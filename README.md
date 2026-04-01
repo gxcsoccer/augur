@@ -1,5 +1,7 @@
 # Augur
 
+[中文文档](./README.zh-CN.md)
+
 **Open-source signal intelligence system that predicts technology eruptions from GitHub ecosystem data.**
 
 Augur monitors infrastructure-layer acceleration patterns across GitHub, HackerNews, and package registries to predict when the next wave of technology products will emerge -- typically 3-6 months before commercial eruption.
