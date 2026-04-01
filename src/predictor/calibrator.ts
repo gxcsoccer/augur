@@ -727,8 +727,11 @@ export async function validate(
 
   const signals: SignalDetectionResult[] = [];
 
-  // 关键改进：只看 cutoff 前 12 个月内的信号，过滤旧周期噪声
-  const recencyWindow = 12; // months
+  // 关键改进：只看 cutoff 前 N 个月内的信号，过滤旧周期噪声
+  // 对于"已知爆发日期"的验证用 12 个月窗口
+  // 对于"预测未来"的场景，eruptionDate 是 placeholder，用更短的窗口
+  const isFuturePrediction = new Date(validationTarget.eruptionDate) > new Date(cutoff);
+  const recencyWindow = isFuturePrediction ? 18 : 12; // 预测未来时放宽窗口
   const recencyCutoff = new Date(cutoff);
   recencyCutoff.setMonth(recencyCutoff.getMonth() - recencyWindow);
   const recencyCutoffStr = recencyCutoff.toISOString().slice(0, 10);
