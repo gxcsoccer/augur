@@ -528,22 +528,22 @@ program
       looLines.push('\n---\n');
       looLines.push('## Leave-one-out 交叉验证');
       looLines.push('');
-      looLines.push('| Fold | 留出案例 | 训练评分 | 实际领先(月) | 预测领先(月) | 误差(月) |');
-      looLines.push('|------|---------|---------|-------------|-------------|---------|');
+      looLines.push('| Fold | 留出案例 | Cutoff | 预测爆发 | 实际爆发 | 误差(月) |');
+      looLines.push('|------|---------|--------|---------|---------|---------|');
 
       const errors: number[] = [];
       for (const [i, r] of looResults.entries()) {
-        looLines.push(`| ${i + 1} | ${r.heldOut} | ${r.trainScore.toFixed(3)} | ${r.infraLeadActual?.toFixed(1) ?? '-'} | ${r.infraLeadPredicted?.toFixed(1) ?? '-'} | ${r.error?.toFixed(1) ?? '-'} |`);
-        if (r.error !== null) errors.push(r.error);
+        looLines.push(`| ${i + 1} | ${r.heldOut} | ${r.cutoff} | ${r.predictedEruption ?? '-'} | ${r.actualEruption} | ${r.errorMonths?.toFixed(1) ?? '-'} |`);
+        if (r.errorMonths !== null) errors.push(r.errorMonths);
       }
 
       const avgError = errors.length > 0 ? errors.reduce((a, b) => a + b, 0) / errors.length : 0;
 
-      // 计算置信区间（基于 LOO 残差的标准差）
-      const residuals = looResults.filter(r => r.error !== null).map(r => {
-        const actual = r.infraLeadActual ?? 0;
-        const predicted = r.infraLeadPredicted ?? 0;
-        return predicted - actual; // positive = overprediction
+      // 计算置信区间（基于 LOO 误差的标准差）
+      const residuals = looResults.filter(r => r.errorMonths !== null).map(r => {
+        if (!r.predictedEruption) return 0;
+        // positive = predicted too early, negative = predicted too late
+        return (new Date(r.actualEruption).getTime() - new Date(r.predictedEruption).getTime()) / (1000 * 60 * 60 * 24 * 30);
       });
       const meanResidual = residuals.reduce((a, b) => a + b, 0) / residuals.length;
       const variance = residuals.reduce((s, r) => s + (r - meanResidual) ** 2, 0) / (residuals.length - 1);

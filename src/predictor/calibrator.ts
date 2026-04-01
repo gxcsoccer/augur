@@ -373,7 +373,11 @@ export interface LOOResult {
   heldOut: string;            // 被留出的案例名
   trainScore: number;         // 训练集评分
   bestParams: ModelParams;
-  // 用训练得到的参数在留出案例上的预测
+  cutoff: string;             // 模拟站在哪天预测
+  predictedEruption: string | null;
+  actualEruption: string;
+  errorMonths: number | null; // 预测误差（月）
+  // legacy fields for backwards compat
   infraLeadPredicted: number | null;
   infraLeadActual: number | null;
   error: number | null;
@@ -418,12 +422,19 @@ export async function crossValidate(
   console.log(`[LOO] 已缓存 ${dataCache.size} 个数据集\n`);
 
   // 本地检测函数
+  // dataCutoff: 只扫描此日期之前的数据；eruptionDate: 用于计算 lead time
   function detectLocal(
     repo: string, layer: 'infrastructure' | 'tooling' | 'application',
-    eruptionDate: string, params: ModelParams,
+    eruptionDate: string, params: ModelParams, dataCutoff?: string,
   ): SignalDetectionResult {
     const cacheKey = `${repo}::${eruptionDate}`;
-    const history = dataCache.get(cacheKey) ?? [];
+    let history = dataCache.get(cacheKey) ?? [];
+
+    // 如果有 dataCutoff，过滤掉 cutoff 之后的数据
+    if (dataCutoff) {
+      history = history.filter(h => h.week <= dataCutoff);
+    }
+
     if (history.length < params.windowSize + 2) {
       return { repo, layer, signalDate: null, leadMonths: null };
     }
@@ -436,8 +447,9 @@ export async function crossValidate(
         const current = history[i][key] as number;
         if (current / baseline >= params.accelerationThreshold) {
           const signalDate = history[i].week;
+          const refDate = dataCutoff ?? eruptionDate;
           const d1 = new Date(signalDate);
-          const d2 = new Date(eruptionDate);
+          const d2 = new Date(refDate);
           const leadMonths = (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24 * 30);
           return { repo, layer, signalDate, leadMonths: Math.round(leadMonths * 10) / 10 };
         }
@@ -500,31 +512,40 @@ export async function crossValidate(
       }
     }
 
-    // Evaluate on held-out case
-    const heldOutResults = [
-      ...heldOut.infrastructureRepos.map(r => detectLocal(r, 'infrastructure', heldOut.eruptionDate, bestParams)),
-      ...heldOut.toolingRepos.map(r => detectLocal(r, 'tooling', heldOut.eruptionDate, bestParams)),
-      ...heldOut.applicationRepos.map(r => detectLocal(r, 'application', heldOut.eruptionDate, bestParams)),
+    // ─── 时间模拟验证 ───
+    // 模拟"站在爆发前 3 个月"做预测
+    const cutoffDate = new Date(heldOut.eruptionDate);
+    cutoffDate.setMonth(cutoffDate.getMonth() - 3);
+    const cutoff = cutoffDate.toISOString().slice(0, 10);
+
+    // 检测信号（只用 cutoff 前 12 个月的信号）
+    const recencyCutoff = new Date(cutoff);
+    recencyCutoff.setMonth(recencyCutoff.getMonth() - 12);
+    const recencyCutoffStr = recencyCutoff.toISOString().slice(0, 10);
+
+    const allDetections = [
+      ...heldOut.infrastructureRepos.map(r => ({ ...detectLocal(r, 'infrastructure', heldOut.eruptionDate, bestParams, cutoff), layer: 'infrastructure' as const })),
+      ...heldOut.toolingRepos.map(r => ({ ...detectLocal(r, 'tooling', heldOut.eruptionDate, bestParams, cutoff), layer: 'tooling' as const })),
+      ...heldOut.applicationRepos.map(r => ({ ...detectLocal(r, 'application', heldOut.eruptionDate, bestParams, cutoff), layer: 'application' as const })),
     ];
 
-    const infraResults = heldOutResults.filter(r => r.layer === 'infrastructure' && r.leadMonths !== null);
-    // 用 trimmed mean：去掉最高最低后取均值（比纯均值鲁棒，比中位数稳定）
-    const infraLeads = infraResults.map(r => r.leadMonths!).sort((a, b) => a - b);
-    let infraLeadActual: number | null = null;
-    if (infraLeads.length >= 3) {
-      const trimmed = infraLeads.slice(1, -1); // remove min and max
-      infraLeadActual = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
-    } else if (infraLeads.length > 0) {
-      infraLeadActual = infraLeads.reduce((a, b) => a + b, 0) / infraLeads.length;
-    }
+    // Recency filter
+    const filteredSignals = allDetections.map(s => {
+      if (s.signalDate && s.signalDate < recencyCutoffStr) {
+        return { ...s, signalDate: null, leadMonths: null };
+      }
+      return s;
+    });
 
-    // 从训练集中学到的领先时间做回归预测
+    const recentInfra = filteredSignals.filter(s => s.layer === 'infrastructure' && s.signalDate !== null);
+    const recentTooling = filteredSignals.filter(s => s.layer === 'tooling' && s.signalDate !== null);
+
+    // 计算 base expected lead time（三模型集成）
     const trainLeads: { date: number; lead: number }[] = [];
     for (const t of trainSet) {
       const tResults = t.infrastructureRepos.map(r => detectLocal(r, 'infrastructure', t.eruptionDate, bestParams));
       const validLeads = tResults.filter(r => r.leadMonths !== null).map(r => r.leadMonths!).sort((a, b) => a - b);
       if (validLeads.length > 0) {
-        // trimmed mean: remove outliers
         let lead: number;
         if (validLeads.length >= 3) {
           const trimmed = validLeads.slice(1, -1);
@@ -536,13 +557,12 @@ export async function crossValidate(
       }
     }
 
-    // 三模型集成预测：线性回归 + 指数衰减 + 加权最近邻
-    let infraLeadPredicted: number | null = null;
+    let baseLead: number = 5 * bestParams.compressionFactor;
     if (trainLeads.length >= 2) {
       const heldOutDate = new Date(heldOut.eruptionDate).getTime();
       const predictions: number[] = [];
 
-      // Model 1: 线性回归
+      // Linear regression
       const n = trainLeads.length;
       const sumX = trainLeads.reduce((s, p) => s + p.date, 0);
       const sumY = trainLeads.reduce((s, p) => s + p.lead, 0);
@@ -555,8 +575,7 @@ export async function crossValidate(
         predictions.push(Math.max(1, a * heldOutDate + b));
       }
 
-      // Model 2: 指数衰减 lead = A * exp(-B * t)
-      // 在 log 空间做线性回归：log(lead) = log(A) - B*t
+      // Exponential decay
       const logLeads = trainLeads.filter(p => p.lead > 0).map(p => ({ date: p.date, logLead: Math.log(p.lead) }));
       if (logLeads.length >= 2) {
         const ln = logLeads.length;
@@ -572,46 +591,74 @@ export async function crossValidate(
         }
       }
 
-      // Model 3: 距离加权最近邻（时间越近权重越高）
+      // KNN
       const weights = trainLeads.map(p => 1 / (1 + Math.abs(p.date - heldOutDate) / (365.25 * 24 * 3600 * 1000)));
       const totalWeight = weights.reduce((a, b) => a + b, 0);
       if (totalWeight > 0) {
-        const weightedLead = trainLeads.reduce((s, p, idx) => s + p.lead * weights[idx], 0) / totalWeight;
-        predictions.push(Math.max(1, weightedLead));
+        predictions.push(Math.max(1, trainLeads.reduce((s, p, idx) => s + p.lead * weights[idx], 0) / totalWeight));
       }
 
-      // 集成：加权平均（指数衰减权重最高，因为它最能捕捉"领先时间在缩短"的趋势）
       if (predictions.length > 0) {
-        const ensembleWeights = [0.25, 0.45, 0.30]; // [linear, exponential, knn]
-        let weightedSum = 0;
-        let totalW = 0;
+        const ensembleWeights = [0.25, 0.45, 0.30];
+        let ws = 0, tw = 0;
         for (let j = 0; j < predictions.length; j++) {
           const w = ensembleWeights[j] ?? (1 / predictions.length);
-          weightedSum += predictions[j] * w;
-          totalW += w;
+          ws += predictions[j] * w; tw += w;
         }
-        infraLeadPredicted = Math.round(weightedSum / totalW * 10) / 10;
+        baseLead = ws / tw;
       }
     }
-    if (infraLeadPredicted === null && infraLeadActual !== null) {
-      const leads = trainLeads.map(p => p.lead).sort((a, b) => a - b);
-      infraLeadPredicted = leads.length > 0 ? leads[Math.floor(leads.length / 2)] : 5 * bestParams.compressionFactor;
-      infraLeadPredicted = Math.round(infraLeadPredicted * 10) / 10;
+
+    // 应用修正：跨层、多信号、新鲜度
+    let adjustedLead = baseLead;
+    if (recentInfra.length > 0 && recentTooling.length > 0) adjustedLead *= 0.7;
+    if (recentInfra.length + recentTooling.length >= 3) adjustedLead *= 0.8;
+
+    // 新鲜度修正
+    const allSignalDates = [...recentInfra, ...recentTooling].filter(s => s.signalDate).map(s => s.signalDate!).sort((a, b) => b.localeCompare(a));
+    if (allSignalDates.length > 0) {
+      const newest = new Date(allSignalDates[0]);
+      const cutoffD2 = new Date(cutoff);
+      const monthsSince = (cutoffD2.getTime() - newest.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      if (monthsSince <= 2) adjustedLead *= 0.5;
+      else if (monthsSince <= 4) adjustedLead *= 0.75;
     }
 
-    const error = (infraLeadActual !== null && infraLeadPredicted !== null)
-      ? Math.abs(infraLeadActual - infraLeadPredicted)
-      : null;
+    // 预测爆发日期
+    let predictedEruption: string | null = null;
+    let errorMonths: number | null = null;
 
-    console.log(`  训练评分: ${bestScore.toFixed(3)} | 实际领先: ${infraLeadActual?.toFixed(1) ?? '-'}m | 预测: ${infraLeadPredicted?.toFixed(1) ?? '-'}m | 误差: ${error?.toFixed(1) ?? '-'}m`);
+    if (recentInfra.length > 0) {
+      const latestInfra = recentInfra.sort((a, b) => b.signalDate!.localeCompare(a.signalDate!))[0];
+      const signalD = new Date(latestInfra.signalDate!);
+      signalD.setMonth(signalD.getMonth() + Math.round(adjustedLead));
+      predictedEruption = signalD.toISOString().slice(0, 10);
+    } else if (recentTooling.length > 0) {
+      const latestTooling = recentTooling.sort((a, b) => b.signalDate!.localeCompare(a.signalDate!))[0];
+      const signalD = new Date(latestTooling.signalDate!);
+      const toolingLead = adjustedLead * 0.4; // tooling lead is shorter
+      signalD.setMonth(signalD.getMonth() + Math.round(toolingLead));
+      predictedEruption = signalD.toISOString().slice(0, 10);
+    }
+
+    if (predictedEruption) {
+      const diff = Math.abs(new Date(heldOut.eruptionDate).getTime() - new Date(predictedEruption).getTime());
+      errorMonths = Math.round(diff / (1000 * 60 * 60 * 24 * 30) * 10) / 10;
+    }
+
+    console.log(`  训练评分: ${bestScore.toFixed(3)} | cutoff: ${cutoff} | 预测: ${predictedEruption ?? '-'} | 实际: ${heldOut.eruptionDate} | 误差: ${errorMonths?.toFixed(1) ?? '-'}m`);
 
     results.push({
       heldOut: heldOut.name,
       trainScore: bestScore,
       bestParams,
-      infraLeadPredicted: infraLeadPredicted ? Math.round(infraLeadPredicted * 10) / 10 : null,
-      infraLeadActual: infraLeadActual ? Math.round(infraLeadActual * 10) / 10 : null,
-      error: error ? Math.round(error * 10) / 10 : null,
+      cutoff,
+      predictedEruption,
+      actualEruption: heldOut.eruptionDate,
+      errorMonths,
+      infraLeadPredicted: adjustedLead ? Math.round(adjustedLead * 10) / 10 : null,
+      infraLeadActual: null,
+      error: errorMonths,
     });
   }
 
