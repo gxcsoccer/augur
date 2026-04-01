@@ -95,9 +95,16 @@
         "actual": 0,
         "error": 3.6,
         "date": "2025-06-01"
+      },
+      {
+        "domain": "professional-agent",
+        "predicted": -1,
+        "actual": 0,
+        "error": 4.1,
+        "date": "2025-06-01"
       }
     ],
     "warmStarted": true,
-    "selfCalibratedCount": 8
+    "selfCalibratedCount": 9
   }
 }

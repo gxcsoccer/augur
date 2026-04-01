@@ -538,8 +538,50 @@ program
       }
 
       const avgError = errors.length > 0 ? errors.reduce((a, b) => a + b, 0) / errors.length : 0;
+
+      // 计算置信区间（基于 LOO 残差的标准差）
+      const residuals = looResults.filter(r => r.error !== null).map(r => {
+        const actual = r.infraLeadActual ?? 0;
+        const predicted = r.infraLeadPredicted ?? 0;
+        return predicted - actual; // positive = overprediction
+      });
+      const meanResidual = residuals.reduce((a, b) => a + b, 0) / residuals.length;
+      const variance = residuals.reduce((s, r) => s + (r - meanResidual) ** 2, 0) / (residuals.length - 1);
+      const stdDev = Math.sqrt(variance);
+
       looLines.push('');
       looLines.push(`**平均预测误差: ${avgError.toFixed(1)} 个月** (${errors.length} 个有效 fold)`);
+      looLines.push(`**残差标准差: ±${stdDev.toFixed(1)} 个月**`);
+      looLines.push(`**预测偏差: ${meanResidual > 0 ? '+' : ''}${meanResidual.toFixed(1)} 个月** (${meanResidual > 0 ? '偏早' : '偏晚'})`);
+      looLines.push('');
+
+      // 将置信区间应用到 OpenClaw 验证结果
+      if (valResult.predictedEruptionDate) {
+        const predicted = new Date(valResult.predictedEruptionDate);
+        const lowerDate = new Date(predicted);
+        lowerDate.setDate(lowerDate.getDate() - Math.round(stdDev * 30));
+        const upperDate = new Date(predicted);
+        upperDate.setDate(upperDate.getDate() + Math.round(stdDev * 30));
+
+        looLines.push('### OpenClaw 预测置信区间');
+        looLines.push('');
+        looLines.push(`| 区间 | 日期范围 |`);
+        looLines.push(`|------|---------|`);
+        looLines.push(`| 点估计 | **${valResult.predictedEruptionDate}** |`);
+        looLines.push(`| 68% 区间 (±1σ) | ${lowerDate.toISOString().slice(0, 10)} ~ ${upperDate.toISOString().slice(0, 10)} |`);
+
+        const lower95 = new Date(predicted);
+        lower95.setDate(lower95.getDate() - Math.round(stdDev * 2 * 30));
+        const upper95 = new Date(predicted);
+        upper95.setDate(upper95.getDate() + Math.round(stdDev * 2 * 30));
+        looLines.push(`| 95% 区间 (±2σ) | ${lower95.toISOString().slice(0, 10)} ~ ${upper95.toISOString().slice(0, 10)} |`);
+        looLines.push(`| 实际爆发 | ${valResult.actualEruptionDate} |`);
+
+        const actualInBand = valResult.actualEruptionDate >= lowerDate.toISOString().slice(0, 10)
+          && valResult.actualEruptionDate <= upperDate.toISOString().slice(0, 10);
+        looLines.push('');
+        looLines.push(`实际爆发日期${actualInBand ? '**在 68% 置信区间内** ✓' : '在 68% 置信区间外'}`);
+      }
 
       const looReport = looLines.join('\n');
       console.log(looReport);

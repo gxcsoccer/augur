@@ -8,11 +8,45 @@
  * 测试集: OpenClaw / 专业 Agent
  */
 
+import * as fs from 'node:fs';
 import {
   fetchWeeklyMetrics,
   type BacktestTarget,
   BACKTEST_TARGETS,
 } from './backtest.js';
+
+// ─── ClickHouse 数据缓存 ────────────────────────────────────────
+
+const CH_CACHE_PATH = 'data/ch-cache.json';
+
+type CacheStore = Record<string, any[]>;
+
+function loadCache(): CacheStore {
+  try {
+    if (fs.existsSync(CH_CACHE_PATH)) {
+      return JSON.parse(fs.readFileSync(CH_CACHE_PATH, 'utf-8'));
+    }
+  } catch {}
+  return {};
+}
+
+function saveCache(cache: CacheStore): void {
+  fs.writeFileSync(CH_CACHE_PATH, JSON.stringify(cache), 'utf-8');
+}
+
+/**
+ * 带缓存的 ClickHouse 数据加载
+ */
+async function fetchWithCache(
+  repo: string, from: string, to: string, cache: CacheStore,
+): Promise<any[]> {
+  const key = `${repo}::${from}::${to}`;
+  if (cache[key]) return cache[key];
+
+  const data = await fetchWeeklyMetrics(repo, from, to);
+  cache[key] = data;
+  return data;
+}
 
 // ─── 可调参数空间 ───────────────────────────────────────────────
 
@@ -193,10 +227,11 @@ export async function calibrate(
 
   console.log(`[Calibrate] 训练集: ${targets.map(t => t.name).join(', ')}`);
 
-  // 先用所有参数组合跑一遍 — 但因为 ClickHouse 查询慢，
-  // 我们先缓存所有 repo 的原始数据，然后在本地做参数搜索
-  console.log('[Calibrate] 预加载历史数据...');
+  // 使用磁盘缓存避免重复查询 ClickHouse
+  console.log('[Calibrate] 加载历史数据（使用缓存）...');
+  const diskCache = loadCache();
   const dataCache = new Map<string, Awaited<ReturnType<typeof fetchWeeklyMetrics>>>();
+  let cacheHits = 0;
 
   for (const target of targets) {
     const allRepos = [...target.infrastructureRepos, ...target.toolingRepos, ...target.applicationRepos];
@@ -208,17 +243,19 @@ export async function calibrate(
       fromDate.setMonth(fromDate.getMonth() - 24);
       const from = fromDate.toISOString().slice(0, 10);
 
-      console.log(`  加载 ${repo}...`);
       try {
-        const data = await fetchWeeklyMetrics(repo, from, target.eruptionDate);
+        const data = await fetchWithCache(repo, from, target.eruptionDate, diskCache);
         dataCache.set(cacheKey, data);
+        if (diskCache[`${repo}::${from}::${target.eruptionDate}`]) cacheHits++;
+        else console.log(`  加载 ${repo}...`);
       } catch {
         dataCache.set(cacheKey, []);
       }
     }
   }
 
-  console.log(`[Calibrate] 已缓存 ${dataCache.size} 个数据集，开始网格搜索...`);
+  saveCache(diskCache);
+  console.log(`[Calibrate] 已加载 ${dataCache.size} 个数据集 (缓存命中 ${cacheHits})，开始网格搜索...`);
 
   // 本地快速信号检测（使用缓存数据）
   function detectLocal(
@@ -352,9 +389,11 @@ export async function crossValidate(
   const allTargets = targets ?? BACKTEST_TARGETS;
   const results: LOOResult[] = [];
 
-  // 先预加载所有数据
-  console.log('[LOO] 预加载所有数据...');
+  // 使用磁盘缓存
+  console.log('[LOO] 加载数据（使用缓存）...');
+  const diskCache = loadCache();
   const dataCache = new Map<string, Awaited<ReturnType<typeof fetchWeeklyMetrics>>>();
+  let hits = 0;
 
   for (const target of allTargets) {
     const allRepos = [...target.infrastructureRepos, ...target.toolingRepos, ...target.applicationRepos];
@@ -364,15 +403,17 @@ export async function crossValidate(
       const fromDate = new Date(target.eruptionDate);
       fromDate.setMonth(fromDate.getMonth() - 24);
       const from = fromDate.toISOString().slice(0, 10);
-      console.log(`  加载 ${repo}...`);
       try {
-        const data = await fetchWeeklyMetrics(repo, from, target.eruptionDate);
+        const data = await fetchWithCache(repo, from, target.eruptionDate, diskCache);
         dataCache.set(cacheKey, data);
+        if (diskCache[`${repo}::${from}::${target.eruptionDate}`]) hits++;
+        else console.log(`  加载 ${repo}...`);
       } catch {
         dataCache.set(cacheKey, []);
       }
     }
   }
+  saveCache(diskCache);
 
   console.log(`[LOO] 已缓存 ${dataCache.size} 个数据集\n`);
 
@@ -682,6 +723,31 @@ export async function validate(
 
   expectedInfraLead *= accelerationFactor;
   expectedToolingLead *= accelerationFactor;
+
+  // ─── 信号新鲜度修正 ───
+  // 信号越新（越接近 cutoff），说明爆发越近
+  // 如果最新信号在 cutoff 前 2 个月内 → 缩短 50%
+  // 如果在 2~4 个月内 → 缩短 25%
+  const allSignalDates = [...recentInfra, ...recentTooling]
+    .filter(s => s.signalDate)
+    .map(s => s.signalDate!)
+    .sort((a, b) => b.localeCompare(a)); // newest first
+
+  if (allSignalDates.length > 0) {
+    const newestSignal = new Date(allSignalDates[0]);
+    const cutoffD = new Date(cutoff);
+    const monthsSinceNewest = (cutoffD.getTime() - newestSignal.getTime()) / (1000 * 60 * 60 * 24 * 30);
+
+    if (monthsSinceNewest <= 2) {
+      expectedInfraLead *= 0.5;
+      expectedToolingLead *= 0.5;
+      console.log(`  [新鲜度] 最新信号仅 ${monthsSinceNewest.toFixed(1)} 月前 → 领先时间 ×0.5`);
+    } else if (monthsSinceNewest <= 4) {
+      expectedInfraLead *= 0.75;
+      expectedToolingLead *= 0.75;
+      console.log(`  [新鲜度] 最新信号 ${monthsSinceNewest.toFixed(1)} 月前 → 领先时间 ×0.75`);
+    }
+  }
 
   // 预测策略
   if (recentInfra.length > 0) {
