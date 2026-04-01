@@ -5,8 +5,9 @@ import { getDb, initSchema } from './store/schema.js';
 import { upsertProject, upsertSnapshot, upsertReadme, type Project, type Snapshot } from './store/queries.js';
 import { fetchTrending } from './collector/github-trending.js';
 import { fetchRepoDetails, fetchReadme, getRateLimitInfo } from './collector/github-api.js';
-import { generateWeeklyReport } from './predictor/report-generator.js';
+import { generateWeeklyReport, collectReportData, enrichWithSignals, formatReport } from './predictor/report-generator.js';
 import { BACKTEST_TARGETS, runBacktest, formatFullBacktestReport } from './predictor/backtest.js';
+import { classifyProjects } from './analyzer/signal-tagger.js';
 
 const program = new Command();
 
@@ -118,6 +119,93 @@ program
     db.close();
   });
 
+// ─── augur analyze ──────────────────────────────────────────────
+program
+  .command('analyze')
+  .description('对已采集的项目进行 LLM 信号分类和评分')
+  .option('-d, --date <date>', '指定日期 (YYYY-MM-DD)')
+  .action(async (opts: { date?: string }) => {
+    const db = getDb();
+    initSchema(db);
+
+    const date = opts.date ?? new Date().toISOString().slice(0, 10);
+    console.log(`[Analyze] 正在分析项目信号...`);
+
+    const entries = collectReportData(db, date);
+    if (entries.length === 0) {
+      console.log('[Analyze] 无数据，请先运行 augur collect');
+      db.close();
+      return;
+    }
+
+    // Load READMEs for classification
+    const projects = entries.map(e => {
+      const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(e.id) as any;
+      const readme = db.prepare('SELECT content FROM readmes WHERE project_id = ?').get(e.id) as any;
+      return {
+        id: e.id,
+        description: e.description,
+        language: e.language,
+        topics: project?.topics ?? null,
+        readme: readme?.content?.slice(0, 500) ?? undefined,
+      };
+    });
+
+    console.log(`[Analyze] 正在调用 LLM 分类 ${projects.length} 个项目...`);
+    const classifications = await classifyProjects(projects);
+    console.log(`[Analyze] 分类完成`);
+
+    // Save signals to DB
+    const week = date; // simplified for now
+    for (const c of classifications) {
+      db.prepare(`
+        INSERT INTO signals (project_id, week, layer, growth_pattern, domains, confidence, opportunity_score, raw_analysis)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(project_id, week) DO UPDATE SET
+          layer = excluded.layer,
+          domains = excluded.domains,
+          raw_analysis = excluded.raw_analysis
+      `).run(
+        c.projectId,
+        week,
+        c.layer,
+        entries.find(e => e.id === c.projectId)?.growth.pattern ?? 'steady',
+        JSON.stringify(c.domains),
+        0, // will be set by scorer
+        0, // will be set by scorer
+        JSON.stringify(c),
+      );
+    }
+
+    // Enrich and score
+    enrichWithSignals(entries, classifications);
+
+    // Update scores in DB
+    for (const e of entries) {
+      if (e.score) {
+        db.prepare(`
+          UPDATE signals SET confidence = ?, opportunity_score = ? WHERE project_id = ? AND week = ?
+        `).run(e.score.confidence, e.score.opportunityScore, e.id, week);
+      }
+    }
+
+    // Print summary
+    const infra = classifications.filter(c => c.layer === 'infrastructure');
+    const tooling = classifications.filter(c => c.layer === 'tooling');
+    const app = classifications.filter(c => c.layer === 'application');
+    console.log(`[Analyze] 结果: 基础设施 ${infra.length} | 工具 ${tooling.length} | 应用 ${app.length}`);
+
+    const topScored = entries.filter(e => e.score).sort((a, b) => b.score!.opportunityScore - a.score!.opportunityScore).slice(0, 5);
+    if (topScored.length > 0) {
+      console.log(`[Analyze] Top 5 机会:`);
+      for (const e of topScored) {
+        console.log(`  ${e.score!.opportunityScore.toFixed(2)} | ${e.signal?.layer} | ${e.id} [${e.signal?.domains.join(', ')}]`);
+      }
+    }
+
+    db.close();
+  });
+
 // ─── augur report ───────────────────────────────────────────────
 program
   .command('report')
@@ -125,14 +213,51 @@ program
   .option('-w, --week', '生成周报')
   .option('-d, --date <date>', '指定日期 (YYYY-MM-DD)')
   .option('-o, --output <file>', '输出到文件')
-  .action(async (opts: { week?: boolean; date?: string; output?: string }) => {
+  .option('--with-llm', '包含 LLM 信号分析（如未运行 analyze 则自动触发）')
+  .action(async (opts: { week?: boolean; date?: string; output?: string; withLlm?: boolean }) => {
     const db = getDb();
     initSchema(db);
 
     const date = opts.date ?? new Date().toISOString().slice(0, 10);
+    const weekLabel = `${new Date(date).getFullYear()}-W${String(Math.ceil((new Date(date).getTime() - new Date(new Date(date).getFullYear(), 0, 1).getTime()) / 604800000)).padStart(2, '0')}`;
+
     console.log(`[Report] 生成周报，基准日期: ${date}`);
 
-    const report = generateWeeklyReport(db, date);
+    const entries = collectReportData(db, date);
+
+    if (opts.withLlm && entries.length > 0) {
+      // Check if signals already exist
+      const existingSignals = db.prepare('SELECT COUNT(*) as count FROM signals WHERE week = ?').get(date) as { count: number };
+
+      if (existingSignals.count === 0) {
+        console.log('[Report] 正在调用 LLM 分析...');
+        const projects = entries.map(e => {
+          const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(e.id) as any;
+          const readme = db.prepare('SELECT content FROM readmes WHERE project_id = ?').get(e.id) as any;
+          return {
+            id: e.id,
+            description: e.description,
+            language: e.language,
+            topics: project?.topics ?? null,
+            readme: readme?.content?.slice(0, 500) ?? undefined,
+          };
+        });
+        const classifications = await classifyProjects(projects);
+        enrichWithSignals(entries, classifications);
+      } else {
+        // Load existing signals
+        const rows = db.prepare('SELECT * FROM signals WHERE week = ?').all(date) as any[];
+        const classifications = rows.map(r => ({
+          projectId: r.project_id,
+          layer: r.layer as 'infrastructure' | 'tooling' | 'application',
+          domains: JSON.parse(r.domains || '[]'),
+          reasoning: '',
+        }));
+        enrichWithSignals(entries, classifications);
+      }
+    }
+
+    const report = formatReport(entries, weekLabel, date);
 
     if (opts.output) {
       const fs = await import('node:fs');
