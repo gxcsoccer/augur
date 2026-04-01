@@ -68,6 +68,12 @@ jobs:
           DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
         run: npx tsx src/cli.ts run --weekly
 
+      - name: Run evolution cycle
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+        run: npx tsx src/cli.ts evolve --skip-discover -o reports/evolution-$(date +%Y-%m-%d).md || true
+
       - name: Commit data and report
         run: |
           git config user.name "augur-bot"

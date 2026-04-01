@@ -432,6 +432,176 @@ program
     db.close();
   });
 
+// ─── augur discover ─────────────────────────────────────────────
+program
+  .command('discover')
+  .description('LLM 自动发现新候选浪潮')
+  .action(async () => {
+    const db = getDb();
+    initSchema(db);
+    const { discoverWaves, mergeWaves } = await import('./analyzer/wave-discoverer.js');
+    const { CANDIDATE_WAVES } = await import('./predictor/wave-scanner.js');
+
+    console.log('[Discover] 正在从已采集数据中发现新浪潮...');
+    const discovered = await discoverWaves(db);
+
+    if (discovered.length === 0) {
+      console.log('[Discover] 未发现新浪潮');
+      db.close();
+      return;
+    }
+
+    console.log(`\n[Discover] 发现 ${discovered.length} 个候选浪潮:`);
+    for (const w of discovered) {
+      const totalRepos = w.infrastructureRepos.length + w.toolingRepos.length + w.applicationRepos.length;
+      console.log(`  - ${w.name}: ${w.description} (${totalRepos} repos)`);
+    }
+
+    const merged = mergeWaves(CANDIDATE_WAVES, discovered);
+    const newCount = merged.length - CANDIDATE_WAVES.length;
+    console.log(`\n[Discover] 合并后: ${merged.length} 个浪潮 (+${newCount} 新增)`);
+
+    // Save discovered waves to data/discovered-waves.json
+    const fs = await import('node:fs');
+    fs.writeFileSync('data/discovered-waves.json', JSON.stringify(discovered, null, 2) + '\n', 'utf-8');
+    console.log('[Discover] 已保存到 data/discovered-waves.json');
+
+    db.close();
+  });
+
+// ─── augur evolve ───────────────────────────────────────────────
+program
+  .command('evolve')
+  .description('完整进化循环：发现 → 预测 → 记录 → 验证 → 调参')
+  .option('-o, --output <file>', '输出到文件')
+  .option('--skip-discover', '跳过候选发现（仅用已有浪潮）')
+  .action(async (opts: { output?: string; skipDiscover?: boolean }) => {
+    const fsModule = await import('node:fs');
+    const db = getDb();
+    initSchema(db);
+    const { discoverWaves, mergeWaves } = await import('./analyzer/wave-discoverer.js');
+    const { CANDIDATE_WAVES, scanWaves, formatWavePredictionReport } = await import('./predictor/wave-scanner.js');
+    const { recordPredictions, checkPendingPredictions, evolveParams, expireOldPredictions, formatLedgerReport, getLedgerStats } = await import('./predictor/online-learner.js');
+
+    const today = new Date().toISOString().slice(0, 10);
+    console.log(`═══ Augur 进化循环 (${today}) ═══\n`);
+
+    // Step 1: Discover new waves
+    let waves = [...CANDIDATE_WAVES];
+    if (!opts.skipDiscover) {
+      console.log('── Step 1: 候选发现 ──');
+      const discovered = await discoverWaves(db);
+      if (discovered.length > 0) {
+        // Load previously discovered waves
+        let prevDiscovered: any[] = [];
+        try {
+          prevDiscovered = JSON.parse(fsModule.readFileSync('data/discovered-waves.json', 'utf-8'));
+        } catch {}
+        const allDiscovered = [...prevDiscovered, ...discovered];
+
+        waves = mergeWaves(CANDIDATE_WAVES, allDiscovered);
+        fsModule.writeFileSync('data/discovered-waves.json', JSON.stringify(allDiscovered, null, 2) + '\n', 'utf-8');
+        console.log(`  新增 ${waves.length - CANDIDATE_WAVES.length} 个发现的浪潮\n`);
+      }
+    } else {
+      console.log('── Step 1: 跳过候选发现 ──\n');
+      // Load previously discovered waves
+      try {
+        const prev = JSON.parse(fsModule.readFileSync('data/discovered-waves.json', 'utf-8'));
+        waves = mergeWaves(CANDIDATE_WAVES, prev);
+      } catch {}
+    }
+
+    // Step 2: Run predictions
+    console.log('── Step 2: 运行预测 ──');
+    const state = JSON.parse(fsModule.readFileSync('data/learning-state.json', 'utf-8'));
+    const params = {
+      accelerationThreshold: state.signalDetection.accelerationThreshold,
+      windowSize: state.signalDetection.windowSize,
+      minBaseline: state.signalDetection.minBaseline,
+      layerWeight: state.scorerWeights.layer,
+      growthWeight: state.scorerWeights.growth,
+      usageWeight: state.scorerWeights.usage,
+      activityWeight: state.scorerWeights.activity,
+      signalBonusWeight: state.scorerWeights.signalBonus,
+      compressionFactor: state.compressionFactor.value,
+      biasCorrection: state.signalDetection.biasCorrection ?? 0,
+      recencyBoost: state.signalDetection.recencyBoost ?? 0.5,
+    };
+
+    // Temporarily override CANDIDATE_WAVES for scanning
+    const predictions = await scanWaves(params, today);
+
+    // Step 3: Record predictions to ledger
+    console.log('\n── Step 3: 记录预测 ──');
+    const recordCount = recordPredictions(
+      predictions.map(p => ({
+        wave: p.wave.name,
+        predictedEruption: p.validation.predictedEruptionDate,
+        signalStrength: p.signalStrength,
+        signalCount: p.validation.detectedSignals.filter(s => s.signalDate).length,
+        keySignals: p.validation.detectedSignals.filter(s => s.signalDate).map(s => s.repo),
+        confidenceLower: p.validation.confidenceInterval?.lower,
+        confidenceUpper: p.validation.confidenceInterval?.upper,
+      })),
+      params,
+    );
+    console.log(`  记录了 ${recordCount} 条新预测`);
+
+    // Step 4: Check and expire old predictions
+    console.log('\n── Step 4: 验证旧预测 ──');
+    const pendingForReview = checkPendingPredictions();
+    if (pendingForReview.length > 0) {
+      console.log(`  ${pendingForReview.length} 条预测待人工验证:`);
+      for (const p of pendingForReview) {
+        console.log(`    - ${p.wave}: 预测 ${p.predictedEruption} (${p.signalStrength})`);
+      }
+    }
+    const expiredCount = expireOldPredictions();
+    if (expiredCount > 0) console.log(`  过期 ${expiredCount} 条超时预测`);
+
+    // Step 5: Evolve parameters
+    console.log('\n── Step 5: 参数进化 ──');
+    const evolution = evolveParams();
+    if (evolution.changed) {
+      console.log('  参数已更新:');
+      for (const adj of evolution.adjustments) console.log(`    ${adj}`);
+    } else {
+      for (const adj of evolution.adjustments) console.log(`  ${adj}`);
+    }
+    if (evolution.hitRate > 0) {
+      console.log(`  当前命中率: ${(evolution.hitRate * 100).toFixed(0)}%`);
+    }
+
+    // Step 6: Generate report
+    console.log('\n── Step 6: 生成报告 ──');
+    const predReport = formatWavePredictionReport(predictions, today, 2.6, 3.3);
+    const ledgerReport = formatLedgerReport();
+    const stats = getLedgerStats();
+
+    const fullReport = [
+      predReport,
+      '\n---\n',
+      ledgerReport,
+      '\n---\n',
+      '## 进化状态',
+      '',
+      `- 参数进化: ${evolution.changed ? '已更新' : '无变化'}`,
+      `- 命中率: ${stats.hitRate !== null ? (stats.hitRate * 100).toFixed(0) + '%' : '待验证'}`,
+      `- 平均误差: ${stats.avgError?.toFixed(1) ?? '待验证'} 月`,
+      `- 预测总数: ${stats.total} (待验证 ${stats.pending})`,
+      ...evolution.adjustments.map(a => `- ${a}`),
+    ].join('\n');
+
+    if (opts.output) {
+      fsModule.writeFileSync(opts.output, fullReport, 'utf-8');
+      console.log(`\n[Evolve] 报告已写入 ${opts.output}`);
+    }
+
+    console.log(`\n═══ 进化循环完成 ═══`);
+    db.close();
+  });
+
 // ─── augur predict-next ─────────────────────────────────────────
 program
   .command('predict-next')
