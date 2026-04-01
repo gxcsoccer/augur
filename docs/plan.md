@@ -271,13 +271,36 @@ const response = await llm.chat.completions.create({
 - 需验证 qwen3.5-plus 的 tool use / function calling 能力
 - 搜索 API 有额外成本，按需引入
 
-### Phase 3: 自动化（v0.3）— 1 周
+### Phase 3: 自动化 + 在线学习（v0.3）— 2 周
+
+**核心理念**：借鉴 Karpathy autoresearch 的自主循环思路，让 Augur 基于新数据持续自我优化。
 
 | 任务 | 产出 |
 |------|------|
+| 自动化循环流水线 | `augur run` — 一键执行 collect→analyze→research→report |
 | crontab 配置示例 | docs/crontab-setup.md |
 | 飞书 Bot 推送 | integrations/feishu.ts |
-| 回测框架 + 置信度校准 | predictor/backtest.ts 完善 |
+| Auto Research 路径 B（联网搜索） | analyzer/auto-researcher.ts 升级 |
+
+#### 持续在线学习机制
+
+| 学习模块 | 实现方式 | 触发条件 |
+|----------|---------|---------|
+| 评分权重自动校准 | 对比历史预测 vs 实际爆发，用梯度下降调整 WEIGHTS | 每月 1 次回测 |
+| 信号阈值自适应 | 变点检测的 `accelerationThreshold` 根据历史准确率动态调整 | 每周分析后 |
+| 关键词词典自动扩展 | LLM 从新 README 中提取高频技术词，自动加入 TECH_KEYWORDS | 每周 analyze 时 |
+| 置信度衰减 | 信号连续 N 周不出现 → 置信度 ×0.8/周 | 每周 report 时 |
+| keep/discard 机制 | 信号持续多周 → 置信度上升；消失 → 自动标记为 discarded | 每周 analyze 时 |
+
+```
+自动化循环（类 autoresearch 的 LOOP FOREVER）：
+┌─────────────────────────────────────────────────┐
+│  collect → analyze → research → report → push   │
+│     ↑                                    │      │
+│     │    ← 权重校准 ← 对比预测 vs 实际 ←─┘      │
+│     └─────────── 每日/每周 cron ────────────────┘
+└─────────────────────────────────────────────────┘
+```
 
 ### Phase 4: 开源发布（v0.4）— 1 周
 
