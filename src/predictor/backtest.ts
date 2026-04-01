@@ -188,22 +188,79 @@ export interface BacktestTarget {
 
 export const BACKTEST_TARGETS: BacktestTarget[] = [
   {
+    name: 'Stable Diffusion 爆发',
+    eruptionDate: '2022-08-22',
+    description: 'Stable Diffusion 开源发布，AI 图像生成浪潮',
+    infrastructureRepos: [
+      'CompVis/latent-diffusion',      // 潜在扩散模型论文代码
+      'openai/CLIP',                   // CLIP 文本-图像对齐
+      'huggingface/diffusers',         // 扩散模型工具库
+    ],
+    toolingRepos: [
+      'huggingface/transformers',      // 模型框架（扩散模型依赖）
+      'CompVis/stable-diffusion',      // SD 原始实现
+      'invoke-ai/InvokeAI',           // SD 包装工具
+    ],
+    applicationRepos: [
+      'AUTOMATIC1111/stable-diffusion-webui', // 最流行的 SD WebUI
+      'cmdr2/stable-diffusion-ui',    // 另一个 SD UI
+    ],
+  },
+  {
     name: 'ChatGPT 爆发',
     eruptionDate: '2022-11-30',
     description: 'ChatGPT 发布，Chat AI 浪潮开始',
     infrastructureRepos: [
-      'huggingface/transformers',       // 模型框架，持续增长
-      'pytorch/pytorch',                // 深度学习基础设施
-      'ggerganov/llama.cpp',           // 本地推理（虽然稍晚，但验证趋势）
+      'huggingface/transformers',
+      'pytorch/pytorch',
+      'ggerganov/llama.cpp',
     ],
     toolingRepos: [
-      'openai/openai-python',          // OpenAI SDK
-      'huggingface/huggingface_hub',   // 模型分发工具
-      'AUTOMATIC1111/stable-diffusion-webui', // SD WebUI（同期工具层爆发）
+      'openai/openai-python',
+      'huggingface/huggingface_hub',
+      'AUTOMATIC1111/stable-diffusion-webui',
     ],
     applicationRepos: [
-      'xtekky/gpt4free',              // ChatGPT 套壳应用
-      'lencx/ChatGPT',                // ChatGPT 桌面客户端
+      'xtekky/gpt4free',
+      'lencx/ChatGPT',
+    ],
+  },
+  {
+    name: 'Local LLM 爆发',
+    eruptionDate: '2023-03-15',
+    description: 'LLaMA 泄露 + llama.cpp，本地大模型浪潮',
+    infrastructureRepos: [
+      'ggerganov/llama.cpp',           // 本地推理引擎
+      'ggerganov/ggml',                // 底层张量库
+      'facebookresearch/llama',        // LLaMA 模型
+    ],
+    toolingRepos: [
+      'nomic-ai/gpt4all',             // 一键本地运行
+      'lm-sys/FastChat',              // 本地 Chat 框架
+      'oobabooga/text-generation-webui', // 文本生成 WebUI
+    ],
+    applicationRepos: [
+      'imartinez/privateGPT',         // 私有文档 GPT
+      'mlc-ai/mlc-llm',              // 多平台 LLM 部署
+    ],
+  },
+  {
+    name: 'RAG / Vector DB 爆发',
+    eruptionDate: '2023-04-01',
+    description: 'RAG 范式确立，向量数据库生态爆发',
+    infrastructureRepos: [
+      'chroma-core/chroma',           // 向量数据库
+      'qdrant/qdrant',                // Rust 向量搜索引擎
+      'weaviate/weaviate',            // 向量数据库
+    ],
+    toolingRepos: [
+      'jerryjliu/llama_index',        // RAG 框架
+      'langchain-ai/langchain',       // LLM 编排（RAG 核心工具）
+      'hwchase17/langchain',          // LangChain 早期 repo
+    ],
+    applicationRepos: [
+      'imartinez/privateGPT',         // RAG 应用
+      'StanGirard/quivr',            // 第二大脑 RAG 应用
     ],
   },
   {
@@ -211,18 +268,18 @@ export const BACKTEST_TARGETS: BacktestTarget[] = [
     eruptionDate: '2023-06-01',
     description: 'Cursor 和 Copilot 推动 AI IDE 浪潮',
     infrastructureRepos: [
-      'tree-sitter/tree-sitter',       // 代码解析基础设施
-      'nomic-ai/gpt4all',             // 本地模型运行
-      'ggerganov/llama.cpp',          // 本地推理引擎
+      'tree-sitter/tree-sitter',
+      'nomic-ai/gpt4all',
+      'ggerganov/llama.cpp',
     ],
     toolingRepos: [
-      'jerryjliu/llama_index',        // RAG 框架
-      'chroma-core/chroma',           // 向量数据库
-      'AntonOsika/gpt-engineer',      // 代码生成工具
+      'jerryjliu/llama_index',
+      'chroma-core/chroma',
+      'AntonOsika/gpt-engineer',
     ],
     applicationRepos: [
-      'getcursor/cursor',             // Cursor IDE
-      'paul-gauthier/aider',          // AI pair programming
+      'getcursor/cursor',
+      'paul-gauthier/aider',
     ],
   },
   {
@@ -230,18 +287,18 @@ export const BACKTEST_TARGETS: BacktestTarget[] = [
     eruptionDate: '2024-03-01',
     description: '通用 Agent 浪潮，Manus 等产品涌现',
     infrastructureRepos: [
-      'microsoft/autogen',             // Agent 多智能体框架
-      'openai/openai-python',          // function calling 基础
-      'run-llama/llama_index',         // Agent 数据管道
+      'microsoft/autogen',
+      'openai/openai-python',
+      'run-llama/llama_index',
     ],
     toolingRepos: [
-      'langchain-ai/langchain',       // Agent 编排框架
-      'Significant-Gravitas/AutoGPT', // 自主 Agent 先驱
-      'joaomdmoura/crewAI',           // 多 Agent 协作
+      'langchain-ai/langchain',
+      'Significant-Gravitas/AutoGPT',
+      'joaomdmoura/crewAI',
     ],
     applicationRepos: [
-      'geekan/MetaGPT',              // 多角色 Agent 应用
-      'OpenDevin/OpenDevin',          // 自主编码 Agent
+      'geekan/MetaGPT',
+      'OpenDevin/OpenDevin',
     ],
   },
 ];

@@ -330,6 +330,204 @@ export async function calibrate(
   };
 }
 
+// ─── Leave-one-out 交叉验证 ─────────────────────────────────────
+
+export interface LOOResult {
+  heldOut: string;            // 被留出的案例名
+  trainScore: number;         // 训练集评分
+  bestParams: ModelParams;
+  // 用训练得到的参数在留出案例上的预测
+  infraLeadPredicted: number | null;
+  infraLeadActual: number | null;
+  error: number | null;
+}
+
+/**
+ * Leave-one-out 交叉验证
+ * 每次留出 1 个案例做测试，其余做训练，轮转所有案例
+ */
+export async function crossValidate(
+  targets?: BacktestTarget[],
+): Promise<LOOResult[]> {
+  const allTargets = targets ?? BACKTEST_TARGETS;
+  const results: LOOResult[] = [];
+
+  // 先预加载所有数据
+  console.log('[LOO] 预加载所有数据...');
+  const dataCache = new Map<string, Awaited<ReturnType<typeof fetchWeeklyMetrics>>>();
+
+  for (const target of allTargets) {
+    const allRepos = [...target.infrastructureRepos, ...target.toolingRepos, ...target.applicationRepos];
+    for (const repo of allRepos) {
+      const cacheKey = `${repo}::${target.eruptionDate}`;
+      if (dataCache.has(cacheKey)) continue;
+      const fromDate = new Date(target.eruptionDate);
+      fromDate.setMonth(fromDate.getMonth() - 24);
+      const from = fromDate.toISOString().slice(0, 10);
+      console.log(`  加载 ${repo}...`);
+      try {
+        const data = await fetchWeeklyMetrics(repo, from, target.eruptionDate);
+        dataCache.set(cacheKey, data);
+      } catch {
+        dataCache.set(cacheKey, []);
+      }
+    }
+  }
+
+  console.log(`[LOO] 已缓存 ${dataCache.size} 个数据集\n`);
+
+  // 本地检测函数
+  function detectLocal(
+    repo: string, layer: 'infrastructure' | 'tooling' | 'application',
+    eruptionDate: string, params: ModelParams,
+  ): SignalDetectionResult {
+    const cacheKey = `${repo}::${eruptionDate}`;
+    const history = dataCache.get(cacheKey) ?? [];
+    if (history.length < params.windowSize + 2) {
+      return { repo, layer, signalDate: null, leadMonths: null };
+    }
+    const factors: (keyof typeof history[0])[] = ['new_stars', 'new_forks', 'new_issues', 'new_prs', 'unique_pushers', 'new_releases'];
+    for (let i = params.windowSize; i < history.length; i++) {
+      for (const key of factors) {
+        const window = history.slice(i - params.windowSize, i);
+        const baseline = window.reduce((sum, w) => sum + (w[key] as number), 0) / params.windowSize;
+        if (baseline < params.minBaseline) continue;
+        const current = history[i][key] as number;
+        if (current / baseline >= params.accelerationThreshold) {
+          const signalDate = history[i].week;
+          const d1 = new Date(signalDate);
+          const d2 = new Date(eruptionDate);
+          const leadMonths = (d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24 * 30);
+          return { repo, layer, signalDate, leadMonths: Math.round(leadMonths * 10) / 10 };
+        }
+      }
+    }
+    return { repo, layer, signalDate: null, leadMonths: null };
+  }
+
+  function scoreOnTargets(params: ModelParams, targets: BacktestTarget[]): number {
+    let totalDetected = 0, totalRepos = 0, orderCorrect = 0, orderTotal = 0;
+    const leadErrors: number[] = [];
+    for (const target of targets) {
+      const allRepos = [
+        ...target.infrastructureRepos.map(r => ({ repo: r, layer: 'infrastructure' as const })),
+        ...target.toolingRepos.map(r => ({ repo: r, layer: 'tooling' as const })),
+        ...target.applicationRepos.map(r => ({ repo: r, layer: 'application' as const })),
+      ];
+      const results = allRepos.map(({ repo, layer }) => detectLocal(repo, layer, target.eruptionDate, params));
+      totalRepos += results.length;
+      totalDetected += results.filter(r => r.signalDate !== null).length;
+      const infraDates = results.filter(r => r.layer === 'infrastructure' && r.signalDate).map(r => r.signalDate!);
+      const toolingDates = results.filter(r => r.layer === 'tooling' && r.signalDate).map(r => r.signalDate!);
+      if (infraDates.length > 0 && toolingDates.length > 0) {
+        orderTotal++;
+        if (infraDates.sort()[0] <= toolingDates.sort()[0]) orderCorrect++;
+      }
+      for (const r of results) {
+        if (r.leadMonths !== null && r.layer === 'infrastructure') {
+          if (r.leadMonths >= 3 && r.leadMonths <= 18) leadErrors.push(0);
+          else if (r.leadMonths < 3) leadErrors.push(3 - r.leadMonths);
+          else leadErrors.push(r.leadMonths - 18);
+        }
+      }
+    }
+    const detectionRate = totalRepos > 0 ? totalDetected / totalRepos : 0;
+    const orderRate = orderTotal > 0 ? orderCorrect / orderTotal : 0.5;
+    const mae = leadErrors.length > 0 ? leadErrors.reduce((a, b) => a + b, 0) / leadErrors.length : 10;
+    const maeScore = Math.max(0, 1 - mae / 10);
+    return detectionRate * 0.4 + orderRate * 0.3 + maeScore * 0.3;
+  }
+
+  for (let i = 0; i < allTargets.length; i++) {
+    const heldOut = allTargets[i];
+    const trainSet = allTargets.filter((_, j) => j !== i);
+
+    console.log(`[LOO] Fold ${i + 1}/${allTargets.length}: 留出 "${heldOut.name}"，训练 ${trainSet.length} 个`);
+
+    // Grid search on training set
+    let bestScore = -1;
+    let bestParams = { ...DEFAULT_PARAMS };
+    for (const at of PARAM_GRID.accelerationThreshold) {
+      for (const ws of PARAM_GRID.windowSize) {
+        for (const mb of PARAM_GRID.minBaseline) {
+          for (const cf of PARAM_GRID.compressionFactor) {
+            const params: ModelParams = { ...DEFAULT_PARAMS, accelerationThreshold: at, windowSize: ws, minBaseline: mb, compressionFactor: cf };
+            const score = scoreOnTargets(params, trainSet);
+            if (score > bestScore) { bestScore = score; bestParams = { ...params }; }
+          }
+        }
+      }
+    }
+
+    // Evaluate on held-out case
+    const heldOutResults = [
+      ...heldOut.infrastructureRepos.map(r => detectLocal(r, 'infrastructure', heldOut.eruptionDate, bestParams)),
+      ...heldOut.toolingRepos.map(r => detectLocal(r, 'tooling', heldOut.eruptionDate, bestParams)),
+      ...heldOut.applicationRepos.map(r => detectLocal(r, 'application', heldOut.eruptionDate, bestParams)),
+    ];
+
+    const infraResults = heldOutResults.filter(r => r.layer === 'infrastructure' && r.leadMonths !== null);
+    const infraLeadActual = infraResults.length > 0
+      ? infraResults.reduce((sum, r) => sum + r.leadMonths!, 0) / infraResults.length
+      : null;
+
+    // 从训练集中学到的领先时间做回归预测
+    // 收集训练集的实际领先时间
+    const trainLeads: { date: number; lead: number }[] = [];
+    for (const t of trainSet) {
+      const tResults = [
+        ...t.infrastructureRepos.map(r => detectLocal(r, 'infrastructure', t.eruptionDate, bestParams)),
+      ];
+      const validLeads = tResults.filter(r => r.leadMonths !== null).map(r => r.leadMonths!);
+      if (validLeads.length > 0) {
+        const avgLead = validLeads.reduce((a, b) => a + b, 0) / validLeads.length;
+        trainLeads.push({ date: new Date(t.eruptionDate).getTime(), lead: avgLead });
+      }
+    }
+
+    // 线性回归预测：lead = a * date + b
+    let infraLeadPredicted: number | null = null;
+    if (trainLeads.length >= 2) {
+      const n = trainLeads.length;
+      const sumX = trainLeads.reduce((s, p) => s + p.date, 0);
+      const sumY = trainLeads.reduce((s, p) => s + p.lead, 0);
+      const sumXY = trainLeads.reduce((s, p) => s + p.date * p.lead, 0);
+      const sumX2 = trainLeads.reduce((s, p) => s + p.date * p.date, 0);
+      const denom = n * sumX2 - sumX * sumX;
+      if (Math.abs(denom) > 0) {
+        const a = (n * sumXY - sumX * sumY) / denom;
+        const b = (sumY - a * sumX) / n;
+        const heldOutDate = new Date(heldOut.eruptionDate).getTime();
+        infraLeadPredicted = Math.max(1, a * heldOutDate + b); // clamp to >=1
+        infraLeadPredicted = Math.round(infraLeadPredicted * 10) / 10;
+      }
+    }
+    if (infraLeadPredicted === null && infraLeadActual !== null) {
+      // fallback: use median of training leads
+      const leads = trainLeads.map(p => p.lead).sort((a, b) => a - b);
+      infraLeadPredicted = leads.length > 0 ? leads[Math.floor(leads.length / 2)] : 5 * bestParams.compressionFactor;
+      infraLeadPredicted = Math.round(infraLeadPredicted * 10) / 10;
+    }
+
+    const error = (infraLeadActual !== null && infraLeadPredicted !== null)
+      ? Math.abs(infraLeadActual - infraLeadPredicted)
+      : null;
+
+    console.log(`  训练评分: ${bestScore.toFixed(3)} | 实际领先: ${infraLeadActual?.toFixed(1) ?? '-'}m | 预测: ${infraLeadPredicted?.toFixed(1) ?? '-'}m | 误差: ${error?.toFixed(1) ?? '-'}m`);
+
+    results.push({
+      heldOut: heldOut.name,
+      trainScore: bestScore,
+      bestParams,
+      infraLeadPredicted: infraLeadPredicted ? Math.round(infraLeadPredicted * 10) / 10 : null,
+      infraLeadActual: infraLeadActual ? Math.round(infraLeadActual * 10) / 10 : null,
+      error: error ? Math.round(error * 10) / 10 : null,
+    });
+  }
+
+  return results;
+}
+
 // ─── 验证：在新案例上预测 ───────────────────────────────────────
 
 export interface DownloadSignal {
@@ -399,27 +597,44 @@ export async function validate(
     }
   }
 
-  // Predict eruption date
+  // ─── 多源融合预测 ────────────────────────────────────────────
+
   const recentInfra = signals.filter(s => s.layer === 'infrastructure' && s.signalDate !== null);
   const recentTooling = signals.filter(s => s.layer === 'tooling' && s.signalDate !== null);
 
   let predictedEruptionDate: string | null = null;
   let predictedLeadMonths: number | null = null;
 
-  // 预测策略：
-  // 1. 如果有基础设施信号 → 用最近的基础设施信号 + 压缩后的领先时间
-  // 2. 如果只有工具层信号 → 用工具层信号 + 更短的领先时间
-  // 3. 如果无信号 → 无法预测
+  // Base expected lead times (from training data regression)
+  // Historical infra leads: SD ~6m, ChatGPT ~17m, LocalLLM ~0, RAG ~3.6, Cursor ~12m, Manus ~5m
+  // Median recent: ~5m, compressed: 5 * compression
+  let expectedInfraLead = 5 * params.compressionFactor;
+  let expectedToolingLead = 1.8 * params.compressionFactor;
 
-  // 历史基础设施领先时间: ChatGPT ~17m, Cursor ~12m, Manus ~5m
-  // 压缩趋势: 17 → 12 → 5，每轮 ×compression
-  // 下一轮预期: 5 × compression = 3~4 个月
-  const expectedInfraLead = 5 * params.compressionFactor;
-  // 工具层历史: ~19m, ~2.4m, ~1.8m → 下一轮 ~1 个月
-  const expectedToolingLead = 1.8 * params.compressionFactor;
+  // ─── 下载量 + HN 多信号修正 ───
+  // 收集下载量后再修正（此时 downloadSignals 还没有，先标记多信号数）
+  const infraSignalCount = recentInfra.length;
+  const toolingSignalCount = recentTooling.length;
+  const totalGitHubSignals = infraSignalCount + toolingSignalCount;
 
+  // 多信号聚合修正：
+  // - 基础设施 + 工具层同时有信号 → 已进入工具化期，缩短 30%
+  // - 3+ 个 repo 同时有信号 → 强信号，缩短 20%
+  let accelerationFactor = 1.0;
+  if (infraSignalCount > 0 && toolingSignalCount > 0) {
+    accelerationFactor *= 0.7; // 跨层信号确认
+    console.log('  [融合] 基础设施+工具层同时有信号 → 领先时间 ×0.7');
+  }
+  if (totalGitHubSignals >= 3) {
+    accelerationFactor *= 0.8; // 多 repo 信号强化
+    console.log(`  [融合] ${totalGitHubSignals} 个 repo 同时有信号 → 领先时间 ×0.8`);
+  }
+
+  expectedInfraLead *= accelerationFactor;
+  expectedToolingLead *= accelerationFactor;
+
+  // 预测策略
   if (recentInfra.length > 0) {
-    // 用最近的基础设施信号（而非最早的）
     const latestInfra = recentInfra.sort((a, b) => b.signalDate!.localeCompare(a.signalDate!))[0];
     const signalDate = new Date(latestInfra.signalDate!);
     const eruptionDate = new Date(signalDate);
@@ -430,7 +645,6 @@ export async function validate(
     predictedLeadMonths = (eruptionDate.getTime() - cutoffD.getTime()) / (1000 * 60 * 60 * 24 * 30);
     predictedLeadMonths = Math.round(predictedLeadMonths * 10) / 10;
   } else if (recentTooling.length > 0) {
-    // 退而用工具层信号
     const latestTooling = recentTooling.sort((a, b) => b.signalDate!.localeCompare(a.signalDate!))[0];
     const signalDate = new Date(latestTooling.signalDate!);
     const eruptionDate = new Date(signalDate);

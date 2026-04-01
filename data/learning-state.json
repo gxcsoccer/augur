@@ -9,8 +9,8 @@
     "signalBonus": 0.15
   },
   "signalDetection": {
-    "accelerationThreshold": 3,
-    "windowSize": 4,
+    "accelerationThreshold": 2,
+    "windowSize": 3,
     "minBaseline": 3
   },
   "confidenceDecay": {
@@ -67,9 +67,23 @@
         "actual": 0,
         "error": 1.9,
         "date": "2025-06-01"
+      },
+      {
+        "domain": "professional-agent",
+        "predicted": 0,
+        "actual": 0,
+        "error": 3.1,
+        "date": "2025-06-01"
+      },
+      {
+        "domain": "professional-agent",
+        "predicted": 0,
+        "actual": 0,
+        "error": 3.1,
+        "date": "2025-06-01"
       }
     ],
     "warmStarted": true,
-    "selfCalibratedCount": 4
+    "selfCalibratedCount": 6
   }
 }

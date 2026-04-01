@@ -10,37 +10,76 @@
 
 | 参数 | 值 | 说明 |
 |------|-----|------|
-| accelerationThreshold | 3 | 变点检测倍数 |
-| windowSize | 4 | 滑动窗口（周） |
+| accelerationThreshold | 2 | 变点检测倍数 |
+| windowSize | 3 | 滑动窗口（周） |
 | minBaseline | 3 | 最低基线 |
 | compressionFactor | 0.6 | 压缩因子 |
 
-**综合评分: 0.826**
+**综合评分: 0.770**
 
 ### Top 5 参数组合
 
 | 排名 | threshold | window | baseline | compression | 评分 |
 |------|-----------|--------|----------|-------------|------|
-| 1 | 3 | 4 | 3 | 0.6 | 0.826 |
-| 2 | 3 | 4 | 3 | 0.7 | 0.826 |
-| 3 | 3 | 4 | 3 | 0.75 | 0.826 |
-| 4 | 3 | 4 | 3 | 0.8 | 0.826 |
-| 5 | 3 | 4 | 3 | 0.85 | 0.826 |
+| 1 | 2 | 3 | 3 | 0.6 | 0.770 |
+| 2 | 2 | 3 | 3 | 0.7 | 0.770 |
+| 3 | 2 | 3 | 3 | 0.75 | 0.770 |
+| 4 | 2 | 3 | 3 | 0.8 | 0.770 |
+| 5 | 2 | 3 | 3 | 0.85 | 0.770 |
 
 ### 训练集信号检测详情
+
+#### Stable Diffusion 爆发
+
+| 层级 | 仓库 | 信号日期 | 领先月数 |
+|------|------|---------|---------|
+| 基础设施 | CompVis/latent-diffusion | 2022-02-20 | 6.1 |
+| 基础设施 | openai/CLIP | 2021-02-28 | 18.0 |
+| 基础设施 | huggingface/diffusers | 2022-07-17 | 1.2 |
+| 工具 | huggingface/transformers | 2021-02-28 | 18.0 |
+| 工具 | CompVis/stable-diffusion | - | - |
+| 工具 | invoke-ai/InvokeAI | - | - |
+| 应用 | AUTOMATIC1111/stable-diffusion-webui | - | - |
+| 应用 | cmdr2/stable-diffusion-ui | - | - |
 
 #### ChatGPT 爆发
 
 | 层级 | 仓库 | 信号日期 | 领先月数 |
 |------|------|---------|---------|
-| 基础设施 | huggingface/transformers | 2021-04-11 | 19.9 |
+| 基础设施 | huggingface/transformers | 2021-02-28 | 21.3 |
 | 基础设施 | pytorch/pytorch | 2021-10-31 | 13.2 |
 | 基础设施 | ggerganov/llama.cpp | - | - |
-| 工具 | openai/openai-python | 2022-01-23 | 10.4 |
-| 工具 | huggingface/huggingface_hub | 2021-05-16 | 18.8 |
-| 工具 | AUTOMATIC1111/stable-diffusion-webui | 2022-10-09 | 1.7 |
+| 工具 | openai/openai-python | 2021-04-11 | 19.9 |
+| 工具 | huggingface/huggingface_hub | 2021-04-04 | 20.2 |
+| 工具 | AUTOMATIC1111/stable-diffusion-webui | 2022-09-11 | 2.7 |
 | 应用 | xtekky/gpt4free | - | - |
 | 应用 | lencx/ChatGPT | - | - |
+
+#### Local LLM 爆发
+
+| 层级 | 仓库 | 信号日期 | 领先月数 |
+|------|------|---------|---------|
+| 基础设施 | ggerganov/llama.cpp | - | - |
+| 基础设施 | ggerganov/ggml | 2022-10-09 | 5.2 |
+| 基础设施 | facebookresearch/llama | - | - |
+| 工具 | nomic-ai/gpt4all | - | - |
+| 工具 | lm-sys/FastChat | - | - |
+| 工具 | oobabooga/text-generation-webui | 2023-01-08 | 2.2 |
+| 应用 | imartinez/privateGPT | - | - |
+| 应用 | mlc-ai/mlc-llm | - | - |
+
+#### RAG / Vector DB 爆发
+
+| 层级 | 仓库 | 信号日期 | 领先月数 |
+|------|------|---------|---------|
+| 基础设施 | chroma-core/chroma | 2023-02-12 | 1.6 |
+| 基础设施 | qdrant/qdrant | 2021-05-09 | 23.1 |
+| 基础设施 | weaviate/weaviate | 2023-02-05 | 1.8 |
+| 工具 | jerryjliu/llama_index | - | - |
+| 工具 | langchain-ai/langchain | - | - |
+| 工具 | hwchase17/langchain | 2022-11-06 | 4.9 |
+| 应用 | imartinez/privateGPT | - | - |
+| 应用 | StanGirard/quivr | - | - |
 
 #### Cursor / AI IDE 爆发
 
@@ -48,24 +87,24 @@
 |------|------|---------|---------|
 | 基础设施 | tree-sitter/tree-sitter | 2021-06-27 | 23.5 |
 | 基础设施 | nomic-ai/gpt4all | 2023-05-07 | 0.8 |
-| 基础设施 | ggerganov/llama.cpp | - | - |
+| 基础设施 | ggerganov/llama.cpp | 2023-04-30 | 1.1 |
 | 工具 | jerryjliu/llama_index | 2023-04-30 | 1.1 |
 | 工具 | chroma-core/chroma | 2023-02-12 | 3.6 |
 | 工具 | AntonOsika/gpt-engineer | - | - |
-| 应用 | getcursor/cursor | 2023-04-30 | 1.1 |
+| 应用 | getcursor/cursor | - | - |
 | 应用 | paul-gauthier/aider | - | - |
 
 #### Manus / 通用 Agent 爆发
 
 | 层级 | 仓库 | 信号日期 | 领先月数 |
 |------|------|---------|---------|
-| 基础设施 | microsoft/autogen | 2023-09-24 | 5.3 |
-| 基础设施 | openai/openai-python | 2022-12-04 | 15.1 |
+| 基础设施 | microsoft/autogen | 2023-09-17 | 5.5 |
+| 基础设施 | openai/openai-python | 2022-04-03 | 23.3 |
 | 基础设施 | run-llama/llama_index | 2023-11-05 | 3.9 |
-| 工具 | langchain-ai/langchain | 2023-09-10 | 5.8 |
+| 工具 | langchain-ai/langchain | 2023-08-06 | 6.9 |
 | 工具 | Significant-Gravitas/AutoGPT | 2024-01-07 | 1.8 |
-| 工具 | joaomdmoura/crewAI | - | - |
-| 应用 | geekan/MetaGPT | 2023-08-06 | 6.9 |
+| 工具 | joaomdmoura/crewAI | 2024-01-07 | 1.8 |
+| 应用 | geekan/MetaGPT | 2023-07-16 | 7.6 |
 | 应用 | OpenDevin/OpenDevin | - | - |
 
 ---
@@ -81,11 +120,11 @@
 |------|------|---------|---------|
 | 基础设施 | modelcontextprotocol/modelcontextprotocol | - | - |
 | 基础设施 | modelcontextprotocol/servers | - | - |
-| 基础设施 | modelcontextprotocol/python-sdk | 2025-01-05 | 1.8 |
+| 基础设施 | modelcontextprotocol/python-sdk | 2024-12-29 | 2.1 |
 | 基础设施 | anthropics/anthropic-sdk-python | - | - |
 | 工具 | anthropics/claude-code | - | - |
-| 工具 | browser-use/browser-use | 2025-01-19 | 1.4 |
-| 工具 | langchain-ai/langgraph | 2024-04-21 | 10.5 |
+| 工具 | browser-use/browser-use | 2025-01-12 | 1.6 |
+| 工具 | langchain-ai/langgraph | - | - |
 | 应用 | openclaw/openclaw | - | - |
 | 应用 | OpenManus/OpenManus | - | - |
 | 应用 | all-hands-ai/OpenHands | - | - |
@@ -95,7 +134,6 @@
 | 仓库 | 包名 | 注册表 | 周下载量 | 趋势 |
 |------|------|--------|---------|------|
 | modelcontextprotocol/python-sdk | mcp | pypi | 27,114,398 | 📈 增长 |
-| anthropics/anthropic-sdk-python | anthropic | pypi | 14,634,363 | 📈 增长 |
 | browser-use/browser-use | browser-use | pypi | 982,728 | 🔺 加速 |
 | langchain-ai/langgraph | langgraph | pypi | 8,804,247 | 📈 增长 |
 
@@ -104,11 +142,26 @@
 
 | 指标 | 值 |
 |------|-----|
-| 预测爆发日期 | **2025-04-05** |
+| 预测爆发日期 | **2025-03-01** |
 | 实际爆发日期 | 2025-06-01 |
-| 预测误差 | 1.9 个月 |
-| 站在预测时的剩余时间 | 1.2 个月 |
+| 预测误差 | 3.1 个月 |
+| 站在预测时的剩余时间 | 0.0 个月 |
 
 ### 结论
 
-模型预测误差 1.9 个月，**预测有效**。
+模型预测误差 3.1 个月，**方向正确但精度有待提升**。
+
+---
+
+## Leave-one-out 交叉验证
+
+| Fold | 留出案例 | 训练评分 | 实际领先(月) | 预测领先(月) | 误差(月) |
+|------|---------|---------|-------------|-------------|---------|
+| 1 | Stable Diffusion 爆发 | 0.765 | 8.4 | 11.6 | 3.2 |
+| 2 | ChatGPT 爆发 | 0.765 | 16.5 | 7.4 | 9.1 |
+| 3 | Local LLM 爆发 | 0.791 | 5.2 | 10.8 | 5.6 |
+| 4 | RAG / Vector DB 爆发 | 0.789 | 12.4 | 9.6 | 2.8 |
+| 5 | Cursor / AI IDE 爆发 | 0.775 | 8.5 | 10.1 | 1.6 |
+| 6 | Manus / 通用 Agent 爆发 | 0.747 | 10.8 | 5.5 | 5.3 |
+
+**平均预测误差: 4.6 个月** (6 个有效 fold)

@@ -437,9 +437,10 @@ program
   .command('calibrate')
   .description('用历史数据训练模型参数，并在 OpenClaw 案例上验证')
   .option('-o, --output <file>', '输出到文件')
-  .option('--cutoff <date>', '验证时的"站在哪天"视角', '2025-01-01')
-  .action(async (opts: { output?: string; cutoff: string }) => {
-    const { calibrate, validate, formatCalibrationReport } = await import('./predictor/calibrator.js');
+  .option('--cutoff <date>', '验证时的"站在哪天"视角', '2025-03-01')
+  .option('--cross-validate', '运行 Leave-one-out 交叉验证')
+  .action(async (opts: { output?: string; cutoff: string; crossValidate?: boolean }) => {
+    const { calibrate, validate, crossValidate, formatCalibrationReport } = await import('./predictor/calibrator.js');
     const backtest = await import('./predictor/backtest.js');
 
     // 训练集: 前 3 个案例
@@ -516,6 +517,37 @@ program
 
       fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n', 'utf-8');
       console.log('[Calibrate] 参数已保存到 data/learning-state.json');
+    }
+
+    // Cross-validation
+    if (opts.crossValidate) {
+      console.log('\n═══ Phase 3: Leave-one-out 交叉验证 ═══\n');
+      const looResults = await crossValidate();
+
+      const looLines: string[] = [];
+      looLines.push('\n---\n');
+      looLines.push('## Leave-one-out 交叉验证');
+      looLines.push('');
+      looLines.push('| Fold | 留出案例 | 训练评分 | 实际领先(月) | 预测领先(月) | 误差(月) |');
+      looLines.push('|------|---------|---------|-------------|-------------|---------|');
+
+      const errors: number[] = [];
+      for (const [i, r] of looResults.entries()) {
+        looLines.push(`| ${i + 1} | ${r.heldOut} | ${r.trainScore.toFixed(3)} | ${r.infraLeadActual?.toFixed(1) ?? '-'} | ${r.infraLeadPredicted?.toFixed(1) ?? '-'} | ${r.error?.toFixed(1) ?? '-'} |`);
+        if (r.error !== null) errors.push(r.error);
+      }
+
+      const avgError = errors.length > 0 ? errors.reduce((a, b) => a + b, 0) / errors.length : 0;
+      looLines.push('');
+      looLines.push(`**平均预测误差: ${avgError.toFixed(1)} 个月** (${errors.length} 个有效 fold)`);
+
+      const looReport = looLines.join('\n');
+      console.log(looReport);
+
+      if (opts.output) {
+        const existing = fs.readFileSync(opts.output, 'utf-8');
+        fs.writeFileSync(opts.output, existing + '\n' + looReport, 'utf-8');
+      }
     }
   });
 
