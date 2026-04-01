@@ -149,10 +149,10 @@ export async function fetchGitHubRedditPosts(): Promise<RedditPost[]> {
  * 一站式采集：合并所有 Reddit 源，去重
  */
 export async function fetchAllRedditPosts(): Promise<RedditPost[]> {
-  const [programming, github] = await Promise.all([
-    fetchProgrammingPosts(),
-    fetchGitHubRedditPosts(),
-  ]);
+  // Sequential to avoid Reddit rate limiting (429)
+  const programming = await fetchProgrammingPosts();
+  await new Promise((r) => setTimeout(r, 2000)); // extra gap before search
+  const github = await fetchGitHubRedditPosts();
 
   const all = new Map<string, RedditPost>();
   for (const p of [...programming, ...github]) {

@@ -42,19 +42,11 @@ Augur 在基础设施层检测加速信号，预测爆发何时到来。
 | MCP 生态 | 7 个 repo 同时加速, browser-use 下载量加速 | 2025-11 | 活跃 |
 | 端侧 AI | llama.cpp, MLX, ollama | 2026-01 | **下一个** |
 
-### 趋势项目预测（2026 年 4 月）
+### 趋势项目预测
 
-预测哪些**具体项目**即将爆火，附量化 KPI：
+同时预测哪些**具体项目**即将爆火，附量化 KPI（4 周 star/fork/issue 预测、社区活跃度、增长势头）。最新预测见 [`reports/`](./reports/)。
 
-| # | 项目 | 当前★ | 4周预计+★ | 4周后总★ | 社区活跃 | 势头 |
-|---|------|-------|----------|---------|---------|------|
-| 1 | mauriceboe/TREK | 270 | +668 | 938 | 76/100 | 加速中 |
-| 2 | chenglou/pretext | 3.9k | +8.8k | 12.6k | 70/100 | 加速中 |
-| 3 | Crosstalk-Solutions/project-nomad | 3.3k | +5.2k | 8.5k | 80/100 | 加速中 |
-| 4 | larksuite/cli | 841 | +2.0k | 2.8k | 73/100 | 加速中 |
-| 5 | SakanaAI/AI-Scientist-v2 | 1.8k | +739 | 2.6k | 46/100 | 加速中 |
-
-历史回测：**80% 命中率**，平均提前 **4 周** 检测到。在 Auto-GPT、Ollama、Open Interpreter、llama.cpp 等案例上验证。
+历史回测：**80% 命中率**，平均提前 **4 周** 检测到。在 Auto-GPT、Ollama、Open Interpreter、llama.cpp、SD WebUI 等案例上验证。
 
 ## 快速开始
 

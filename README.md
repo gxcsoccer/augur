@@ -42,19 +42,11 @@ Trained on 6 historical eruptions (Stable Diffusion, ChatGPT, Local LLM, RAG, Cu
 | MCP Ecosystem | 7 repos, browser-use accelerating | 2025-11 | Active |
 | On-device / Edge AI | llama.cpp, MLX, ollama | 2026-01 | **Next up** |
 
-### Trending Project Predictions (2026-04)
+### Trending Project Predictions
 
-Predicts which **specific projects** will blow up next, with quantitative KPI forecasts:
+Also predicts which **specific projects** will blow up next, with quantitative KPI forecasts (4-week star/fork/issue projections, community score, growth momentum). See latest predictions in [`reports/`](./reports/).
 
-| # | Project | Current ★ | 4-Week +★ | 4-Week Total | Community | Momentum |
-|---|---------|-----------|-----------|-------------|-----------|----------|
-| 1 | mauriceboe/TREK | 270 | +668 | 938 | 76/100 | Accelerating |
-| 2 | chenglou/pretext | 3.9k | +8.8k | 12.6k | 70/100 | Accelerating |
-| 3 | Crosstalk-Solutions/project-nomad | 3.3k | +5.2k | 8.5k | 80/100 | Accelerating |
-| 4 | larksuite/cli | 841 | +2.0k | 2.8k | 73/100 | Accelerating |
-| 5 | SakanaAI/AI-Scientist-v2 | 1.8k | +739 | 2.6k | 46/100 | Accelerating |
-
-Historical backtest: **80% hit rate**, average **4 weeks** early detection. Validated on Auto-GPT, Ollama, Open Interpreter, llama.cpp, etc.
+Historical backtest: **80% hit rate**, average **4 weeks** early detection. Validated on Auto-GPT, Ollama, Open Interpreter, llama.cpp, SD WebUI, etc.
 
 ## Quick Start
 

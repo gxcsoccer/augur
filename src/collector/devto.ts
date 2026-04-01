@@ -91,8 +91,10 @@ export function extractGitHubRepoFromArticle(article: DevToArticle): string | nu
   if (urlMatch) return cleanRepoId(urlMatch[1]);
 
   // Check title for GitHub repo patterns like "owner/repo"
-  const titleMatch = article.title.match(/\b([a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+)\b/);
-  if (titleMatch && !titleMatch[1].includes('.com')) {
+  // Strict: require at least 2 chars each side, exclude common false positives
+  const titleMatch = article.title.match(/\b([a-zA-Z][a-zA-Z0-9_-]{1,38}\/[a-zA-Z][a-zA-Z0-9_.-]{1,100})\b/);
+  if (titleMatch && !/\.(js|ts|py|com|org|io|css|html|json)$/i.test(titleMatch[1])
+    && !['node.js', 'next.js', 'vue.js', 'express.js'].some(fp => titleMatch[1].toLowerCase().includes(fp))) {
     return titleMatch[1];
   }
 

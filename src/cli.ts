@@ -1492,13 +1492,9 @@ program
     const cooccurrences = (db.prepare('SELECT COUNT(*) as count FROM cooccurrences').get() as { count: number }).count;
     const latest = db.prepare('SELECT MAX(captured_at) as date FROM snapshots').get() as { date: string | null };
 
-    // Social buzz & trending predictions (new tables, might not exist)
-    let socialBuzz = 0;
-    let trendingPreds = 0;
-    try {
-      socialBuzz = (db.prepare('SELECT COUNT(*) as count FROM social_buzz').get() as { count: number }).count;
-      trendingPreds = (db.prepare('SELECT COUNT(*) as count FROM trending_predictions').get() as { count: number }).count;
-    } catch {}
+    // Social buzz & trending predictions
+    const socialBuzz = (db.prepare('SELECT COUNT(*) as count FROM social_buzz').get() as { count: number }).count;
+    const trendingPreds = (db.prepare('SELECT COUNT(*) as count FROM trending_predictions').get() as { count: number }).count;
 
     console.log('Augur 数据库状态:');
     console.log(`  项目数: ${projects}`);

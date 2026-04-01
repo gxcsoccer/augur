@@ -44,8 +44,31 @@ function queryClickHouseCurl(sql: string): string {
   }
 }
 
+/**
+ * ClickHouse SQL 转义
+ * - 单引号用 '' 转义（ClickHouse 标准）
+ * - 过滤掉其他可能导致注入的字符
+ * - 只允许 repo name 合法字符: 字母、数字、-_./
+ */
+// ─── 共享工具函数 ─────────────────────────────────────────────
+
+/**
+ * 计算加速度：recent 周期均值 / baseline 周期均值
+ * 用于检测指标突增（star、fork、issue 等）
+ */
+export function computeAcceleration(recent: number[], baseline: number[]): number {
+  const recentAvg = recent.length > 0 ? recent.reduce((a, b) => a + b, 0) / recent.length : 0;
+  const baselineAvg = baseline.length > 0 ? baseline.reduce((a, b) => a + b, 0) / baseline.length : 0;
+  if (baselineAvg < 1) return recentAvg > 3 ? Math.min(recentAvg, 10) : 0;
+  return recentAvg / baselineAvg;
+}
+
 export function escapeSQL(s: string): string {
-  return s.replace(/'/g, "\\'");
+  // Strict allowlist: only valid GitHub repo name characters
+  if (!/^[a-zA-Z0-9_.\-/]+$/.test(s)) {
+    throw new Error(`Invalid repo name for SQL: ${s}`);
+  }
+  return s.replace(/'/g, "''");
 }
 
 export interface WeeklyMetrics {

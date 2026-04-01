@@ -15,7 +15,7 @@
  * - 有 ClickHouse GH Archive 历史数据可查
  */
 
-import { fetchWeeklyMetrics as fetchMetricsFromCH, type WeeklyMetrics } from '../util/clickhouse.js';
+import { fetchWeeklyMetrics as fetchMetricsFromCH, computeAcceleration, type WeeklyMetrics } from '../util/clickhouse.js';
 
 // ─── 回测目标 ──────────────────────────────────────────────────
 
@@ -118,15 +118,6 @@ export const TRENDING_BACKTEST_CASES: TrendingBacktestCase[] = [
 ];
 
 // ─── 回测逻辑 ──────────────────────────────────────────────────
-
-function computeAcceleration(recent: number[], baseline: number[]): number {
-  const recentAvg = recent.length > 0 ? recent.reduce((a, b) => a + b, 0) / recent.length : 0;
-  const baselineAvg = baseline.length > 0 ? baseline.reduce((a, b) => a + b, 0) / baseline.length : 0;
-  // For cold-start projects: if baseline is near-zero but recent is significant,
-  // treat it as a strong "emergence" signal
-  if (baselineAvg < 1) return recentAvg > 3 ? Math.min(recentAvg, 10) : 0;
-  return recentAvg / baselineAvg;
-}
 
 /**
  * 计算"突然涌现"信号 — 适用于从零开始的新项目
@@ -415,7 +406,14 @@ export function formatTrendingBacktestReport(summary: TrendingBacktestSummary): 
   lines.push('- **检测阈值**: 预测得分 ≥ 0.15（多因子加权）');
   lines.push('- **因子**: Star 加速度、Fork 加速度、Issue 活跃度、贡献者增长、多因子共振');
   lines.push('- **基线**: 回测时间点前 4-8 周的平均活跃度');
-  lines.push('- **局限**: 社交媒体信号（HN/Reddit/DEV.to）无法回测，实际检测率可能更高');
+  lines.push('');
+  lines.push('### 局限性说明');
+  lines.push('- **Emergence Score**: 部分案例（如 SD WebUI、llama.cpp）在 ClickHouse 中首次出现时已有大量活跃度，');
+  lines.push('  模型通过"绝对活跃度"（emergence score）而非"加速度"检测到。这更接近"确认已开始起飞"，');
+  lines.push('  而非"在起飞前预测"。加速度因子全为 0x 但仍标记"检测到"的案例属于此类。');
+  lines.push('- **幸存者偏差**: 回测只选取了最终成功爆火的项目，未评估假阳性率（模型同期预测了多少未爆火的项目）。');
+  lines.push('- **社交媒体信号无法回测**: HN/Reddit/DEV.to 的历史数据不可用，实际系统的信号更丰富。');
+  lines.push('- **ClickHouse 数据不完整**: GH Archive 的 WatchEvent 计数显著低于 GitHub API 实际 star 数。');
 
   return lines.join('\n');
 }

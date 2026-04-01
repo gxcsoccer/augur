@@ -23,7 +23,8 @@
  */
 
 import type Database from 'better-sqlite3';
-import { queryClickHouse, escapeSQL, type WeeklyMetrics } from '../util/clickhouse.js';
+import { queryClickHouse, escapeSQL, computeAcceleration, type WeeklyMetrics } from '../util/clickhouse.js';
+import { fetchRepoDetails } from '../collector/github-api.js';
 
 // ─── 类型定义 ──────────────────────────────────────────────────
 
@@ -129,13 +130,6 @@ export async function discoverRisingProjects(
 }
 
 // ─── 因子计算 ──────────────────────────────────────────────────
-
-function computeAcceleration(recent: number[], baseline: number[]): number {
-  const recentAvg = recent.length > 0 ? recent.reduce((a, b) => a + b, 0) / recent.length : 0;
-  const baselineAvg = baseline.length > 0 ? baseline.reduce((a, b) => a + b, 0) / baseline.length : 0;
-  if (baselineAvg < 1) return recentAvg > 3 ? Math.min(recentAvg, 10) : 0;
-  return recentAvg / baselineAvg;
-}
 
 function computeFactors(
   history: WeeklyMetrics[],
@@ -412,7 +406,7 @@ export async function predictTrendingProjects(
   for (const d of discovered) lifetimeMap.set(d.repo, d.lifetimeStars);
 
   // Score each candidate
-  const results: TrendingCandidate[] = [];
+  const scored: TrendingCandidate[] = [];
 
   for (const d of discovered) {
     const history = allMetrics.get(d.repo);
@@ -424,7 +418,7 @@ export async function predictTrendingProjects(
     const kpi = forecastKPI(history, d.lifetimeStars, factors);
 
     if (score > 0.15) {
-      results.push({
+      scored.push({
         repo: d.repo,
         lifetimeStars: d.lifetimeStars,
         recentStars8w: d.recentStars,
@@ -436,9 +430,40 @@ export async function predictTrendingProjects(
     }
   }
 
-  return results
-    .sort((a, b) => b.predictionScore - a.predictionScore)
-    .slice(0, topN);
+  // Sort and take top candidates
+  scored.sort((a, b) => b.predictionScore - a.predictionScore);
+  const topCandidates = scored.slice(0, topN * 2); // fetch more, filter later
+
+  // Enrich with real star counts from GitHub API
+  // (ClickHouse GH Archive undercounts stars significantly)
+  if (!referenceDate) { // only for real-time predictions, not backtests
+    console.log(`[TrendPredict] 通过 GitHub API 校准 ${topCandidates.length} 个候选的真实 star 数...`);
+    for (const c of topCandidates) {
+      try {
+        const details = await fetchRepoDetails(c.repo);
+        if (details) {
+          c.lifetimeStars = details.stars;
+          // Recalculate KPI with real star count
+          const history = allMetrics.get(c.repo);
+          if (history) {
+            const newKpi = forecastKPI(history, details.stars, c.factors);
+            c.kpi = newKpi;
+          }
+        }
+      } catch {
+        // Keep ClickHouse estimate if API fails
+      }
+    }
+
+    // Re-filter: remove projects that are actually already popular
+    const filtered = topCandidates.filter((c) => c.lifetimeStars <= maxStars);
+    if (filtered.length < topCandidates.length) {
+      console.log(`[TrendPredict] GitHub API 校准后过滤掉 ${topCandidates.length - filtered.length} 个已火项目`);
+    }
+    return filtered.slice(0, topN);
+  }
+
+  return topCandidates.slice(0, topN);
 }
 
 // ─── 已火项目过滤 ──────────────────────────────────────────────
