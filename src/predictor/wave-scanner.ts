@@ -21,21 +21,21 @@ export interface WavePrediction {
 export const CANDIDATE_WAVES: BacktestTarget[] = [
   {
     name: 'Voice AI / 实时多模态',
-    eruptionDate: '2027-01-01', // placeholder — model will predict actual date
+    eruptionDate: '2027-01-01',
     description: '语音 Agent、实时语音对话、多模态流式处理',
     infrastructureRepos: [
-      'openai/whisper',                     // 语音识别基础设施
-      'microsoft/VibeVoice',                // 微软语音 AI
-      'fishaudio/fish-speech',              // 开源 TTS
+      'pipecat-ai/pipecat',               // 语音多模态 AI 管道框架 11k★
+      'livekit/agents',                    // WebRTC 实时 AI Agent 框架 10k★
+      'TEN-framework/ten-framework',       // 模块化实时对话 AI 框架
     ],
     toolingRepos: [
-      'livekit/agents',                     // 实时语音 Agent 框架
-      'fixie-ai/ultravox',                  // 语音 LLM
-      'myshell-ai/OpenVoice',              // 语音克隆工具
+      'resemble-ai/chatterbox',           // SoTA 开源 TTS 11k★
+      'kyutai-labs/moshi',                // 全双工语音对话模型
+      'fishaudio/fish-speech',            // SoTA 文本转语音
     ],
     applicationRepos: [
-      'bolna-ai/bolna',                     // 语音 AI Agent 应用
-      'KoljaB/RealtimeSTT',               // 实时语音转文字
+      'huggingface/speech-to-speech',     // 本地语音 Agent
+      'bolna-ai/bolna',                   // 语音 AI 电话 Agent
     ],
   },
   {
@@ -43,18 +43,18 @@ export const CANDIDATE_WAVES: BacktestTarget[] = [
     eruptionDate: '2027-01-01',
     description: '本地推理、端侧 AI、WebGPU/WASM 推理',
     infrastructureRepos: [
-      'ggerganov/llama.cpp',               // 本地推理引擎
-      'ml-explore/mlx',                    // Apple Silicon ML 框架
-      'huggingface/candle',                // Rust ML 框架
+      'ggml-org/llama.cpp',               // 本地推理引擎 100k★
+      'ml-explore/mlx',                    // Apple Silicon ML 25k★
+      'pytorch/executorch',                // 端侧 PyTorch 推理（GA 2025-10）
     ],
     toolingRepos: [
-      'ollama/ollama',                     // 本地模型管理
-      'Mozilla-Ocho/llamafile',            // 单文件 LLM 部署
-      'nicholasgasior/gollm',             // Go LLM 推理
+      'mlc-ai/web-llm',                   // 浏览器 WebGPU 推理 18k★
+      'mlc-ai/mlc-llm',                   // 跨平台 LLM 部署
+      'google-ai-edge/mediapipe',         // 跨平台端侧 ML
     ],
     applicationRepos: [
-      'open-webui/open-webui',             // 本地 AI WebUI
-      'khoj-ai/khoj',                      // 本地 AI 助手
+      'ollama/ollama',                     // 本地 LLM 管理 167k★
+      'open-webui/open-webui',             // 本地 AI WebUI 129k★
     ],
   },
   {
@@ -63,17 +63,36 @@ export const CANDIDATE_WAVES: BacktestTarget[] = [
     description: 'AI 驱动的 CI/CD、自动测试、代码审查',
     infrastructureRepos: [
       'anthropics/claude-code',            // AI 编码工具
-      'sourcegraph/cody',                  // AI 代码助手
-      'TabbyML/tabby',                     // 自托管代码补全
+      'qodo-ai/pr-agent',                 // 开源 AI PR 审查 10k★
+      'dagger/dagger',                     // AI-native CI/CD 引擎
     ],
     toolingRepos: [
-      'paul-gauthier/aider',              // AI pair programming
-      'all-hands-ai/OpenHands',           // 自主编码 Agent
-      'stitionai/devika',                  // AI 软件工程师
+      'n8n-io/n8n',                        // AI 工作流自动化 100k★
+      'microsoft/playwright',              // AI 增强的 E2E 测试
+      'coderabbitai/ai-pr-reviewer',      // AI PR 审查（GitHub 安装量最大）
     ],
     applicationRepos: [
-      'plandex-ai/plandex',               // AI 项目规划
-      'sweepai/sweep',                     // AI Pull Request
+      'all-hands-ai/OpenHands',           // 自主编码 Agent
+      'infiniflow/ragflow',               // 企业 AI 数据管道 70k★
+    ],
+  },
+  {
+    name: 'Autonomous Commerce / AI Economy',
+    eruptionDate: '2027-01-01',
+    description: 'AI Agent 自主交易、加密+AI、DAO 自治经济',
+    infrastructureRepos: [
+      'elizaOS/eliza',                    // 自主 AI Agent TypeScript 框架 17.6k★
+      'goat-sdk/goat',                    // 链上 Agent 工具包 200+ 集成
+      'sendaifun/solana-agent-kit',       // Solana AI Agent 60+ 预置操作
+    ],
+    toolingRepos: [
+      '0xPlaygrounds/rig',               // Rust Agent + 链上开发框架
+      'HKUDS/AI-Trader',                 // AI 交易研究平台
+      'langchain-ai/langgraph',          // Agent 编排（交易 Agent 依赖）
+    ],
+    applicationRepos: [
+      'alsk1992/CloddsBot',              // 开源 AI 交易 Agent
+      'wen82fastik/ai-crypto-cryptocurrency-trading-bot', // LLM 交易 Bot
     ],
   },
   {
@@ -81,18 +100,18 @@ export const CANDIDATE_WAVES: BacktestTarget[] = [
     eruptionDate: '2027-01-01',
     description: '具身智能、人形机器人、Sim-to-Real',
     infrastructureRepos: [
-      'google-deepmind/mujoco',            // 物理模拟引擎
-      'NVIDIA-Omniverse/IsaacGymEnvs',    // NVIDIA 机器人训练
-      'huggingface/lerobot',               // HF 机器人学习
+      'huggingface/lerobot',              // 端到端机器人库 20k★
+      'Genesis-Embodied-AI/Genesis',      // 通用物理引擎
+      'isaac-sim/IsaacLab',              // NVIDIA 机器人学习框架
     ],
     toolingRepos: [
-      'dora-rs/dora',                      // 机器人数据流框架
-      'InternLM/InternLM-XComposer',      // 多模态理解
-      'OpenRobotLab/GRUtopia',            // 具身 AI 训练平台
+      'Physical-Intelligence/openpi',     // pi0 视觉-语言-动作模型
+      'LeCAR-Lab/HumanoidVerse',         // 人形机器人多模拟器
+      'NVIDIA/Isaac-GR00T',              // GR00T 通用机器人基座模型
     ],
     applicationRepos: [
-      'Genesis-Embodied-AI/Genesis',       // 通用机器人 Agent
-      'unitreerobotics/unitree_rl_gym',   // Unitree 机器人 RL
+      'octo-models/octo',                // 通用机器人策略
+      'OpenDriveLab/AgiBot-World',       // 大规模操作平台
     ],
   },
   {
@@ -100,18 +119,18 @@ export const CANDIDATE_WAVES: BacktestTarget[] = [
     eruptionDate: '2027-01-01',
     description: 'AI 药物发现、蛋白质设计、材料科学',
     infrastructureRepos: [
-      'google-deepmind/alphafold',         // 蛋白质折叠
-      'dptech-corp/Uni-Mol',              // 分子表征学习
-      'microsoft/graphormer',              // 分子图变换器
+      'google-deepmind/alphafold3',       // AlphaFold3 推理（诺奖 2024）
+      'jwohlwend/boltz',                  // 生物分子交互模型 3.9k★
+      'deepchem/deepchem',                // 药物发现深度学习框架
     ],
     toolingRepos: [
-      'deepchem/deepchem',                 // 药物发现工具
-      'mims-harvard/TDC',                  // 治疗数据库
-      'Lightning-AI/litgpt',              // 高效训练框架
+      'dptech-corp/Uni-Mol',             // 3D 分子表征学习
+      'microsoft/mattergen',              // 无机材料生成模型
+      'rdkit/rdkit',                      // 化学信息学核心工具
     ],
     applicationRepos: [
-      'lucidrains/alphafold3-pytorch',     // AlphaFold3 复现
-      'chao1224/BioT5',                    // 生物文本-分子桥接
+      'aqlaboratory/openfold',            // AlphaFold 开源复现
+      'HannesStark/boltzgen',             // 生物分子结构生成
     ],
   },
   {
