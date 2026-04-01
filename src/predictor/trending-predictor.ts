@@ -203,6 +203,61 @@ function buildEvidence(factors: TrendingFactors): string[] {
   return evidence;
 }
 
+// ─── 批量查询 ──────────────────────────────────────────────────
+
+/**
+ * 用一条 ClickHouse SQL 批量查询所有候选 repo 的周级指标，
+ * 避免逐个查询的网络延迟累积。
+ */
+async function batchFetchMetrics(
+  repos: string[],
+  fromDate: string,
+  toDate: string,
+): Promise<Map<string, WeeklyMetrics[]>> {
+  if (repos.length === 0) return new Map();
+
+  const repoList = repos.map((r) => `'${escapeSQL(r)}'`).join(', ');
+  const sql = `
+    SELECT
+      repo_name,
+      toStartOfWeek(created_at) AS week,
+      countIf(event_type = 'WatchEvent') AS new_stars,
+      countIf(event_type = 'ForkEvent') AS new_forks,
+      countIf(event_type = 'IssuesEvent') AS new_issues,
+      countIf(event_type = 'PullRequestEvent') AS new_prs,
+      uniqIf(actor_login, event_type = 'PushEvent') AS unique_pushers,
+      countIf(event_type = 'ReleaseEvent') AS new_releases
+    FROM github_events
+    WHERE repo_name IN (${repoList})
+      AND created_at >= '${fromDate}'
+      AND created_at <= '${toDate}'
+    GROUP BY repo_name, week
+    ORDER BY repo_name, week ASC
+    FORMAT JSONEachRow
+  `;
+
+  const text = await queryClickHouse(sql);
+  const lines = text.trim().split('\n').filter(Boolean);
+
+  const result = new Map<string, WeeklyMetrics[]>();
+  for (const line of lines) {
+    const row = JSON.parse(line);
+    const repo = row.repo_name as string;
+    if (!result.has(repo)) result.set(repo, []);
+    result.get(repo)!.push({
+      week: row.week.slice(0, 10),
+      new_stars: Number(row.new_stars),
+      new_forks: Number(row.new_forks),
+      new_issues: Number(row.new_issues),
+      new_prs: Number(row.new_prs),
+      unique_pushers: Number(row.unique_pushers ?? 0),
+      new_releases: Number(row.new_releases ?? 0),
+    });
+  }
+
+  return result;
+}
+
 // ─── 主预测流程 ─────────────────────────────────────────────────
 
 /**
@@ -262,32 +317,32 @@ export async function predictTrendingProjects(
     } catch {}
   }
 
+  // Batch fetch all candidate metrics in a single ClickHouse query
+  console.log(`[TrendPredict] 批量查询 ${candidates.length} 个候选的历史指标...`);
+  const allMetrics = await batchFetchMetrics(candidates, from, to);
+
   // Score each candidate
   const results: TrendingCandidate[] = [];
 
   for (const repo of candidates) {
-    try {
-      const history = await fetchRepoWeeklyMetrics(repo, from, to);
-      if (history.length < 3) continue;
+    const history = allMetrics.get(repo);
+    if (!history || history.length < 2) continue;
 
-      const socialScore = socialScores.get(repo) ?? 0;
-      const factors = computeFactors(history, socialScore);
-      const score = scoreTrendingCandidate(factors);
+    const socialScore = socialScores.get(repo) ?? 0;
+    const factors = computeFactors(history, socialScore);
+    const score = scoreTrendingCandidate(factors);
 
-      // Calculate approximate current stars from ClickHouse period data
-      const totalPeriodStars = history.reduce((s, w) => s + w.new_stars, 0);
+    // Calculate approximate current stars from ClickHouse period data
+    const totalPeriodStars = history.reduce((s, w) => s + w.new_stars, 0);
 
-      if (score > 0.15) { // minimum threshold
-        results.push({
-          repo,
-          currentStars: totalPeriodStars, // approximate
-          predictionScore: score,
-          factors,
-          evidence: buildEvidence(factors),
-        });
-      }
-    } catch (err) {
-      console.warn(`  Warning: failed to analyze ${repo}: ${(err as Error).message}`);
+    if (score > 0.15) { // minimum threshold
+      results.push({
+        repo,
+        currentStars: totalPeriodStars, // approximate
+        predictionScore: score,
+        factors,
+        evidence: buildEvidence(factors),
+      });
     }
   }
 
