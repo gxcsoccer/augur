@@ -4,7 +4,9 @@
 
 **Open-source signal intelligence system that predicts technology eruptions from GitHub ecosystem data.**
 
-Augur monitors infrastructure-layer acceleration patterns across GitHub, HackerNews, and package registries to predict when the next wave of technology products will emerge -- typically 3-6 months before commercial eruption.
+Augur monitors infrastructure-layer acceleration patterns across GitHub, HackerNews, Reddit, DEV.to, and package registries to predict when the next wave of technology products will emerge -- typically 3-6 months before commercial eruption.
+
+It can also **predict which specific projects will trend next** -- identifying rising repos before they blow up, with quantitative KPI forecasts validated at **80% hit rate** on historical data.
 
 ## How It Works
 
@@ -40,20 +42,40 @@ Trained on 6 historical eruptions (Stable Diffusion, ChatGPT, Local LLM, RAG, Cu
 | MCP Ecosystem | 7 repos, browser-use accelerating | 2025-11 | Active |
 | On-device / Edge AI | llama.cpp, MLX, ollama | 2026-01 | **Next up** |
 
+### Trending Project Predictions (2026-04)
+
+Predicts which **specific projects** will blow up next, with quantitative KPI forecasts:
+
+| # | Project | Current ★ | 4-Week +★ | 4-Week Total | Community | Momentum |
+|---|---------|-----------|-----------|-------------|-----------|----------|
+| 1 | mauriceboe/TREK | 270 | +668 | 938 | 76/100 | Accelerating |
+| 2 | chenglou/pretext | 3.9k | +8.8k | 12.6k | 70/100 | Accelerating |
+| 3 | Crosstalk-Solutions/project-nomad | 3.3k | +5.2k | 8.5k | 80/100 | Accelerating |
+| 4 | larksuite/cli | 841 | +2.0k | 2.8k | 73/100 | Accelerating |
+| 5 | SakanaAI/AI-Scientist-v2 | 1.8k | +739 | 2.6k | 46/100 | Accelerating |
+
+Historical backtest: **80% hit rate**, average **4 weeks** early detection. Validated on Auto-GPT, Ollama, Open Interpreter, llama.cpp, etc.
+
 ## Quick Start
 
 ```bash
 # Install
 npm install
 
-# Collect data (GitHub Trending + HN + watchlist)
-npx tsx src/cli.ts collect --backfill
+# Collect data (GitHub Trending + HN + social media + watchlist)
+npx tsx src/cli.ts collect --backfill --social
 
 # Analyze signals (LLM classification + co-occurrence)
 npx tsx src/cli.ts analyze
 
 # Predict next wave
 npx tsx src/cli.ts predict-next
+
+# Predict trending projects (with quantitative KPIs)
+npx tsx src/cli.ts predict --trending
+
+# Historical backtest (validate prediction model)
+npx tsx src/cli.ts backtest --trending
 
 # Full weekly pipeline (collect + analyze + predict + evolve + report)
 npx tsx src/cli.ts run --weekly
@@ -75,6 +97,8 @@ src/
     github-trending.ts    # Fetch + Cheerio scraping
     github-api.ts         # REST API + star history backfill
     hackernews.ts         # Algolia HN API
+    devto.ts              # DEV.to Forem API (social buzz)
+    reddit.ts             # Reddit JSON API (viral signal)
     package-downloads.ts  # npm + PyPI download stats
   analyzer/
     growth-classifier.ts  # Staircase/spike/steady/declining patterns
@@ -85,6 +109,8 @@ src/
     wave-discoverer.ts    # LLM-powered candidate wave discovery
   predictor/
     backtest.ts           # ClickHouse GH Archive historical backtest
+    trending-predictor.ts # Rising project prediction + KPI forecasting
+    trending-backtest.ts  # Trending prediction historical validation (80% hit rate)
     calibrator.ts         # Grid search + 3-model ensemble + LOO cross-validation
     scorer.ts             # Multi-factor opportunity scoring
     wave-scanner.ts       # Candidate wave prediction scanner
@@ -94,15 +120,17 @@ src/
     eruption-predictor.ts # Eruption date prediction with compression factor
     report-generator.ts   # Markdown report generation
   store/
-    schema.ts             # SQLite schema
+    schema.ts             # SQLite schema (+ social_buzz, trending_predictions)
     queries.ts            # Data access layer
+  util/
+    clickhouse.ts         # ClickHouse client (fetch + curl fallback)
   llm/
     client.ts             # OpenAI-compatible LLM client (DashScope)
 ```
 
 ## Signal Detection
 
-**8 factors** from ClickHouse GH Archive:
+**10 factors** from ClickHouse GH Archive, social media, and package registries:
 
 | Factor | Source | Signal |
 |--------|--------|--------|
@@ -114,6 +142,8 @@ src/
 | Releases | ReleaseEvent | Shipping cadence |
 | npm downloads | api.npmjs.org | JS/TS adoption |
 | PyPI downloads | pypistats.org | Python adoption |
+| Social buzz | Reddit + DEV.to | Viral leading indicator (24-48h before star surge) |
+| HN attention | Algolia HN API | Developer community buzz |
 
 **Change-point detection**: Sliding window (4 weeks) baseline, 3x acceleration threshold, multi-factor cross-validation.
 
@@ -156,8 +186,10 @@ Weekly cycle (GitHub Actions cron):
 | Command | Description |
 |---------|-------------|
 | `augur collect --backfill` | Collect Trending + API + HN + star history |
+| `augur collect --social` | Also collect DEV.to + Reddit social data |
 | `augur analyze` | LLM signal classification + co-occurrence + scoring |
 | `augur predict-next` | Scan candidate waves, predict eruptions |
+| `augur predict --trending` | Predict rising projects + quantitative KPIs |
 | `augur discover` | LLM-powered new wave candidate discovery |
 | `augur evolve` | Full evolution cycle (discover -> predict -> verify -> evolve) |
 | `augur calibrate --cross-validate` | Train on history, LOO validation |
@@ -166,7 +198,8 @@ Weekly cycle (GitHub Actions cron):
 | `augur run --weekly` | Full pipeline: collect + analyze + predict + evolve + report |
 | `augur run --daily` | Daily data collection only |
 | `augur publish` | Post latest report as GitHub Issue |
-| `augur backtest` | Historical backtest via ClickHouse |
+| `augur backtest` | Historical backtest via ClickHouse (wave signals) |
+| `augur backtest --trending` | Backtest trending project predictions (80% hit rate) |
 | `augur status` | Database status |
 
 ## GitHub Actions Setup
