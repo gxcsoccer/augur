@@ -90,8 +90,23 @@ export function initSchema(db: Database.Database): void {
       keywords TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS domain_signals (
+      domain TEXT NOT NULL,
+      week TEXT NOT NULL,
+      phase INTEGER,
+      ssi REAL,
+      project_count INTEGER,
+      infra_count INTEGER,
+      tooling_count INTEGER,
+      app_count INTEGER,
+      metrics TEXT,
+      prediction TEXT,
+      PRIMARY KEY (domain, week)
+    );
+
     CREATE INDEX IF NOT EXISTS idx_snapshots_date ON snapshots(captured_at);
     CREATE INDEX IF NOT EXISTS idx_snapshots_project ON snapshots(project_id);
     CREATE INDEX IF NOT EXISTS idx_issues_project ON issues(project_id);
+    CREATE INDEX IF NOT EXISTS idx_domain_signals_week ON domain_signals(week);
   `);
 }

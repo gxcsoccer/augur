@@ -12,6 +12,10 @@ import { classifyProjects } from './analyzer/signal-tagger.js';
 import { analyzeCoOccurrences } from './analyzer/cooccurrence.js';
 import { fetchProjectIssues, classifyIssues, clusterFeatureRequests } from './analyzer/feature-extractor.js';
 import { generateResearch, collectResearchInput } from './analyzer/auto-researcher.js';
+import { aggregateDomains } from './predictor/domain-aggregator.js';
+import { computeSSI, detectPhase, analyzeSSITrend, saveDomainSignal, PHASE_LABELS } from './predictor/phase-detector.js';
+import { predictEruption, formatPredictionReport } from './predictor/eruption-predictor.js';
+import { checkAllEruptions } from './predictor/eruption-detector.js';
 
 const program = new Command();
 
@@ -307,6 +311,82 @@ program
     } else {
       console.log('\n' + report);
     }
+  });
+
+// ─── augur predict ──────────────────────────────────────────────
+program
+  .command('predict')
+  .description('域级预测：相位检测 + 爆发时间预测')
+  .option('-d, --date <date>', '指定日期 (YYYY-MM-DD)')
+  .option('--domain <domain>', '指定域深度预测')
+  .option('-o, --output <file>', '输出到文件')
+  .action(async (opts: { date?: string; domain?: string; output?: string }) => {
+    const db = getDb();
+    initSchema(db);
+
+    const date = opts.date ?? new Date().toISOString().slice(0, 10);
+    console.log(`[Predict] 正在生成域级预测...`);
+
+    // 1. Aggregate domains
+    let domains = aggregateDomains(db, date);
+    if (domains.length === 0) {
+      console.log('[Predict] 无信号数据，请先运行 augur analyze');
+      db.close();
+      return;
+    }
+
+    if (opts.domain) {
+      domains = domains.filter(d => d.domain === opts.domain);
+      if (domains.length === 0) {
+        console.error(`[Predict] 未找到域: ${opts.domain}`);
+        console.error(`可用域: ${aggregateDomains(db, date).map(d => d.domain).join(', ')}`);
+        db.close();
+        return;
+      }
+    }
+
+    console.log(`[Predict] 分析 ${domains.length} 个域...`);
+
+    // 2. Compute SSI, detect phase, predict eruption for each domain
+    const predictions = [];
+    for (const view of domains) {
+      const ssi = computeSSI(view);
+      const phase = detectPhase(view);
+      const trend = analyzeSSITrend(db, view.domain, date);
+
+      const prediction = predictEruption(
+        view.domain, phase.phase, phase.label, ssi, trend.trend,
+        view, phase.evidence,
+      );
+      predictions.push(prediction);
+
+      // Save to DB
+      saveDomainSignal(db, view.domain, date, view, phase, ssi, prediction);
+
+      console.log(`  ${view.domain}: Phase ${phase.phase}(${phase.label}) | SSI ${ssi} | → ${prediction.predictedEruptionRange.join('~')} (置信度 ${prediction.confidenceScore})`);
+    }
+
+    // 3. Check for eruptions (online learning feedback)
+    const eruptions = checkAllEruptions(db, date);
+    if (eruptions.length > 0) {
+      console.log(`\n[Predict] 检测到 ${eruptions.length} 个域爆发信号！`);
+      for (const e of eruptions) {
+        console.log(`  ${e.domain}: 置信度 ${e.confidence}`);
+      }
+    }
+
+    // 4. Output
+    const report = formatPredictionReport(predictions);
+
+    if (opts.output) {
+      const fs = await import('node:fs');
+      fs.writeFileSync(opts.output, report, 'utf-8');
+      console.log(`[Predict] 报告已写入 ${opts.output}`);
+    } else {
+      console.log('\n' + report);
+    }
+
+    db.close();
   });
 
 // ─── augur report ───────────────────────────────────────────────

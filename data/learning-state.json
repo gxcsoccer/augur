@@ -17,5 +17,16 @@
     "weeklyDecayFactor": 0.8,
     "minConfidence": 0.1
   },
-  "calibrationHistory": []
+  "calibrationHistory": [],
+  "compressionFactor": {
+    "value": 0.75,
+    "lastUpdated": "2026-04-01",
+    "calibrationHistory": [
+      {"domain": "chat-ai", "predicted": 15, "actual": 17, "date": "2022-11-30"},
+      {"domain": "ai-ide", "predicted": 12, "actual": 12, "date": "2023-06-01"},
+      {"domain": "agent", "predicted": 8, "actual": 5, "date": "2024-03-01"}
+    ],
+    "warmStarted": true,
+    "selfCalibratedCount": 0
+  }
 }
