@@ -249,14 +249,14 @@ export const BACKTEST_TARGETS: BacktestTarget[] = [
     eruptionDate: '2023-04-01',
     description: 'RAG 范式确立，向量数据库生态爆发',
     infrastructureRepos: [
-      'chroma-core/chroma',           // 向量数据库
-      'qdrant/qdrant',                // Rust 向量搜索引擎
-      'weaviate/weaviate',            // 向量数据库
+      'weaviate/weaviate',            // 向量数据库（2019 年创建，有长期历史）
+      'qdrant/qdrant',                // Rust 向量搜索引擎（2021 年创建）
+      'facebookresearch/faiss',       // Facebook 向量搜索（2017，最老的基础设施）
     ],
     toolingRepos: [
-      'jerryjliu/llama_index',        // RAG 框架
-      'langchain-ai/langchain',       // LLM 编排（RAG 核心工具）
-      'hwchase17/langchain',          // LangChain 早期 repo
+      'hwchase17/langchain',          // LangChain 早期 repo（2022-10 创建）
+      'jerryjliu/llama_index',        // RAG 框架（2022-11 创建）
+      'chroma-core/chroma',           // 向量数据库（2022-10 创建）
     ],
     applicationRepos: [
       'imartinez/privateGPT',         // RAG 应用

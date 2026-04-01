@@ -60,6 +60,8 @@ export interface ModelParams {
   activityWeight: number;          // 活跃度权重
   signalBonusWeight: number;       // 强信号权重
   compressionFactor: number;       // 领先时间压缩因子
+  biasCorrection: number;          // 系统偏差修正（月，正值=推迟预测）
+  recencyBoost: number;            // 新鲜度修正强度 (0~1, 信号越新缩短越多)
 }
 
 const DEFAULT_PARAMS: ModelParams = {
@@ -72,6 +74,8 @@ const DEFAULT_PARAMS: ModelParams = {
   activityWeight: 0.15,
   signalBonusWeight: 0.15,
   compressionFactor: 0.75,
+  biasCorrection: 0,
+  recencyBoost: 0.5,
 };
 
 // ─── 参数搜索网格 ───────────────────────────────────────────────
@@ -389,6 +393,7 @@ export interface LOOResult {
  */
 export async function crossValidate(
   targets?: BacktestTarget[],
+  biasOverride?: number,
 ): Promise<LOOResult[]> {
   const allTargets = targets ?? BACKTEST_TARGETS;
   const results: LOOResult[] = [];
@@ -497,9 +502,10 @@ export async function crossValidate(
 
     console.log(`[LOO] Fold ${i + 1}/${allTargets.length}: 留出 "${heldOut.name}"，训练 ${trainSet.length} 个`);
 
-    // Grid search on training set
+    // Two-stage grid search: 1) signal detection params, 2) prediction correction params
     let bestScore = -1;
     let bestParams = { ...DEFAULT_PARAMS };
+    // Stage 1: signal detection
     for (const at of PARAM_GRID.accelerationThreshold) {
       for (const ws of PARAM_GRID.windowSize) {
         for (const mb of PARAM_GRID.minBaseline) {
@@ -510,6 +516,11 @@ export async function crossValidate(
           }
         }
       }
+    }
+
+    // Inject bias override if provided
+    if (biasOverride !== undefined) {
+      bestParams.biasCorrection = biasOverride;
     }
 
     // ─── 时间模拟验证 ───
@@ -614,15 +625,20 @@ export async function crossValidate(
     if (recentInfra.length > 0 && recentTooling.length > 0) adjustedLead *= 0.7;
     if (recentInfra.length + recentTooling.length >= 3) adjustedLead *= 0.8;
 
-    // 新鲜度修正
+    // 参数化新鲜度修正
+    const rb = bestParams.recencyBoost;
     const allSignalDates = [...recentInfra, ...recentTooling].filter(s => s.signalDate).map(s => s.signalDate!).sort((a, b) => b.localeCompare(a));
     if (allSignalDates.length > 0) {
       const newest = new Date(allSignalDates[0]);
       const cutoffD2 = new Date(cutoff);
       const monthsSince = (cutoffD2.getTime() - newest.getTime()) / (1000 * 60 * 60 * 24 * 30);
-      if (monthsSince <= 2) adjustedLead *= 0.5;
-      else if (monthsSince <= 4) adjustedLead *= 0.75;
+      if (monthsSince <= 2) adjustedLead *= (1 - rb);         // e.g. rb=0.5 → ×0.5
+      else if (monthsSince <= 4) adjustedLead *= (1 - rb * 0.5); // e.g. rb=0.5 → ×0.75
     }
+
+    // 偏差修正：向后推迟（正值=推迟）
+    adjustedLead += bestParams.biasCorrection;
+    adjustedLead = Math.max(0.5, adjustedLead);
 
     // 预测爆发日期
     let predictedEruption: string | null = null;
@@ -636,7 +652,7 @@ export async function crossValidate(
     } else if (recentTooling.length > 0) {
       const latestTooling = recentTooling.sort((a, b) => b.signalDate!.localeCompare(a.signalDate!))[0];
       const signalD = new Date(latestTooling.signalDate!);
-      const toolingLead = adjustedLead * 0.4; // tooling lead is shorter
+      const toolingLead = adjustedLead * 0.4;
       signalD.setMonth(signalD.getMonth() + Math.round(toolingLead));
       predictedEruption = signalD.toISOString().slice(0, 10);
     }

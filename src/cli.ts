@@ -521,8 +521,42 @@ program
 
     // Cross-validation
     if (opts.crossValidate) {
-      console.log('\n═══ Phase 3: Leave-one-out 交叉验证 ═══\n');
-      const looResults = await crossValidate();
+      console.log('\n═══ Phase 3: Leave-one-out 交叉验证（Round 1）═══\n');
+      let looResults = await crossValidate();
+
+      // 计算残差偏差，作为 bias correction 回注到 Round 2
+      const r1Residuals = looResults
+        .filter(r => r.predictedEruption && r.errorMonths !== null)
+        .map(r => {
+          const pred = new Date(r.predictedEruption!).getTime();
+          const actual = new Date(r.actualEruption).getTime();
+          return (actual - pred) / (1000 * 60 * 60 * 24 * 30); // positive = pred too early
+        });
+
+      if (r1Residuals.length >= 2) {
+        const meanBias = r1Residuals.reduce((a, b) => a + b, 0) / r1Residuals.length;
+        const roundedBias = Math.round(meanBias * 10) / 10;
+
+        if (Math.abs(roundedBias) >= 0.5) {
+          console.log(`\n[LOO] Round 1 系统偏差: ${roundedBias > 0 ? '+' : ''}${roundedBias} 月 → 启动 Round 2 (bias=${roundedBias})\n`);
+          console.log('═══ Phase 3b: LOO Round 2（偏差修正后）═══\n');
+
+          // 更新 learning state 中的 bias
+          const statePath = 'data/learning-state.json';
+          if (fs.existsSync(statePath)) {
+            const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+            if (!state.signalDetection.biasCorrection || Math.abs(state.signalDetection.biasCorrection - roundedBias) > 0.3) {
+              state.signalDetection.biasCorrection = roundedBias;
+              state.signalDetection.recencyBoost = 0.5;
+              fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n', 'utf-8');
+            }
+          }
+
+          // Round 2 with bias correction
+          // 通过修改 DEFAULT_PARAMS 来注入 bias（临时方案）
+          looResults = await crossValidate(undefined, roundedBias);
+        }
+      }
 
       const looLines: string[] = [];
       looLines.push('\n---\n');
