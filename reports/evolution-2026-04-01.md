@@ -167,19 +167,25 @@
 
 # 预测记录 (Prediction Ledger)
 
-> 总预测: 7 | 待验证: 7 | 命中: 0 | 未命中: 0 | 过期: 0
+> 总预测: 7 | 待验证: 1 | 命中: 3 | 未命中: 3 | 过期: 0
+> 命中率: 50% | 平均误差: 0.0 月
 
 ## 待验证预测
 
 | 浪潮 | 预测爆发 | 信号强度 | 信号数 | 创建日期 |
 |------|---------|---------|--------|---------|
-| Agentic Infrastructure / MCP 生态 | 2025-11-06 | strong | 7 | 2026-04-01 |
-| Voice AI / 实时多模态 | 2025-09-13 | moderate | 3 | 2026-04-01 |
 | On-device / Edge AI | 2026-01-02 | moderate | 5 | 2026-04-01 |
-| AI-native DevOps | 2025-07-18 | moderate | 4 | 2026-04-01 |
-| Autonomous Commerce / AI Economy | 2025-04-02 | moderate | 4 | 2026-04-01 |
-| Embodied AI / 机器人 | 2025-08-29 | moderate | 4 | 2026-04-01 |
-| AI for Science | 2025-10-27 | moderate | 2 | 2026-04-01 |
+
+## 已验证预测
+
+| 浪潮 | 预测 | 实际 | 误差 | 结果 |
+|------|------|------|------|------|
+| Agentic Infrastructure / MCP 生态 | 2025-11-06 | - | -m | ✗ 未命中 |
+| Voice AI / 实时多模态 | 2025-09-13 | Voice AI / 实时多模态 | -m | ✓ 命中 |
+| AI-native DevOps | 2025-07-18 | AI-native DevOps | -m | ✓ 命中 |
+| Autonomous Commerce / AI Economy | 2025-04-02 | - | -m | ✗ 未命中 |
+| Embodied AI / 机器人 | 2025-08-29 | Embodied AI / 机器人 | -m | ✓ 命中 |
+| AI for Science | 2025-10-27 | - | -m | ✗ 未命中 |
 
 
 ---
@@ -187,7 +193,7 @@
 ## 进化状态
 
 - 参数进化: 无变化
-- 命中率: 待验证
-- 平均误差: 待验证 月
-- 预测总数: 7 (待验证 7)
-- 需要至少 3 条已验证预测才能进化
+- 命中率: 50%
+- 平均误差: 0.0 月
+- 预测总数: 7 (待验证 1)
+- compression factor 0.6 保持不变 (近期命中精度好: 0.0 月)

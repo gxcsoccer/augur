@@ -54,10 +54,27 @@ function saveLedger(ledger: PredictionLedger): void {
 }
 
 /**
- * 记录一条新预测
+ * 记录一条新预测（自动去重：同一浪潮每月只记录一次）
  */
-export function recordPrediction(record: Omit<PredictionRecord, 'id' | 'status'>): string {
+export function recordPrediction(record: Omit<PredictionRecord, 'id' | 'status'>): string | null {
   const ledger = loadLedger();
+
+  // 去重：同一浪潮在同一个月内不重复记录
+  const month = record.createdAt.slice(0, 7); // YYYY-MM
+  const duplicate = ledger.predictions.find(
+    p => p.wave === record.wave && p.createdAt.slice(0, 7) === month && p.status === 'pending',
+  );
+  if (duplicate) {
+    // 更新已有预测而非新增
+    duplicate.predictedEruption = record.predictedEruption;
+    duplicate.signalStrength = record.signalStrength;
+    duplicate.signalCount = record.signalCount;
+    duplicate.keySignals = record.keySignals;
+    duplicate.params = record.params;
+    saveLedger(ledger);
+    return null; // 表示更新而非新增
+  }
+
   const id = `pred_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
   ledger.predictions.push({
     ...record,

@@ -158,6 +158,54 @@ program
       console.log(`[Collect] 已保存 ${saved} 个 HN 帖子`);
     }
 
+    // Step 6: Watchlist — 追踪候选浪潮的关键 repo
+    console.log('[Collect] 正在追踪 watchlist repo...');
+    let watchlistCount = 0;
+    try {
+      const fsModule = await import('node:fs');
+      const sources: string[][] = [];
+
+      // 从 wave-scanner 导入候选浪潮
+      try {
+        const { CANDIDATE_WAVES } = await import('./predictor/wave-scanner.js');
+        for (const w of CANDIDATE_WAVES) {
+          sources.push([...w.infrastructureRepos, ...w.toolingRepos, ...w.applicationRepos]);
+        }
+      } catch {}
+
+      // 从 discovered-waves.json 导入
+      try {
+        const discovered = JSON.parse(fsModule.readFileSync('data/discovered-waves.json', 'utf-8'));
+        for (const w of discovered) {
+          sources.push([...(w.infrastructureRepos ?? []), ...(w.toolingRepos ?? []), ...(w.applicationRepos ?? [])]);
+        }
+      } catch {}
+
+      const watchlist = [...new Set(sources.flat())];
+      for (const repoId of watchlist) {
+        // Only fetch details if we don't have a recent snapshot
+        const recent = db.prepare(
+          "SELECT 1 FROM snapshots WHERE project_id = ? AND captured_at >= date(?, '-7 days') LIMIT 1"
+        ).get(repoId, today);
+        if (recent) continue;
+
+        const details = await fetchRepoDetails(repoId);
+        if (!details) continue;
+
+        upsertProject(db, {
+          id: details.id, language: details.language, topics: JSON.stringify(details.topics),
+          description: details.description, created_at: details.createdAt, first_seen_at: today,
+        });
+        upsertSnapshot(db, {
+          project_id: details.id, captured_at: today, stars: details.stars,
+          forks: details.forks, open_issues: details.openIssues, trending_rank: null,
+          trending_period: null, source: 'watchlist',
+        });
+        watchlistCount++;
+      }
+    } catch {}
+    console.log(`[Collect] 追踪了 ${watchlistCount} 个 watchlist repo`);
+
     const limit = getRateLimitInfo();
     console.log(`[Collect] 完成! GitHub API 余量: ${limit.remaining}, 重置时间: ${limit.reset.toLocaleTimeString()}`);
     db.close();
@@ -481,7 +529,7 @@ program
     initSchema(db);
     const { discoverWaves, mergeWaves } = await import('./analyzer/wave-discoverer.js');
     const { CANDIDATE_WAVES, scanWaves, formatWavePredictionReport } = await import('./predictor/wave-scanner.js');
-    const { recordPredictions, checkPendingPredictions, evolveParams, expireOldPredictions, formatLedgerReport, getLedgerStats } = await import('./predictor/online-learner.js');
+    const { recordPredictions, checkPendingPredictions, verifyPrediction, evolveParams, expireOldPredictions, formatLedgerReport, getLedgerStats } = await import('./predictor/online-learner.js');
 
     const today = new Date().toISOString().slice(0, 10);
     console.log(`═══ Augur 进化循环 (${today}) ═══\n`);
@@ -548,14 +596,32 @@ program
     );
     console.log(`  记录了 ${recordCount} 条新预测`);
 
-    // Step 4: Check and expire old predictions
-    console.log('\n── Step 4: 验证旧预测 ──');
+    // Step 4: Auto-verify old predictions
+    console.log('\n── Step 4: 自动验证旧预测 ──');
     const pendingForReview = checkPendingPredictions();
     if (pendingForReview.length > 0) {
-      console.log(`  ${pendingForReview.length} 条预测待人工验证:`);
-      for (const p of pendingForReview) {
-        console.log(`    - ${p.wave}: 预测 ${p.predictedEruption} (${p.signalStrength})`);
+      console.log(`  ${pendingForReview.length} 条预测待自动验证`);
+
+      // Build wave → repos mapping from all known waves
+      const { autoVerifyPredictions } = await import('./predictor/outcome-detector.js');
+      const waveRepoMap = new Map<string, string[]>();
+      for (const w of waves) {
+        waveRepoMap.set(w.name, [...w.infrastructureRepos, ...w.toolingRepos, ...w.applicationRepos]);
       }
+      // Also add from CANDIDATE_WAVES
+      for (const w of CANDIDATE_WAVES) {
+        if (!waveRepoMap.has(w.name)) {
+          waveRepoMap.set(w.name, [...w.infrastructureRepos, ...w.toolingRepos, ...w.applicationRepos]);
+        }
+      }
+
+      const verifications = await autoVerifyPredictions(pendingForReview, waveRepoMap);
+      let hits = 0, misses = 0;
+      for (const v of verifications) {
+        verifyPrediction(v.predictionId, v.hit, v.hit ? v.wave : undefined);
+        if (v.hit) hits++; else misses++;
+      }
+      console.log(`  自动验证完成: ${hits} 命中, ${misses} 未命中`);
     }
     const expiredCount = expireOldPredictions();
     if (expiredCount > 0) console.log(`  过期 ${expiredCount} 条超时预测`);

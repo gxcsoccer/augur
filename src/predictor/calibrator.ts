@@ -19,12 +19,26 @@ import {
 
 const CH_CACHE_PATH = 'data/ch-cache.json';
 
-type CacheStore = Record<string, any[]>;
+interface CacheEntry {
+  data: any[];
+  cachedAt: string;  // ISO date
+}
+type CacheStore = Record<string, CacheEntry>;
 
 function loadCache(): CacheStore {
   try {
     if (fs.existsSync(CH_CACHE_PATH)) {
-      return JSON.parse(fs.readFileSync(CH_CACHE_PATH, 'utf-8'));
+      const raw = JSON.parse(fs.readFileSync(CH_CACHE_PATH, 'utf-8'));
+      // Migrate old format (array values) to new format (entry with cachedAt)
+      const migrated: CacheStore = {};
+      for (const [key, value] of Object.entries(raw)) {
+        if (Array.isArray(value)) {
+          migrated[key] = { data: value, cachedAt: '2020-01-01' }; // old data, will be refreshed if recent
+        } else {
+          migrated[key] = value as CacheEntry;
+        }
+      }
+      return migrated;
     }
   } catch {}
   return {};
@@ -35,16 +49,39 @@ function saveCache(cache: CacheStore): void {
 }
 
 /**
- * 带缓存的 ClickHouse 数据加载
+ * 带缓存 + TTL 的 ClickHouse 数据加载
+ *
+ * TTL 策略：
+ * - "to" 日期在最近 6 个月内 → 7 天 TTL（数据还在变化）
+ * - "to" 日期更早 → 永不过期（历史数据不会变）
  */
 async function fetchWithCache(
   repo: string, from: string, to: string, cache: CacheStore,
 ): Promise<any[]> {
   const key = `${repo}::${from}::${to}`;
-  if (cache[key]) return cache[key];
+  const existing = cache[key];
+
+  if (existing) {
+    const toDate = new Date(to);
+    const now = new Date();
+    const monthsAgo = (now.getTime() - toDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+
+    if (monthsAgo > 6) {
+      // Historical data: never expires
+      return existing.data;
+    }
+
+    // Recent data: 7-day TTL
+    const cachedAt = new Date(existing.cachedAt);
+    const daysSinceCached = (now.getTime() - cachedAt.getTime()) / (1000 * 60 * 60 * 24);
+    if (daysSinceCached < 7) {
+      return existing.data;
+    }
+    // Expired, re-fetch below
+  }
 
   const data = await fetchWeeklyMetrics(repo, from, to);
-  cache[key] = data;
+  cache[key] = { data, cachedAt: new Date().toISOString().slice(0, 10) };
   return data;
 }
 
@@ -250,7 +287,7 @@ export async function calibrate(
       try {
         const data = await fetchWithCache(repo, from, target.eruptionDate, diskCache);
         dataCache.set(cacheKey, data);
-        if (diskCache[`${repo}::${from}::${target.eruptionDate}`]) cacheHits++;
+        if (diskCache[`${repo}::${from}::${target.eruptionDate}`]?.data) cacheHits++;
         else console.log(`  加载 ${repo}...`);
       } catch {
         dataCache.set(cacheKey, []);
@@ -415,7 +452,7 @@ export async function crossValidate(
       try {
         const data = await fetchWithCache(repo, from, target.eruptionDate, diskCache);
         dataCache.set(cacheKey, data);
-        if (diskCache[`${repo}::${from}::${target.eruptionDate}`]) hits++;
+        if (diskCache[`${repo}::${from}::${target.eruptionDate}`]?.data) hits++;
         else console.log(`  加载 ${repo}...`);
       } catch {
         dataCache.set(cacheKey, []);

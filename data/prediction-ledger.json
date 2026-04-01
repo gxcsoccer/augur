@@ -32,7 +32,8 @@
         "recencyBoost": 0.5
       },
       "id": "pred_1775025472545_p91n",
-      "status": "pending"
+      "status": "miss",
+      "verifiedAt": "2026-04-01"
     },
     {
       "createdAt": "2026-04-01",
@@ -61,7 +62,10 @@
         "recencyBoost": 0.5
       },
       "id": "pred_1775025472547_zhnc",
-      "status": "pending"
+      "status": "hit",
+      "verifiedAt": "2026-04-01",
+      "actualEruption": "Voice AI / 实时多模态",
+      "errorMonths": null
     },
     {
       "createdAt": "2026-04-01",
@@ -122,7 +126,10 @@
         "recencyBoost": 0.5
       },
       "id": "pred_1775025472548_bnog",
-      "status": "pending"
+      "status": "hit",
+      "verifiedAt": "2026-04-01",
+      "actualEruption": "AI-native DevOps",
+      "errorMonths": null
     },
     {
       "createdAt": "2026-04-01",
@@ -152,7 +159,8 @@
         "recencyBoost": 0.5
       },
       "id": "pred_1775025472548_peyq",
-      "status": "pending"
+      "status": "miss",
+      "verifiedAt": "2026-04-01"
     },
     {
       "createdAt": "2026-04-01",
@@ -182,7 +190,10 @@
         "recencyBoost": 0.5
       },
       "id": "pred_1775025472549_2y6i",
-      "status": "pending"
+      "status": "hit",
+      "verifiedAt": "2026-04-01",
+      "actualEruption": "Embodied AI / 机器人",
+      "errorMonths": null
     },
     {
       "createdAt": "2026-04-01",
@@ -210,7 +221,8 @@
         "recencyBoost": 0.5
       },
       "id": "pred_1775025472549_vzrk",
-      "status": "pending"
+      "status": "miss",
+      "verifiedAt": "2026-04-01"
     }
   ]
 }
