@@ -432,6 +432,47 @@ program
     db.close();
   });
 
+// ─── augur predict-next ─────────────────────────────────────────
+program
+  .command('predict-next')
+  .description('扫描候选浪潮，预测下一个风口')
+  .option('-o, --output <file>', '输出到文件')
+  .action(async (opts: { output?: string }) => {
+    const { scanWaves, formatWavePredictionReport } = await import('./predictor/wave-scanner.js');
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Load calibrated params from learning-state.json
+    const fs = await import('node:fs');
+    const state = JSON.parse(fs.readFileSync('data/learning-state.json', 'utf-8'));
+    const params = {
+      accelerationThreshold: state.signalDetection.accelerationThreshold,
+      windowSize: state.signalDetection.windowSize,
+      minBaseline: state.signalDetection.minBaseline,
+      layerWeight: state.scorerWeights.layer,
+      growthWeight: state.scorerWeights.growth,
+      usageWeight: state.scorerWeights.usage,
+      activityWeight: state.scorerWeights.activity,
+      signalBonusWeight: state.scorerWeights.signalBonus,
+      compressionFactor: state.compressionFactor.value,
+      biasCorrection: state.signalDetection.biasCorrection ?? 0,
+      recencyBoost: state.signalDetection.recencyBoost ?? 0.5,
+    };
+
+    console.log(`[Predict-Next] 使���校准参数: threshold=${params.accelerationThreshold}, window=${params.windowSize}, bias=${params.biasCorrection}`);
+    console.log(`[Predict-Next] 扫描 6 个候选浪潮...\n`);
+
+    const predictions = await scanWaves(params, today);
+
+    const report = formatWavePredictionReport(predictions, today, 2.6, 3.3);
+
+    if (opts.output) {
+      fs.writeFileSync(opts.output, report, 'utf-8');
+      console.log(`\n[Predict-Next] 报告已写�� ${opts.output}`);
+    } else {
+      console.log('\n' + report);
+    }
+  });
+
 // ─── augur calibrate ────────────────────────────────────────────
 program
   .command('calibrate')
