@@ -467,27 +467,41 @@ export async function crossValidate(
     ];
 
     const infraResults = heldOutResults.filter(r => r.layer === 'infrastructure' && r.leadMonths !== null);
-    const infraLeadActual = infraResults.length > 0
-      ? infraResults.reduce((sum, r) => sum + r.leadMonths!, 0) / infraResults.length
-      : null;
+    // 用 trimmed mean：去掉最高最低后取均值（比纯均值鲁棒，比中位数稳定）
+    const infraLeads = infraResults.map(r => r.leadMonths!).sort((a, b) => a - b);
+    let infraLeadActual: number | null = null;
+    if (infraLeads.length >= 3) {
+      const trimmed = infraLeads.slice(1, -1); // remove min and max
+      infraLeadActual = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
+    } else if (infraLeads.length > 0) {
+      infraLeadActual = infraLeads.reduce((a, b) => a + b, 0) / infraLeads.length;
+    }
 
     // 从训练集中学到的领先时间做回归预测
-    // 收集训练集的实际领先时间
     const trainLeads: { date: number; lead: number }[] = [];
     for (const t of trainSet) {
-      const tResults = [
-        ...t.infrastructureRepos.map(r => detectLocal(r, 'infrastructure', t.eruptionDate, bestParams)),
-      ];
-      const validLeads = tResults.filter(r => r.leadMonths !== null).map(r => r.leadMonths!);
+      const tResults = t.infrastructureRepos.map(r => detectLocal(r, 'infrastructure', t.eruptionDate, bestParams));
+      const validLeads = tResults.filter(r => r.leadMonths !== null).map(r => r.leadMonths!).sort((a, b) => a - b);
       if (validLeads.length > 0) {
-        const avgLead = validLeads.reduce((a, b) => a + b, 0) / validLeads.length;
-        trainLeads.push({ date: new Date(t.eruptionDate).getTime(), lead: avgLead });
+        // trimmed mean: remove outliers
+        let lead: number;
+        if (validLeads.length >= 3) {
+          const trimmed = validLeads.slice(1, -1);
+          lead = trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
+        } else {
+          lead = validLeads.reduce((a, b) => a + b, 0) / validLeads.length;
+        }
+        trainLeads.push({ date: new Date(t.eruptionDate).getTime(), lead });
       }
     }
 
-    // 线性回归预测：lead = a * date + b
+    // 三模型集成预测：线性回归 + 指数衰减 + 加权最近邻
     let infraLeadPredicted: number | null = null;
     if (trainLeads.length >= 2) {
+      const heldOutDate = new Date(heldOut.eruptionDate).getTime();
+      const predictions: number[] = [];
+
+      // Model 1: 线性回归
       const n = trainLeads.length;
       const sumX = trainLeads.reduce((s, p) => s + p.date, 0);
       const sumY = trainLeads.reduce((s, p) => s + p.lead, 0);
@@ -497,13 +511,48 @@ export async function crossValidate(
       if (Math.abs(denom) > 0) {
         const a = (n * sumXY - sumX * sumY) / denom;
         const b = (sumY - a * sumX) / n;
-        const heldOutDate = new Date(heldOut.eruptionDate).getTime();
-        infraLeadPredicted = Math.max(1, a * heldOutDate + b); // clamp to >=1
-        infraLeadPredicted = Math.round(infraLeadPredicted * 10) / 10;
+        predictions.push(Math.max(1, a * heldOutDate + b));
+      }
+
+      // Model 2: 指数衰减 lead = A * exp(-B * t)
+      // 在 log 空间做线性回归：log(lead) = log(A) - B*t
+      const logLeads = trainLeads.filter(p => p.lead > 0).map(p => ({ date: p.date, logLead: Math.log(p.lead) }));
+      if (logLeads.length >= 2) {
+        const ln = logLeads.length;
+        const lsumX = logLeads.reduce((s, p) => s + p.date, 0);
+        const lsumY = logLeads.reduce((s, p) => s + p.logLead, 0);
+        const lsumXY = logLeads.reduce((s, p) => s + p.date * p.logLead, 0);
+        const lsumX2 = logLeads.reduce((s, p) => s + p.date * p.date, 0);
+        const ldenom = ln * lsumX2 - lsumX * lsumX;
+        if (Math.abs(ldenom) > 0) {
+          const la = (ln * lsumXY - lsumX * lsumY) / ldenom;
+          const lb = (lsumY - la * lsumX) / ln;
+          predictions.push(Math.max(1, Math.exp(la * heldOutDate + lb)));
+        }
+      }
+
+      // Model 3: 距离加权最近邻（时间越近权重越高）
+      const weights = trainLeads.map(p => 1 / (1 + Math.abs(p.date - heldOutDate) / (365.25 * 24 * 3600 * 1000)));
+      const totalWeight = weights.reduce((a, b) => a + b, 0);
+      if (totalWeight > 0) {
+        const weightedLead = trainLeads.reduce((s, p, idx) => s + p.lead * weights[idx], 0) / totalWeight;
+        predictions.push(Math.max(1, weightedLead));
+      }
+
+      // 集成：加权平均（指数衰减权重最高，因为它最能捕捉"领先时间在缩短"的趋势）
+      if (predictions.length > 0) {
+        const ensembleWeights = [0.25, 0.45, 0.30]; // [linear, exponential, knn]
+        let weightedSum = 0;
+        let totalW = 0;
+        for (let j = 0; j < predictions.length; j++) {
+          const w = ensembleWeights[j] ?? (1 / predictions.length);
+          weightedSum += predictions[j] * w;
+          totalW += w;
+        }
+        infraLeadPredicted = Math.round(weightedSum / totalW * 10) / 10;
       }
     }
     if (infraLeadPredicted === null && infraLeadActual !== null) {
-      // fallback: use median of training leads
       const leads = trainLeads.map(p => p.lead).sort((a, b) => a - b);
       infraLeadPredicted = leads.length > 0 ? leads[Math.floor(leads.length / 2)] : 5 * bestParams.compressionFactor;
       infraLeadPredicted = Math.round(infraLeadPredicted * 10) / 10;
@@ -547,6 +596,7 @@ export interface ValidationResult {
   predictedLeadMonths: number | null;
   actualEruptionDate: string;
   predictionError: number | null;  // months
+  confidenceInterval?: { lower: string; upper: string }; // ±1σ date range
 }
 
 /**
@@ -657,7 +707,7 @@ export async function validate(
   }
 
   const actualD = new Date(validationTarget.eruptionDate);
-  const predError = predictedEruptionDate
+  let predError = predictedEruptionDate
     ? Math.abs(new Date(predictedEruptionDate).getTime() - actualD.getTime()) / (1000 * 60 * 60 * 24 * 30)
     : null;
 
@@ -702,6 +752,28 @@ export async function validate(
         console.log(`    ${pkg.npm} (npm): ${Math.round(avgRecent).toLocaleString()}/周 [${trend}]`);
       }
     }
+  }
+
+  // ─── 下载量加速修正 ────────────────────────────────────────
+  // 如果有包下载量在"加速"状态，说明采用率正在爆发，缩短预测时间
+  const acceleratingDownloads = downloadSignals.filter(d => d.trend === 'accelerating');
+  if (acceleratingDownloads.length > 0 && predictedEruptionDate) {
+    const adjustmentMonths = acceleratingDownloads.length * 0.5; // 每个加速包缩短 0.5 个月
+    const predicted = new Date(predictedEruptionDate);
+    predicted.setDate(predicted.getDate() - Math.round(adjustmentMonths * 30));
+    const oldPrediction = predictedEruptionDate;
+    predictedEruptionDate = predicted.toISOString().slice(0, 10);
+
+    const cutoffD = new Date(cutoff);
+    predictedLeadMonths = (predicted.getTime() - cutoffD.getTime()) / (1000 * 60 * 60 * 24 * 30);
+    predictedLeadMonths = Math.round(predictedLeadMonths * 10) / 10;
+
+    console.log(`  [下载量修正] ${acceleratingDownloads.length} 个包加速中 → 预测前移 ${adjustmentMonths} 月 (${oldPrediction} → ${predictedEruptionDate})`);
+
+    // Recalculate error
+    const actualD2 = new Date(validationTarget.eruptionDate);
+    const newError = Math.abs(predicted.getTime() - actualD2.getTime()) / (1000 * 60 * 60 * 24 * 30);
+    predError = Math.round(newError * 10) / 10;
   }
 
   return {
