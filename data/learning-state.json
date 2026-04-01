@@ -4,12 +4,12 @@
   "scorerWeights": {
     "layer": 0.25,
     "growth": 0.25,
-    "usage": 0.20,
+    "usage": 0.2,
     "activity": 0.15,
     "signalBonus": 0.15
   },
   "signalDetection": {
-    "accelerationThreshold": 2.0,
+    "accelerationThreshold": 3,
     "windowSize": 4,
     "minBaseline": 3
   },
@@ -19,14 +19,43 @@
   },
   "calibrationHistory": [],
   "compressionFactor": {
-    "value": 0.75,
+    "value": 0.6,
     "lastUpdated": "2026-04-01",
     "calibrationHistory": [
-      {"domain": "chat-ai", "predicted": 15, "actual": 17, "date": "2022-11-30"},
-      {"domain": "ai-ide", "predicted": 12, "actual": 12, "date": "2023-06-01"},
-      {"domain": "agent", "predicted": 8, "actual": 5, "date": "2024-03-01"}
+      {
+        "domain": "chat-ai",
+        "predicted": 15,
+        "actual": 17,
+        "date": "2022-11-30"
+      },
+      {
+        "domain": "ai-ide",
+        "predicted": 12,
+        "actual": 12,
+        "date": "2023-06-01"
+      },
+      {
+        "domain": "agent",
+        "predicted": 8,
+        "actual": 5,
+        "date": "2024-03-01"
+      },
+      {
+        "domain": "professional-agent",
+        "predicted": -18.3,
+        "actual": 0,
+        "error": 23.3,
+        "date": "2025-06-01"
+      },
+      {
+        "domain": "professional-agent",
+        "predicted": -0.3,
+        "actual": 0,
+        "error": 3.4,
+        "date": "2025-06-01"
+      }
     ],
     "warmStarted": true,
-    "selfCalibratedCount": 0
+    "selfCalibratedCount": 2
   }
 }

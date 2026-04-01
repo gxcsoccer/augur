@@ -432,6 +432,91 @@ program
     db.close();
   });
 
+// ─── augur calibrate ────────────────────────────────────────────
+program
+  .command('calibrate')
+  .description('用历史数据训练模型参数，并在 OpenClaw 案例上验证')
+  .option('-o, --output <file>', '输出到文件')
+  .option('--cutoff <date>', '验证时的"站在哪天"视角', '2025-01-01')
+  .action(async (opts: { output?: string; cutoff: string }) => {
+    const { calibrate, validate, formatCalibrationReport } = await import('./predictor/calibrator.js');
+    const backtest = await import('./predictor/backtest.js');
+
+    // 训练集: 前 3 个案例
+    console.log('═══ Phase 1: 训练（参数校准）═══\n');
+    const calResult = await calibrate(backtest.BACKTEST_TARGETS);
+
+    // 测试集: 专业 Agent / OpenClaw
+    console.log('\n═══ Phase 2: 验证（OpenClaw 预测）═══\n');
+    const validationTarget: backtest.BacktestTarget = {
+      name: '专业 Agent / OpenClaw 爆发',
+      eruptionDate: '2025-06-01',
+      description: '专业 Agent 浪潮，OpenClaw 等垂直 Agent 产品涌现',
+      infrastructureRepos: [
+        'modelcontextprotocol/specification',
+        'modelcontextprotocol/servers',
+        'anthropics/anthropic-sdk-python',
+      ],
+      toolingRepos: [
+        'anthropics/claude-code',
+        'browser-use/browser-use',
+        'langchain-ai/langgraph',
+      ],
+      applicationRepos: [
+        'OpenManus/OpenManus',
+        'all-hands-ai/OpenHands',
+      ],
+    };
+
+    const valResult = await validate(validationTarget, calResult.bestParams, opts.cutoff);
+
+    // Generate report
+    const report = formatCalibrationReport(calResult, valResult);
+
+    if (opts.output) {
+      const fs = await import('node:fs');
+      fs.writeFileSync(opts.output, report, 'utf-8');
+      console.log(`\n[Calibrate] 报告已写入 ${opts.output}`);
+    } else {
+      console.log('\n' + report);
+    }
+
+    // Save calibrated params to learning-state.json
+    const fs = await import('node:fs');
+    const statePath = 'data/learning-state.json';
+    if (fs.existsSync(statePath)) {
+      const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+      state.scorerWeights = {
+        layer: calResult.bestParams.layerWeight,
+        growth: calResult.bestParams.growthWeight,
+        usage: calResult.bestParams.usageWeight,
+        activity: calResult.bestParams.activityWeight,
+        signalBonus: calResult.bestParams.signalBonusWeight,
+      };
+      state.signalDetection = {
+        accelerationThreshold: calResult.bestParams.accelerationThreshold,
+        windowSize: calResult.bestParams.windowSize,
+        minBaseline: calResult.bestParams.minBaseline,
+      };
+      state.compressionFactor.value = calResult.bestParams.compressionFactor;
+      state.updatedAt = new Date().toISOString().slice(0, 10);
+
+      if (valResult.predictionError !== null) {
+        state.compressionFactor.calibrationHistory.push({
+          domain: 'professional-agent',
+          predicted: valResult.predictedLeadMonths,
+          actual: 0,
+          error: valResult.predictionError,
+          date: validationTarget.eruptionDate,
+        });
+        state.compressionFactor.selfCalibratedCount++;
+      }
+
+      fs.writeFileSync(statePath, JSON.stringify(state, null, 2) + '\n', 'utf-8');
+      console.log('[Calibrate] 参数已保存到 data/learning-state.json');
+    }
+  });
+
 // ─── augur report ───────────────────────────────────────────────
 program
   .command('report')
