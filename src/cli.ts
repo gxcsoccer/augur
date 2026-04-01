@@ -1360,6 +1360,178 @@ program
     }
   });
 
+// ─── augur collect-social ───────────────────────────────────────
+program
+  .command('collect-social')
+  .description('采集 DEV.to + Reddit 社交媒体数据')
+  .option('-d, --days <days>', '回溯天数', '7')
+  .action(async (opts: { days: string }) => {
+    const db = getDb();
+    initSchema(db);
+    const today = new Date().toISOString().slice(0, 10);
+    const daysBack = parseInt(opts.days, 10);
+    const { upsertSocialBuzz } = await import('./store/queries.js');
+
+    // DEV.to
+    console.log('[Social] 采集 DEV.to 帖子...');
+    try {
+      const { fetchAllDevToPosts, extractGitHubRepoFromArticle } = await import('./collector/devto.js');
+      const articles = await fetchAllDevToPosts(daysBack);
+      let devtoCount = 0;
+      for (const a of articles) {
+        const ghRepo = extractGitHubRepoFromArticle(a);
+        upsertSocialBuzz(db, {
+          id: `devto-${a.id}`,
+          source: 'devto',
+          title: a.title,
+          url: a.url,
+          score: a.reactionsCount,
+          comments: a.commentsCount,
+          subreddit: null,
+          tags: JSON.stringify(a.tags),
+          github_repo: ghRepo,
+          captured_at: today,
+        });
+        if (ghRepo) {
+          upsertProject(db, {
+            id: ghRepo, language: null, topics: null,
+            description: a.title, created_at: null, first_seen_at: today,
+          });
+        }
+        devtoCount++;
+      }
+      console.log(`[Social] DEV.to: ${devtoCount} 篇文章 (${articles.filter(a => extractGitHubRepoFromArticle(a)).length} 个关联 GitHub 项目)`);
+    } catch (err) {
+      console.warn(`[Social] DEV.to 采集失败: ${(err as Error).message}`);
+    }
+
+    // Reddit
+    console.log('[Social] 采集 Reddit 帖子...');
+    try {
+      const { fetchAllRedditPosts, extractGitHubRepo: extractRedditRepo } = await import('./collector/reddit.js');
+      const posts = await fetchAllRedditPosts();
+      let redditCount = 0;
+      for (const p of posts) {
+        const ghRepo = extractRedditRepo(p.url);
+        upsertSocialBuzz(db, {
+          id: `reddit-${p.id}`,
+          source: 'reddit',
+          title: p.title,
+          url: p.url,
+          score: p.score,
+          comments: p.comments,
+          subreddit: p.subreddit,
+          tags: null,
+          github_repo: ghRepo,
+          captured_at: today,
+        });
+        if (ghRepo) {
+          upsertProject(db, {
+            id: ghRepo, language: null, topics: null,
+            description: p.title, created_at: null, first_seen_at: today,
+          });
+        }
+        redditCount++;
+      }
+      console.log(`[Social] Reddit: ${redditCount} 帖子 (${posts.filter(p => extractRedditRepo(p.url)).length} 个关联 GitHub 项目)`);
+    } catch (err) {
+      console.warn(`[Social] Reddit 采集失败: ${(err as Error).message}`);
+    }
+
+    // Summary
+    const buzzCount = (db.prepare('SELECT COUNT(*) as count FROM social_buzz').get() as { count: number }).count;
+    const repoCount = (db.prepare('SELECT COUNT(DISTINCT github_repo) as count FROM social_buzz WHERE github_repo IS NOT NULL').get() as { count: number }).count;
+    console.log(`[Social] 完成! 社交数据总量: ${buzzCount} 条, 关联项目: ${repoCount} 个`);
+    db.close();
+  });
+
+// ─── augur predict-trending ─────────────────────────────────────
+program
+  .command('predict-trending')
+  .description('预测即将登上 GitHub Trending 的项目（排除已火项目）')
+  .option('-n, --top <n>', '返回 Top N', '20')
+  .option('--max-stars <stars>', '排除 star 超过此数的项目', '5000')
+  .option('-o, --output <file>', '输出到文件')
+  .option('--date <date>', '参考日期（用于回测）')
+  .action(async (opts: { top: string; maxStars: string; output?: string; date?: string }) => {
+    const db = getDb();
+    initSchema(db);
+    const { predictTrendingProjects, filterAlreadyTrending, formatTrendingPredictionReport } = await import('./predictor/trending-predictor.js');
+
+    const topN = parseInt(opts.top, 10);
+    const maxStars = parseInt(opts.maxStars, 10);
+
+    console.log(`[TrendPredict] 开始预测 (Top ${topN}, star < ${maxStars})...`);
+    const candidates = await predictTrendingProjects(db, maxStars, topN * 2, opts.date);
+
+    // Filter already-trending projects
+    const filtered = filterAlreadyTrending(candidates, db).slice(0, topN);
+    console.log(`[TrendPredict] 过滤后: ${filtered.length} 个候选项目`);
+
+    if (filtered.length > 0) {
+      console.log('\n[TrendPredict] Top 预测:');
+      for (let i = 0; i < Math.min(10, filtered.length); i++) {
+        const c = filtered[i];
+        console.log(`  ${i + 1}. ${c.repo} (得分 ${c.predictionScore.toFixed(2)}) — ${c.evidence.slice(0, 2).join(', ')}`);
+      }
+    }
+
+    const report = formatTrendingPredictionReport(filtered, opts.date);
+
+    if (opts.output) {
+      const fs = await import('node:fs');
+      fs.writeFileSync(opts.output, report, 'utf-8');
+      console.log(`\n[TrendPredict] 报告已写入 ${opts.output}`);
+    } else {
+      console.log('\n' + report);
+    }
+
+    // Save predictions to DB
+    const { upsertTrendingPrediction } = await import('./store/queries.js');
+    const today = opts.date ?? new Date().toISOString().slice(0, 10);
+    for (const c of filtered) {
+      upsertTrendingPrediction(db, {
+        project_id: c.repo,
+        predicted_at: today,
+        prediction_score: c.predictionScore,
+        factors: JSON.stringify(c.factors),
+        star_velocity: c.factors.starVelocity,
+        social_buzz_score: c.factors.socialBuzzScore,
+        fork_acceleration: c.factors.forkAcceleration,
+        issue_acceleration: c.factors.issueAcceleration,
+        actually_trended: 0,
+        trended_at: null,
+      });
+    }
+    console.log(`[TrendPredict] 已保存 ${filtered.length} 条预测到数据库`);
+
+    db.close();
+  });
+
+// ─── augur backtest-trending ────────────────────────────────────
+program
+  .command('backtest-trending')
+  .description('回测趋势项目预测：用历史数据验证"即将爆火"模型')
+  .option('-o, --output <file>', '输出到文件')
+  .action(async (opts: { output?: string }) => {
+    const { runTrendingBacktest, formatTrendingBacktestReport } = await import('./predictor/trending-backtest.js');
+
+    console.log('[Backtest-Trending] 开始回测（通过 ClickHouse GH Archive）...');
+    console.log('[Backtest-Trending] 回测案例: 从默默无闻到爆火的 GitHub 项目\n');
+
+    const summary = await runTrendingBacktest();
+
+    const report = formatTrendingBacktestReport(summary);
+
+    if (opts.output) {
+      const fs = await import('node:fs');
+      fs.writeFileSync(opts.output, report, 'utf-8');
+      console.log(`\n[Backtest-Trending] 报告已写入 ${opts.output}`);
+    } else {
+      console.log('\n' + report);
+    }
+  });
+
 // ─── augur status ───────────────────────────────────────────────
 program
   .command('status')
@@ -1376,12 +1548,22 @@ program
     const cooccurrences = (db.prepare('SELECT COUNT(*) as count FROM cooccurrences').get() as { count: number }).count;
     const latest = db.prepare('SELECT MAX(captured_at) as date FROM snapshots').get() as { date: string | null };
 
+    // Social buzz & trending predictions (new tables, might not exist)
+    let socialBuzz = 0;
+    let trendingPreds = 0;
+    try {
+      socialBuzz = (db.prepare('SELECT COUNT(*) as count FROM social_buzz').get() as { count: number }).count;
+      trendingPreds = (db.prepare('SELECT COUNT(*) as count FROM trending_predictions').get() as { count: number }).count;
+    } catch {}
+
     console.log('Augur 数据库状态:');
     console.log(`  项目数: ${projects}`);
     console.log(`  快照数: ${snapshots}`);
     console.log(`  README: ${readmes}`);
     console.log(`  信号分析: ${signals}`);
     console.log(`  HN 帖子: ${hnPosts}`);
+    console.log(`  社交数据: ${socialBuzz}`);
+    console.log(`  趋势预测: ${trendingPreds}`);
     console.log(`  共现词对: ${cooccurrences}`);
     console.log(`  最新采集: ${latest.date ?? '无'}`);
 

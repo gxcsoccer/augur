@@ -104,9 +104,39 @@ export function initSchema(db: Database.Database): void {
       PRIMARY KEY (domain, week)
     );
 
+    CREATE TABLE IF NOT EXISTS social_buzz (
+      id TEXT PRIMARY KEY,
+      source TEXT NOT NULL,
+      title TEXT,
+      url TEXT,
+      score INTEGER,
+      comments INTEGER,
+      subreddit TEXT,
+      tags TEXT,
+      github_repo TEXT,
+      captured_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS trending_predictions (
+      project_id TEXT NOT NULL,
+      predicted_at TEXT NOT NULL,
+      prediction_score REAL,
+      factors TEXT,
+      star_velocity REAL,
+      social_buzz_score REAL,
+      fork_acceleration REAL,
+      issue_acceleration REAL,
+      actually_trended INTEGER DEFAULT 0,
+      trended_at TEXT,
+      PRIMARY KEY (project_id, predicted_at)
+    );
+
     CREATE INDEX IF NOT EXISTS idx_snapshots_date ON snapshots(captured_at);
     CREATE INDEX IF NOT EXISTS idx_snapshots_project ON snapshots(project_id);
     CREATE INDEX IF NOT EXISTS idx_issues_project ON issues(project_id);
     CREATE INDEX IF NOT EXISTS idx_domain_signals_week ON domain_signals(week);
+    CREATE INDEX IF NOT EXISTS idx_social_buzz_repo ON social_buzz(github_repo);
+    CREATE INDEX IF NOT EXISTS idx_social_buzz_date ON social_buzz(captured_at);
+    CREATE INDEX IF NOT EXISTS idx_trending_predictions_date ON trending_predictions(predicted_at);
   `);
 }

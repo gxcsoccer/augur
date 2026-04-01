@@ -113,3 +113,80 @@ export function getTrendingProjects(db: Database.Database, date: string): (Proje
     ORDER BY s.trending_rank ASC
   `).all(date) as (Project & Snapshot)[];
 }
+
+// ─── Social Buzz ─────────────────────────────────────────────────
+
+export interface SocialBuzzEntry {
+  id: string;
+  source: string;
+  title: string;
+  url: string | null;
+  score: number;
+  comments: number;
+  subreddit: string | null;
+  tags: string | null;
+  github_repo: string | null;
+  captured_at: string;
+}
+
+export function upsertSocialBuzz(db: Database.Database, entry: SocialBuzzEntry): void {
+  db.prepare(`
+    INSERT OR REPLACE INTO social_buzz (id, source, title, url, score, comments, subreddit, tags, github_repo, captured_at)
+    VALUES (@id, @source, @title, @url, @score, @comments, @subreddit, @tags, @github_repo, @captured_at)
+  `).run(entry);
+}
+
+export function getSocialBuzzForRepo(db: Database.Database, repoId: string, daysBack: number = 30): SocialBuzzEntry[] {
+  return db.prepare(`
+    SELECT * FROM social_buzz
+    WHERE github_repo = ?
+      AND captured_at >= date('now', '-' || ? || ' days')
+    ORDER BY score DESC
+  `).all(repoId, daysBack) as SocialBuzzEntry[];
+}
+
+export function getSocialBuzzSummary(db: Database.Database, daysBack: number = 7): { github_repo: string; total_score: number; post_count: number }[] {
+  return db.prepare(`
+    SELECT github_repo, SUM(score) as total_score, COUNT(*) as post_count
+    FROM social_buzz
+    WHERE github_repo IS NOT NULL
+      AND captured_at >= date('now', '-' || ? || ' days')
+    GROUP BY github_repo
+    ORDER BY total_score DESC
+  `).all(daysBack) as { github_repo: string; total_score: number; post_count: number }[];
+}
+
+// ─── Trending Predictions ────────────────────────────────────────
+
+export interface TrendingPrediction {
+  project_id: string;
+  predicted_at: string;
+  prediction_score: number;
+  factors: string;
+  star_velocity: number;
+  social_buzz_score: number;
+  fork_acceleration: number;
+  issue_acceleration: number;
+  actually_trended: number;
+  trended_at: string | null;
+}
+
+export function upsertTrendingPrediction(db: Database.Database, pred: TrendingPrediction): void {
+  db.prepare(`
+    INSERT INTO trending_predictions (project_id, predicted_at, prediction_score, factors, star_velocity, social_buzz_score, fork_acceleration, issue_acceleration, actually_trended, trended_at)
+    VALUES (@project_id, @predicted_at, @prediction_score, @factors, @star_velocity, @social_buzz_score, @fork_acceleration, @issue_acceleration, @actually_trended, @trended_at)
+    ON CONFLICT(project_id, predicted_at) DO UPDATE SET
+      prediction_score = excluded.prediction_score,
+      factors = excluded.factors,
+      actually_trended = excluded.actually_trended,
+      trended_at = excluded.trended_at
+  `).run(pred);
+}
+
+export function getPendingPredictions(db: Database.Database): TrendingPrediction[] {
+  return db.prepare(`
+    SELECT * FROM trending_predictions
+    WHERE actually_trended = 0 AND trended_at IS NULL
+    ORDER BY prediction_score DESC
+  `).all() as TrendingPrediction[];
+}
