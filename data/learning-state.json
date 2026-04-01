@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "updatedAt": "2026-04-01",
+  "scorerWeights": {
+    "layer": 0.25,
+    "growth": 0.25,
+    "usage": 0.20,
+    "activity": 0.15,
+    "signalBonus": 0.15
+  },
+  "signalDetection": {
+    "accelerationThreshold": 2.0,
+    "windowSize": 4,
+    "minBaseline": 3
+  },
+  "confidenceDecay": {
+    "weeklyDecayFactor": 0.8,
+    "minConfidence": 0.1
+  },
+  "calibrationHistory": []
+}

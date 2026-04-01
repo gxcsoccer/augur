@@ -369,6 +369,225 @@ program
     db.close();
   });
 
+// ─── augur run ──────────────────────────────────────────────────
+program
+  .command('run')
+  .description('全自动流水线：collect → analyze → research → report')
+  .option('--daily', '仅执行每日采集（不含分析）')
+  .option('--weekly', '执行完整周度分析流程')
+  .option('-o, --output-dir <dir>', '报告输出目录', 'reports')
+  .action(async (opts: { daily?: boolean; weekly?: boolean; outputDir: string }) => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const db = getDb();
+    initSchema(db);
+    const today = new Date().toISOString().slice(0, 10);
+    const isWeekly = opts.weekly || !opts.daily;
+
+    // Step 1: Collect (always)
+    console.log('═══ Step 1/4: 采集数据 ═══');
+    const trending = await fetchTrending('daily');
+    console.log(`[Collect] ${trending.length} 个 trending 项目`);
+
+    for (const repo of trending) {
+      upsertProject(db, {
+        id: repo.id, language: repo.language, topics: null,
+        description: repo.description, created_at: null, first_seen_at: today,
+      });
+      upsertSnapshot(db, {
+        project_id: repo.id, captured_at: today, stars: repo.totalStars,
+        forks: repo.forks, open_issues: null, trending_rank: repo.rank,
+        trending_period: 'daily', source: 'trending',
+      });
+    }
+
+    // API details
+    let enriched = 0;
+    for (const repo of trending) {
+      const details = await fetchRepoDetails(repo.id);
+      if (!details) continue;
+      upsertProject(db, {
+        id: details.id, language: details.language, topics: JSON.stringify(details.topics),
+        description: details.description, created_at: details.createdAt, first_seen_at: today,
+      });
+      upsertSnapshot(db, {
+        project_id: details.id, captured_at: today, stars: details.stars,
+        forks: details.forks, open_issues: details.openIssues, trending_rank: repo.rank,
+        trending_period: 'daily', source: 'api',
+      });
+      enriched++;
+    }
+    console.log(`[Collect] ${enriched} 个详情补充完成`);
+
+    // READMEs
+    let readmeCount = 0;
+    for (const repo of trending) {
+      const content = await fetchReadme(repo.id);
+      if (!content) continue;
+      upsertReadme(db, { project_id: repo.id, content, keywords: null, updated_at: today });
+      readmeCount++;
+    }
+    console.log(`[Collect] ${readmeCount} 个 README 采集完成`);
+
+    // HN
+    const hnPosts = await fetchAllHNPosts(7);
+    for (const post of hnPosts) {
+      db.prepare('INSERT OR IGNORE INTO hn_posts (id, title, url, points, comments, captured_at, keywords) VALUES (?, ?, ?, ?, ?, ?, ?)')
+        .run(post.id, post.title, post.url, post.points, post.comments, today, null);
+      const repoId = extractGitHubRepo(post.url);
+      if (repoId) {
+        upsertProject(db, { id: repoId, language: null, topics: null, description: post.title, created_at: null, first_seen_at: today });
+      }
+    }
+    console.log(`[Collect] ${hnPosts.length} 个 HN 帖子采集完成`);
+
+    if (opts.daily && !opts.weekly) {
+      console.log('\n═══ 每日采集完成 ═══');
+      db.close();
+      return;
+    }
+
+    // Step 2: Analyze (weekly)
+    console.log('\n═══ Step 2/4: 信号分析 ═══');
+    const entries = collectReportData(db, today);
+    const projects = entries.map(e => {
+      const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(e.id) as any;
+      const readme = db.prepare('SELECT content FROM readmes WHERE project_id = ?').get(e.id) as any;
+      return {
+        id: e.id, description: e.description, language: e.language,
+        topics: project?.topics ?? null, readme: readme?.content?.slice(0, 500) ?? undefined,
+      };
+    });
+
+    const classifications = await classifyProjects(projects);
+    for (const c of classifications) {
+      db.prepare(`
+        INSERT INTO signals (project_id, week, layer, growth_pattern, domains, confidence, opportunity_score, raw_analysis)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(project_id, week) DO UPDATE SET layer = excluded.layer, domains = excluded.domains, raw_analysis = excluded.raw_analysis
+      `).run(c.projectId, today, c.layer, entries.find(e => e.id === c.projectId)?.growth.pattern ?? 'steady',
+        JSON.stringify(c.domains), 0, 0, JSON.stringify(c));
+    }
+    enrichWithSignals(entries, classifications);
+    for (const e of entries) {
+      if (e.score) {
+        db.prepare('UPDATE signals SET confidence = ?, opportunity_score = ? WHERE project_id = ? AND week = ?')
+          .run(e.score.confidence, e.score.opportunityScore, e.id, today);
+      }
+    }
+
+    const coMatrix = analyzeCoOccurrences(db, today);
+    console.log(`[Analyze] 信号 ${classifications.length} | 共现 ${coMatrix.length}`);
+
+    // Step 3: Research top signals
+    console.log('\n═══ Step 3/4: 深度调研 ═══');
+    const topSignals = db.prepare(`
+      SELECT project_id, layer, domains, opportunity_score
+      FROM signals WHERE week = ? ORDER BY opportunity_score DESC LIMIT 3
+    `).all(today) as any[];
+
+    const researchReports: string[] = [];
+    for (const sig of topSignals) {
+      console.log(`  调研 ${sig.project_id}...`);
+      const input = collectResearchInput(db, sig.project_id, {
+        layer: sig.layer, domains: JSON.parse(sig.domains || '[]'), opportunityScore: sig.opportunity_score,
+      });
+      const report = await generateResearch(input);
+      researchReports.push(`## ${sig.project_id}\n\n${report.fullReport}`);
+    }
+
+    // Step 4: Generate and save report
+    console.log('\n═══ Step 4/4: 生成周报 ═══');
+    const weekNum = Math.ceil((new Date(today).getTime() - new Date(new Date(today).getFullYear(), 0, 1).getTime()) / 604800000);
+    const weekLabel = `${new Date(today).getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+    const report = formatReport(entries, weekLabel, today);
+
+    // Append research section
+    let fullReport = report;
+    if (researchReports.length > 0) {
+      fullReport += '\n\n---\n\n# 深度调研\n\n' + researchReports.join('\n\n---\n\n');
+    }
+
+    // Append co-occurrence section
+    if (coMatrix.length > 0) {
+      fullReport += '\n\n---\n\n## 共现关键词网络（本周 Top 10）\n\n';
+      fullReport += '| 关键词对 | 共现项目数 |\n|---------|----------|\n';
+      for (const c of coMatrix.slice(0, 10)) {
+        fullReport += `| ${c.keyword1} + ${c.keyword2} | ${c.count} |\n`;
+      }
+    }
+
+    // Save report
+    fs.mkdirSync(opts.outputDir, { recursive: true });
+    const reportPath = path.join(opts.outputDir, `${weekLabel}.md`);
+    fs.writeFileSync(reportPath, fullReport, 'utf-8');
+    console.log(`[Report] 已写入 ${reportPath}`);
+
+    console.log('\n═══ 完成 ═══');
+    db.close();
+  });
+
+// ─── augur publish ──────────────────────────────────────────────
+program
+  .command('publish')
+  .description('将最新周报发布为 GitHub Issue')
+  .option('-f, --file <file>', '指定报告文件')
+  .option('--repo <repo>', 'GitHub 仓库 (owner/repo)', 'gxcsoccer/augur')
+  .action(async (opts: { file?: string; repo: string }) => {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const { execSync } = await import('node:child_process');
+
+    // Find latest report
+    let reportFile = opts.file;
+    if (!reportFile) {
+      const reportDir = 'reports';
+      if (!fs.existsSync(reportDir)) {
+        console.error('[Publish] reports/ 目录不存在，请先运行 augur run --weekly');
+        process.exit(1);
+      }
+      const files = fs.readdirSync(reportDir).filter(f => f.endsWith('.md')).sort();
+      if (files.length === 0) {
+        console.error('[Publish] 没有找到报告文件');
+        process.exit(1);
+      }
+      reportFile = path.join(reportDir, files[files.length - 1]);
+    }
+
+    const content = fs.readFileSync(reportFile, 'utf-8');
+    const titleMatch = content.match(/^#\s+(.+)/m);
+    const title = titleMatch ? titleMatch[1] : `Augur 周报 — ${new Date().toISOString().slice(0, 10)}`;
+
+    console.log(`[Publish] 发布: ${title}`);
+    console.log(`[Publish] 文件: ${reportFile}`);
+    console.log(`[Publish] 仓库: ${opts.repo}`);
+
+    try {
+      const result = execSync(
+        `gh issue create --repo "${opts.repo}" --title "${title}" --label "weekly-report" --body-file "${reportFile}"`,
+        { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] },
+      );
+      console.log(`[Publish] 已发布: ${result.trim()}`);
+    } catch (err) {
+      const error = err as { stderr?: string; message: string };
+      // Try creating the label first if it doesn't exist
+      if (error.stderr?.includes('label')) {
+        try {
+          execSync(`gh label create weekly-report --repo "${opts.repo}" --color 0E8A16 --description "Augur 信号周报" 2>/dev/null || true`, { encoding: 'utf-8' });
+          const result = execSync(
+            `gh issue create --repo "${opts.repo}" --title "${title}" --label "weekly-report" --body-file "${reportFile}"`,
+            { encoding: 'utf-8' },
+          );
+          console.log(`[Publish] 已发布: ${result.trim()}`);
+        } catch {
+          console.error(`[Publish] 发布失败，请确认 gh CLI 已认证`);
+        }
+      } else {
+        console.error(`[Publish] 发布失败: ${error.message}`);
+      }
+    }
+  });
+
 // ─── augur backtest ─────────────────────────────────────────────
 program
   .command('backtest')

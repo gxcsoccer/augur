@@ -1,6 +1,9 @@
 node_modules/
 dist/
-data/
-*.db
 .env
 .DS_Store
+
+# Data files are tracked in repo (GitHub-native persistence)
+# Only ignore temp files
+data/*.tmp
+data/*.bak
