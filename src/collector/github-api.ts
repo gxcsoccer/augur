@@ -99,14 +99,15 @@ export async function fetchStarHistory(
   maxPages: number = 5,
 ): Promise<StarEvent[]> {
   const events: StarEvent[] = [];
-  const headers = {
+  const starHeaders = {
     ...getHeaders(),
     'Accept': 'application/vnd.github.v3.star+json',
   };
 
-  // Fetch from the last page backwards to get recent stars
-  // First, get total count to calculate last page
-  const headRes = await githubFetch(`${GITHUB_API}/repos/${repoId}/stargazers?per_page=1`);
+  // First request with star+json header to get pagination info
+  const headRes = await fetch(`${GITHUB_API}/repos/${repoId}/stargazers?per_page=100`, {
+    headers: starHeaders,
+  });
   if (!headRes.ok) return events;
 
   const linkHeader = headRes.headers.get('link');
@@ -116,21 +117,78 @@ export async function fetchStarHistory(
     if (match) lastPage = parseInt(match[1], 10);
   }
 
-  // Fetch the most recent pages
-  const startPage = Math.max(1, lastPage - maxPages + 1);
-  for (let page = startPage; page <= lastPage; page++) {
-    const res = await fetch(`${GITHUB_API}/repos/${repoId}/stargazers?per_page=100&page=${page}`, {
-      headers,
-    });
-    if (!res.ok) break;
-
-    const data = await res.json() as { starred_at: string }[];
-    for (const item of data) {
+  // Process first page data
+  const firstPageData = await headRes.json() as { starred_at: string }[];
+  if (lastPage <= maxPages) {
+    // Small repo: first page already fetched, get remaining
+    for (const item of firstPageData) {
       events.push({ starred_at: item.starred_at });
+    }
+    for (let page = 2; page <= lastPage; page++) {
+      const res = await fetch(`${GITHUB_API}/repos/${repoId}/stargazers?per_page=100&page=${page}`, {
+        headers: starHeaders,
+      });
+      if (!res.ok) break;
+      const data = await res.json() as { starred_at: string }[];
+      for (const item of data) events.push({ starred_at: item.starred_at });
+    }
+  } else {
+    // Large repo: fetch the most recent N pages
+    const startPage = Math.max(1, lastPage - maxPages + 1);
+    for (let page = startPage; page <= lastPage; page++) {
+      const res = await fetch(`${GITHUB_API}/repos/${repoId}/stargazers?per_page=100&page=${page}`, {
+        headers: starHeaders,
+      });
+      if (!res.ok) break;
+      const data = await res.json() as { starred_at: string }[];
+      for (const item of data) events.push({ starred_at: item.starred_at });
     }
   }
 
   return events.sort((a, b) => a.starred_at.localeCompare(b.starred_at));
+}
+
+/**
+ * Convert star events into weekly snapshots for backfill.
+ * Groups stars by ISO week and computes cumulative star count.
+ */
+export function starEventsToWeeklySnapshots(
+  repoId: string,
+  events: StarEvent[],
+  currentStars: number,
+): { project_id: string; captured_at: string; stars: number }[] {
+  if (events.length === 0) return [];
+
+  // Group events by week (Monday-start)
+  const weekMap = new Map<string, number>();
+  for (const e of events) {
+    const d = new Date(e.starred_at);
+    // Get Monday of this week
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(d);
+    monday.setDate(diff);
+    const weekKey = monday.toISOString().slice(0, 10);
+
+    weekMap.set(weekKey, (weekMap.get(weekKey) ?? 0) + 1);
+  }
+
+  // Convert to cumulative snapshots
+  // Work backwards from current star count
+  const weeks = [...weekMap.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+  const snapshots: { project_id: string; captured_at: string; stars: number }[] = [];
+  let runningTotal = currentStars;
+
+  for (const [weekDate, count] of weeks) {
+    snapshots.push({
+      project_id: repoId,
+      captured_at: weekDate,
+      stars: runningTotal,
+    });
+    runningTotal -= count;
+  }
+
+  return snapshots.reverse(); // chronological order
 }
 
 export function getRateLimitInfo(): { remaining: number; reset: Date } {

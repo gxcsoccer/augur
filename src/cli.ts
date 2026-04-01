@@ -4,7 +4,7 @@ import { Command } from 'commander';
 import { getDb, initSchema } from './store/schema.js';
 import { upsertProject, upsertSnapshot, upsertReadme, type Project, type Snapshot } from './store/queries.js';
 import { fetchTrending } from './collector/github-trending.js';
-import { fetchRepoDetails, fetchReadme, getRateLimitInfo } from './collector/github-api.js';
+import { fetchRepoDetails, fetchReadme, fetchStarHistory, starEventsToWeeklySnapshots, getRateLimitInfo } from './collector/github-api.js';
 import { fetchAllHNPosts, extractGitHubRepo } from './collector/hackernews.js';
 import { generateWeeklyReport, collectReportData, enrichWithSignals, formatReport } from './predictor/report-generator.js';
 import { BACKTEST_TARGETS, runBacktest, formatFullBacktestReport } from './predictor/backtest.js';
@@ -32,7 +32,8 @@ program
   .option('--no-details', '跳过 GitHub API 详情补充')
   .option('--no-readme', '跳过 README 采集')
   .option('--no-hn', '跳过 HackerNews 采集')
-  .action(async (opts: { period: string; details: boolean; readme: boolean; hn: boolean }) => {
+  .option('--backfill', '回填 star 历史数据（冷启动用，首次运行建议加上）')
+  .action(async (opts: { period: string; details: boolean; readme: boolean; hn: boolean; backfill?: boolean }) => {
     const db = getDb();
     initSchema(db);
     const today = new Date().toISOString().slice(0, 10);
@@ -91,7 +92,49 @@ program
       console.log(`[Collect] 已采集 ${fetched} 个 README`);
     }
 
-    // Step 4: HackerNews
+    // Step 4: Star history backfill (cold start)
+    if (opts.backfill) {
+      console.log('[Collect] 正在回填 star 历史数据...');
+      let backfilled = 0;
+      for (const repo of trending) {
+        // Check if we already have historical snapshots
+        const existing = db.prepare(
+          'SELECT COUNT(*) as cnt FROM snapshots WHERE project_id = ? AND captured_at < ?'
+        ).get(repo.id, today) as { cnt: number };
+
+        if (existing.cnt >= 4) continue; // already have enough history
+
+        // Get current star count from DB (more reliable than trending HTML)
+        const latestSnap = db.prepare(
+          'SELECT stars FROM snapshots WHERE project_id = ? AND stars > 0 ORDER BY captured_at DESC LIMIT 1'
+        ).get(repo.id) as { stars: number } | undefined;
+        const currentStars = latestSnap?.stars ?? repo.totalStars;
+        if (currentStars === 0) continue; // skip if no star data
+
+        console.log(`  回填 ${repo.id} (★${currentStars.toLocaleString()})...`);
+        const events = await fetchStarHistory(repo.id, 5);
+        if (events.length === 0) continue;
+
+        const weeklySnapshots = starEventsToWeeklySnapshots(repo.id, events, currentStars);
+        for (const snap of weeklySnapshots) {
+          upsertSnapshot(db, {
+            project_id: snap.project_id,
+            captured_at: snap.captured_at,
+            stars: snap.stars,
+            forks: null,
+            open_issues: null,
+            trending_rank: null,
+            trending_period: null,
+            source: 'backfill',
+          });
+        }
+        backfilled++;
+      }
+      const limit = getRateLimitInfo();
+      console.log(`[Collect] 已回填 ${backfilled} 个项目历史 (API 余量: ${limit.remaining})`);
+    }
+
+    // Step 5: HackerNews
     if (opts.hn) {
       console.log('[Collect] 正在采集 HackerNews...');
       const hnPosts = await fetchAllHNPosts(7);
