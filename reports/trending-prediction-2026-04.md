@@ -8,26 +8,26 @@
 
 | # | 项目 | 预测得分 | Star加速 | Fork加速 | 多因子 | 关键证据 |
 |---|------|---------|---------|---------|--------|---------|
-| 1 | **mauriceboe/TREK** | 0.78 | 23.27x | 19x | 4 | Star 加速 23.27x; Fork 加速 19x |
-| 2 | **chenglou/pretext** | 0.68 | 1758x | 10x | 3 | Star 加速 1758x; Fork 加速 10x |
-| 3 | **mvanhorn/last30days-skill** | 0.65 | 7.75x | 4.43x | 3 | Star 加速 7.75x; Fork 加速 4.43x |
-| 4 | **bytedance/deer-flow** | 0.61 | 3.67x | 3.45x | 4 | Star 加速 3.67x; Fork 加速 3.45x |
-| 5 | **FujiwaraChoki/MoneyPrinterV2** | 0.61 | 5.8x | 4.48x | 3 | Star 加速 5.8x; Fork 加速 4.48x |
-| 6 | **Z4nzu/hackingtool** | 0.61 | 5.66x | 7x | 3 | Star 加速 5.66x; Fork 加速 7x |
-| 7 | **Crosstalk-Solutions/project-nomad** | 0.59 | 6.42x | 7.41x | 2 | Star 加速 6.42x; Fork 加速 7.41x |
-| 8 | **larksuite/cli** | 0.58 | 2.37x | 2.36x | 4 | Star 加速 2.37x; Fork 加速 2.36x |
-| 9 | **TauricResearch/TradingAgents** | 0.56 | 3.25x | 2.38x | 4 | Star 加速 3.25x; Fork 加速 2.38x |
-| 10 | **supermemoryai/supermemory** | 0.53 | 7.32x | 6.17x | 2 | Star 加速 7.32x; Fork 加速 6.17x |
-| 11 | **onyx-dot-app/onyx** | 0.53 | 6.34x | 3.71x | 2 | Star 加速 6.34x; Fork 加速 3.71x |
-| 12 | **pascalorg/editor** | 0.52 | 66.61x | 39.77x | 2 | Star 加速 66.61x; Fork 加速 39.77x |
-| 13 | **hacksider/Deep-Live-Cam** | 0.51 | 8.99x | 7x | 2 | Star 加速 8.99x; Fork 加速 7x |
-| 14 | **lijigang/ljg-skills** | 0.51 | 15.25x | 10x | 2 | Star 加速 15.25x; Fork 加速 10x |
-| 15 | **TheTom/turboquant_plus** | 0.50 | 4.6x | 5.4x | 2 | Star 加速 4.6x; Fork 加速 5.4x |
-| 16 | **Donchitos/Claude-Code-Game-Studios** | 0.48 | 9.43x | 15.23x | 2 | Star 加速 9.43x; Fork 加速 15.23x |
-| 17 | **liquidslr/interview-company-wise-problems** | 0.48 | 7.07x | 5.95x | 2 | Star 加速 7.07x; Fork 加速 5.95x |
-| 18 | **datalab-to/chandra** | 0.48 | 16.76x | 6.73x | 2 | Star 加速 16.76x; Fork 加速 6.73x |
-| 19 | **Vaibhavs10/insanely-fast-whisper** | 0.48 | 80x | 10x | 2 | Star 加速 80x; Fork 加速 10x |
-| 20 | **SakanaAI/AI-Scientist-v2** | 0.48 | 17.56x | 12.95x | 2 | Star 加速 17.56x; Fork 加速 12.95x |
+| 1 | **chenglou/pretext** | 0.68 | 1758x | 10x | 3 | Star 加速 1758x; Fork 加速 10x |
+| 2 | **mvanhorn/last30days-skill** | 0.65 | 7.75x | 4.43x | 3 | Star 加速 7.75x; Fork 加速 4.43x |
+| 3 | **bytedance/deer-flow** | 0.61 | 3.67x | 3.45x | 4 | Star 加速 3.67x; Fork 加速 3.45x |
+| 4 | **FujiwaraChoki/MoneyPrinterV2** | 0.61 | 5.8x | 4.48x | 3 | Star 加速 5.8x; Fork 加速 4.48x |
+| 5 | **Z4nzu/hackingtool** | 0.61 | 5.66x | 7x | 3 | Star 加速 5.66x; Fork 加速 7x |
+| 6 | **Crosstalk-Solutions/project-nomad** | 0.59 | 6.42x | 7.41x | 2 | Star 加速 6.42x; Fork 加速 7.41x |
+| 7 | **TauricResearch/TradingAgents** | 0.56 | 3.25x | 2.38x | 4 | Star 加速 3.25x; Fork 加速 2.38x |
+| 8 | **supermemoryai/supermemory** | 0.53 | 7.32x | 6.17x | 2 | Star 加速 7.32x; Fork 加速 6.17x |
+| 9 | **onyx-dot-app/onyx** | 0.53 | 6.34x | 3.71x | 2 | Star 加速 6.34x; Fork 加速 3.71x |
+| 10 | **pascalorg/editor** | 0.52 | 66.61x | 39.77x | 2 | Star 加速 66.61x; Fork 加速 39.77x |
+| 11 | **hacksider/Deep-Live-Cam** | 0.51 | 8.99x | 7x | 2 | Star 加速 8.99x; Fork 加速 7x |
+| 12 | **lijigang/ljg-skills** | 0.51 | 15.25x | 10x | 2 | Star 加速 15.25x; Fork 加速 10x |
+| 13 | **Donchitos/Claude-Code-Game-Studios** | 0.48 | 9.43x | 15.23x | 2 | Star 加速 9.43x; Fork 加速 15.23x |
+| 14 | **liquidslr/interview-company-wise-problems** | 0.48 | 7.07x | 5.95x | 2 | Star 加速 7.07x; Fork 加速 5.95x |
+| 15 | **datalab-to/chandra** | 0.48 | 16.76x | 6.73x | 2 | Star 加速 16.76x; Fork 加速 6.73x |
+| 16 | **Vaibhavs10/insanely-fast-whisper** | 0.48 | 80x | 10x | 2 | Star 加速 80x; Fork 加速 10x |
+| 17 | **SakanaAI/AI-Scientist-v2** | 0.48 | 17.56x | 12.95x | 2 | Star 加速 17.56x; Fork 加速 12.95x |
+| 18 | **jackwener/opencli** | 0.47 | 1.25x | 1.6x | 3 | Fork 加速 1.6x; PR 活跃度上升 2.44x |
+| 19 | **harry0703/MoneyPrinterTurbo** | 0.46 | 5.86x | 3.68x | 2 | Star 加速 5.86x; Fork 加速 3.68x |
+| 20 | **agentscope-ai/agentscope** | 0.43 | 3.2x | 6.39x | 2 | Star 加速 3.2x; Fork 加速 6.39x |
 
 ### 评分因子权重
 
