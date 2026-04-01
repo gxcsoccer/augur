@@ -62,17 +62,11 @@ jobs:
       - name: Install dependencies
         run: npm ci --registry=https://registry.npmmirror.com
 
-      - name: Run weekly pipeline
+      - name: Run weekly pipeline (collect + analyze + predict + evolve + report)
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
         run: npx tsx src/cli.ts run --weekly
-
-      - name: Run evolution cycle
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
-        run: npx tsx src/cli.ts evolve --skip-discover -o reports/evolution-$(date +%Y-%m-%d).md || true
 
       - name: Commit data and report
         run: |

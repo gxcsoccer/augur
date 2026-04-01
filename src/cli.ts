@@ -1091,26 +1091,168 @@ program
       researchReports.push(`## ${sig.project_id}\n\n${report.fullReport}`);
     }
 
-    // Step 4: Generate and save report
-    console.log('\n═══ Step 4/4: 生成周报 ═══');
-    const weekNum = Math.ceil((new Date(today).getTime() - new Date(new Date(today).getFullYear(), 0, 1).getTime()) / 604800000);
-    const weekLabel = `${new Date(today).getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
-    const report = formatReport(entries, weekLabel, today);
+    // Step 4: 浪潮预测 + 进化
+    console.log('\n═══ Step 4/7: 浪潮预测 ═══');
+    const { CANDIDATE_WAVES, scanWaves } = await import('./predictor/wave-scanner.js');
+    const { recordPredictions, checkPendingPredictions, verifyPrediction: verifyPred, evolveParams, expireOldPredictions, getLedgerStats } = await import('./predictor/online-learner.js');
 
-    // Append research section
-    let fullReport = report;
-    if (researchReports.length > 0) {
-      fullReport += '\n\n---\n\n# 深度调研\n\n' + researchReports.join('\n\n---\n\n');
+    const state = JSON.parse(fs.readFileSync('data/learning-state.json', 'utf-8'));
+    const params = {
+      accelerationThreshold: state.signalDetection.accelerationThreshold,
+      windowSize: state.signalDetection.windowSize,
+      minBaseline: state.signalDetection.minBaseline,
+      layerWeight: state.scorerWeights.layer,
+      growthWeight: state.scorerWeights.growth,
+      usageWeight: state.scorerWeights.usage,
+      activityWeight: state.scorerWeights.activity,
+      signalBonusWeight: state.scorerWeights.signalBonus,
+      compressionFactor: state.compressionFactor.value,
+      biasCorrection: state.signalDetection.biasCorrection ?? 0,
+      recencyBoost: state.signalDetection.recencyBoost ?? 0.5,
+    };
+
+    let wavePredictions: Awaited<ReturnType<typeof scanWaves>> = [];
+    try {
+      // 加载已发现的浪潮
+      let waves = [...CANDIDATE_WAVES];
+      try {
+        const disc = JSON.parse(fs.readFileSync('data/discovered-waves.json', 'utf-8'));
+        const { mergeWaves } = await import('./analyzer/wave-discoverer.js');
+        waves = mergeWaves(CANDIDATE_WAVES, disc);
+      } catch {}
+
+      wavePredictions = await scanWaves(params, today);
+
+      // 记录预测
+      recordPredictions(
+        wavePredictions.map(p => ({
+          wave: p.wave.name,
+          predictedEruption: p.validation.predictedEruptionDate,
+          signalStrength: p.signalStrength,
+          signalCount: p.validation.detectedSignals.filter(s => s.signalDate).length,
+          keySignals: p.validation.detectedSignals.filter(s => s.signalDate).map(s => s.repo),
+        })),
+        params,
+      );
+    } catch (e) {
+      console.warn(`[Predict] 浪潮预测跳过: ${(e as Error).message}`);
     }
 
-    // Append co-occurrence section
-    if (coMatrix.length > 0) {
-      fullReport += '\n\n---\n\n## 共现关键词网络（本周 Top 10）\n\n';
-      fullReport += '| 关键词对 | 共现项目数 |\n|---------|----------|\n';
-      for (const c of coMatrix.slice(0, 10)) {
-        fullReport += `| ${c.keyword1} + ${c.keyword2} | ${c.count} |\n`;
+    // Step 5: 自动验证
+    console.log('\n═══ Step 5/7: 自动验证 ═══');
+    const pendingForReview = checkPendingPredictions();
+    if (pendingForReview.length > 0) {
+      try {
+        const { autoVerifyPredictions } = await import('./predictor/outcome-detector.js');
+        const waveRepoMap = new Map<string, string[]>();
+        for (const w of CANDIDATE_WAVES) {
+          waveRepoMap.set(w.name, [...w.infrastructureRepos, ...w.toolingRepos, ...w.applicationRepos]);
+        }
+        const verifications = await autoVerifyPredictions(pendingForReview, waveRepoMap);
+        for (const v of verifications) {
+          verifyPred(v.predictionId, v.hit);
+        }
+        const hits = verifications.filter(v => v.hit).length;
+        console.log(`[Verify] ${verifications.length} 条验证: ${hits} 命中`);
+      } catch (e) {
+        console.warn(`[Verify] 自动验证跳过: ${(e as Error).message}`);
       }
     }
+    expireOldPredictions();
+
+    // Step 6: 参数进化
+    console.log('\n═══ Step 6/7: 参数进化 ═══');
+    const evolution = evolveParams();
+    if (evolution.changed) {
+      for (const adj of evolution.adjustments) console.log(`  ${adj}`);
+    }
+
+    // Step 7: 合并生成完整周报
+    console.log('\n═══ Step 7/7: 生成完整周报 ═══');
+    const weekNum = Math.ceil((new Date(today).getTime() - new Date(new Date(today).getFullYear(), 0, 1).getTime()) / 604800000);
+    const weekLabel = `${new Date(today).getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+
+    const sections: string[] = [];
+
+    // Section 1: 标题 + 概览
+    sections.push(`# Augur 周报 — ${weekLabel}`);
+    sections.push('');
+    sections.push(`> 生成日期: ${today} | 项目: ${entries.length} | 浪潮: ${wavePredictions.length}`);
+    const ledgerStats = getLedgerStats();
+    if (ledgerStats.hitRate !== null) {
+      sections.push(`> 模型命中率: ${(ledgerStats.hitRate * 100).toFixed(0)}% | 预测数: ${ledgerStats.total}`);
+    }
+    sections.push('');
+
+    // Section 2: 浪潮预测总览
+    if (wavePredictions.length > 0) {
+      sections.push('## 浪潮预测');
+      sections.push('');
+      sections.push('| 候选浪潮 | 信号强度 | 预测爆发 | 关键信号 |');
+      sections.push('|---------|---------|---------|---------|');
+      for (const p of wavePredictions) {
+        const strength = { strong: '🔴 强', moderate: '🟡 中', weak: '⚪ 弱', none: '- 无' }[p.signalStrength];
+        const signals = p.validation.detectedSignals.filter(s => s.signalDate).map(s => s.repo.split('/')[1]).join(', ');
+        sections.push(`| ${p.wave.name} | ${strength} | ${p.validation.predictedEruptionDate ?? '-'} | ${signals || '-'} |`);
+      }
+      sections.push('');
+    }
+
+    // Section 3: 本周信号（trending 项目评分）
+    const signalReport = formatReport(entries, weekLabel, today);
+    // 去掉 signalReport 的标题（避免重复）
+    const signalBody = signalReport.replace(/^#\s+.*\n+>.*\n*/m, '');
+    sections.push('## 本周项目信号');
+    sections.push('');
+    sections.push(signalBody);
+
+    // Section 4: 深度调研
+    if (researchReports.length > 0) {
+      sections.push('---');
+      sections.push('');
+      sections.push('## 深度调研');
+      sections.push('');
+      sections.push(researchReports.join('\n\n---\n\n'));
+    }
+
+    // Section 5: 共现关键词
+    if (coMatrix.length > 0) {
+      sections.push('---');
+      sections.push('');
+      sections.push('## 共现关键词网络');
+      sections.push('');
+      sections.push('| 关键词对 | 共现项目数 |');
+      sections.push('|---------|----------|');
+      for (const c of coMatrix.slice(0, 10)) {
+        sections.push(`| ${c.keyword1} + ${c.keyword2} | ${c.count} |`);
+      }
+      sections.push('');
+    }
+
+    // Section 6: 进化状态
+    sections.push('---');
+    sections.push('');
+    sections.push('## 系统进化状态');
+    sections.push('');
+    sections.push(`| 指标 | 值 |`);
+    sections.push(`|------|-----|`);
+    sections.push(`| 预测总数 | ${ledgerStats.total} |`);
+    sections.push(`| 待验证 | ${ledgerStats.pending} |`);
+    sections.push(`| 命中 | ${ledgerStats.hits} |`);
+    sections.push(`| 未命中 | ${ledgerStats.misses} |`);
+    if (ledgerStats.hitRate !== null) {
+      sections.push(`| 命中率 | ${(ledgerStats.hitRate * 100).toFixed(0)}% |`);
+    }
+    if (ledgerStats.avgError !== null) {
+      sections.push(`| 平均误差 | ${ledgerStats.avgError.toFixed(1)} 月 |`);
+    }
+    if (evolution.changed) {
+      sections.push('');
+      sections.push('**本周参数调整：**');
+      for (const adj of evolution.adjustments) sections.push(`- ${adj}`);
+    }
+
+    const fullReport = sections.join('\n');
 
     // Save report
     fs.mkdirSync(opts.outputDir, { recursive: true });
