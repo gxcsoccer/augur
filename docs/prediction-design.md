@@ -270,3 +270,117 @@ augur predict              # 输出所有域的当前预测
 augur predict --domain agent  # 指定域深度预测
 augur predict --track      # 显示预测追踪（跨周对比）
 ```
+
+---
+
+## 八、关键设计决策
+
+### 8.1 域的自动发现（Auto Discovery + PR 确认）
+
+新领域不应硬编码维护，而是自动发现 + 人工确认：
+
+**流程：**
+```
+共现关键词网络 → 检测高密度新簇 → LLM 判断是否构成新域
+→ 自动创建 PR（修改 config/domains.yaml）→ 人工 review + merge
+```
+
+**自动发现条件：**
+- 共现网络中出现 ≥3 个新关键词，且互相共现 ≥5 次
+- 这些关键词不属于任何现有域
+- LLM 确认它们代表一个独立的技术方向
+
+**PR 内容：**
+```yaml
+# 新增域提议
+- name: edge-ai-hardware
+  keywords: [npu, neural-engine, edge-tpu, risc-v-ml]
+  evidence: "近 4 周共现密度 0.67，涉及 12 个项目"
+  proposed_by: augur-bot
+  proposed_at: 2026-04-15
+```
+
+**实现：** GitHub Actions 中检测新域 → `gh pr create` 提交提议 → 人工 review
+
+### 8.2 爆发检测（从历史数据提取特征）
+
+不手动标注"爆发已发生"，而是从已知爆发点提取多源特征，训练一个爆发检测器。
+
+**特征提取目标（从 ChatGPT/Cursor/Manus 三个爆发点）：**
+
+| 数据源 | 特征 | 采集方式 |
+|--------|------|---------|
+| HackerNews | 爆发前后 HN 帖子密度变化曲线 | Algolia API 回查 |
+| GitHub Stars | application 层项目的 star 暴涨模式 | ClickHouse GH Archive |
+| GitHub Forks | fork 突增（代表实际使用开始） | ClickHouse |
+| GitHub Issues | issue 量爆炸式增长 | ClickHouse |
+| 共现网络 | 域内关键词共现密度达到峰值 | 需积累数据 |
+
+**爆发特征画像（待验证的假设）：**
+```
+爆发信号 =
+  application_layer_star_spike（周增 > 5000）
++ hn_post_density > 10/周（且 points 均值 > 100）
++ domain_ssi > 0.8
++ new_project_influx > 5/周（域内新增项目数）
+```
+
+**实现步骤：**
+1. 对 ChatGPT（2022-11）、Cursor（2023-06）、Manus（2024-03）三个点，回查爆发前后 4 周的各源数据
+2. 提取特征模式：哪些指标在爆发前/中/后有显著变化
+3. 建立爆发检测规则（阈值型，初版不用 ML）
+4. 跑通后通过在线学习持续校准阈值
+
+**关键问题：X/Twitter 数据**
+- X API 付费且限制严格，MVP 阶段不接入
+- 替代方案：HN + GitHub 两个免费源已覆盖开发者社区主要讨论渠道
+- 后续可考虑 Reddit r/MachineLearning, r/LocalLLaMA 等作为补充
+
+### 8.3 压缩因子（自学习调整）
+
+不预设固定值，而是初始给一个保守估计，通过在线学习自动校准。
+
+**初始策略：**
+```json
+{
+  "compression_factor": 0.75,
+  "estimation_method": "conservative",
+  "confidence": "low",
+  "note": "初始值，待系统积累 3+ 个预测-验证周期后自动校准"
+}
+```
+
+**自学习机制：**
+```
+每当检测到一个域进入 Phase 5（爆发）：
+  1. 回查该域首次进入 Phase 1 的时间
+  2. 计算实际领先时间 = Phase5_date - Phase1_date
+  3. 对比预测的领先时间
+  4. 计算误差，用指数移动平均更新 compression_factor
+
+compression_factor_new =
+  α × (actual_lead_time / base_lead_time) + (1-α) × compression_factor_old
+
+其中 α = 0.3（学习率，偏保守）
+```
+
+**bootstrapping 问题：**
+- 系统运行初期没有自己的预测-验证数据
+- 用回测数据（ChatGPT/Cursor/Manus）做 warm start
+- 第一个真正的验证周期可能要 3~6 个月后才有
+
+**存储在 learning-state.json：**
+```json
+{
+  "compressionFactor": {
+    "value": 0.75,
+    "lastUpdated": "2026-04-01",
+    "calibrationHistory": [
+      {"domain": "chat-ai", "predicted": 12, "actual": 12, "date": "2022-11"},
+      {"domain": "ai-ide", "predicted": 10, "actual": 9, "date": "2023-06"}
+    ],
+    "warmStarted": true,
+    "selfCalibratedCount": 0
+  }
+}
+```
