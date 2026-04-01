@@ -1,0 +1,29 @@
+{
+  "name": "augur",
+  "version": "0.1.0",
+  "description": "开源信号情报系统 — 通过 GitHub 生态数据识别技术浪潮先导信号",
+  "type": "module",
+  "bin": {
+    "augur": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/cli.ts",
+    "start": "node dist/cli.js"
+  },
+  "keywords": ["github", "trending", "signal", "intelligence", "prediction"],
+  "author": "Peter",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "cheerio": "^1.0.0",
+    "commander": "^13.0.0",
+    "openai": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.0.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.7.0"
+  }
+}
