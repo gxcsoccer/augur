@@ -453,8 +453,9 @@ program
       eruptionDate: '2025-06-01',
       description: '专业 Agent 浪潮，OpenClaw 等垂直 Agent 产品涌现',
       infrastructureRepos: [
-        'modelcontextprotocol/specification',
+        'modelcontextprotocol/modelcontextprotocol',
         'modelcontextprotocol/servers',
+        'modelcontextprotocol/python-sdk',
         'anthropics/anthropic-sdk-python',
       ],
       toolingRepos: [
@@ -463,6 +464,7 @@ program
         'langchain-ai/langgraph',
       ],
       applicationRepos: [
+        'openclaw/openclaw',
         'OpenManus/OpenManus',
         'all-hands-ai/OpenHands',
       ],

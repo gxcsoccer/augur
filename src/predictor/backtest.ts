@@ -17,6 +17,8 @@ interface WeeklyMetrics {
   new_forks: number;
   new_issues: number;
   new_prs: number;
+  unique_pushers: number;    // unique contributors (PushEvent actors)
+  new_releases: number;      // ReleaseEvent count
 }
 
 /**
@@ -36,7 +38,9 @@ export async function fetchWeeklyMetrics(
       countIf(event_type = 'WatchEvent') AS new_stars,
       countIf(event_type = 'ForkEvent') AS new_forks,
       countIf(event_type = 'IssuesEvent') AS new_issues,
-      countIf(event_type = 'PullRequestEvent') AS new_prs
+      countIf(event_type = 'PullRequestEvent') AS new_prs,
+      uniqIf(actor_login, event_type = 'PushEvent') AS unique_pushers,
+      countIf(event_type = 'ReleaseEvent') AS new_releases
     FROM github_events
     WHERE repo_name = '${escapeSQL(repoName)}'
       AND created_at >= '${from}'
@@ -66,6 +70,8 @@ export async function fetchWeeklyMetrics(
       new_forks: Number(row.new_forks),
       new_issues: Number(row.new_issues),
       new_prs: Number(row.new_prs),
+      unique_pushers: Number(row.unique_pushers ?? 0),
+      new_releases: Number(row.new_releases ?? 0),
     };
   });
 }
@@ -107,6 +113,8 @@ function detectSignals(
     { key: 'new_forks', name: 'forks' },
     { key: 'new_issues', name: 'issues' },
     { key: 'new_prs', name: 'prs' },
+    { key: 'unique_pushers', name: 'contributors' },
+    { key: 'new_releases', name: 'releases' },
   ];
 
   for (const { key, name } of factors) {

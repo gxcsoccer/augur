@@ -53,9 +53,23 @@
         "actual": 0,
         "error": 3.4,
         "date": "2025-06-01"
+      },
+      {
+        "domain": "professional-agent",
+        "predicted": 1.2,
+        "actual": 0,
+        "error": 1.9,
+        "date": "2025-06-01"
+      },
+      {
+        "domain": "professional-agent",
+        "predicted": 1.2,
+        "actual": 0,
+        "error": 1.9,
+        "date": "2025-06-01"
       }
     ],
     "warmStarted": true,
-    "selfCalibratedCount": 2
+    "selfCalibratedCount": 4
   }
 }

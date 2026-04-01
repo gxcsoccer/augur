@@ -85,7 +85,7 @@ async function detectWithParams(
       return { repo, layer, signalDate: null, leadMonths: null };
     }
 
-    const factors: (keyof typeof history[0])[] = ['new_stars', 'new_forks', 'new_issues', 'new_prs'];
+    const factors: (keyof typeof history[0])[] = ['new_stars', 'new_forks', 'new_issues', 'new_prs', 'unique_pushers', 'new_releases'];
 
     // Find first signal using the given params
     for (let i = params.windowSize; i < history.length; i++) {
@@ -231,7 +231,7 @@ export async function calibrate(
       return { repo, layer, signalDate: null, leadMonths: null };
     }
 
-    const factors: (keyof typeof history[0])[] = ['new_stars', 'new_forks', 'new_issues', 'new_prs'];
+    const factors: (keyof typeof history[0])[] = ['new_stars', 'new_forks', 'new_issues', 'new_prs', 'unique_pushers', 'new_releases'];
 
     for (let i = params.windowSize; i < history.length; i++) {
       for (const key of factors) {
@@ -332,10 +332,19 @@ export async function calibrate(
 
 // ─── 验证：在新案例上预测 ───────────────────────────────────────
 
+export interface DownloadSignal {
+  repo: string;
+  packageName: string;
+  registry: 'npm' | 'pypi';
+  weeklyDownloads: number;
+  trend: 'accelerating' | 'growing' | 'stable' | 'unknown';
+}
+
 export interface ValidationResult {
   target: BacktestTarget;
   params: ModelParams;
   detectedSignals: SignalDetectionResult[];
+  downloadSignals: DownloadSignal[];
   predictedEruptionDate: string | null;
   predictedLeadMonths: number | null;
   actualEruptionDate: string;
@@ -438,10 +447,54 @@ export async function validate(
     ? Math.abs(new Date(predictedEruptionDate).getTime() - actualD.getTime()) / (1000 * 60 * 60 * 24 * 30)
     : null;
 
+  // ─── 下载量信号（额外因子）───
+  const { fetchNpmWeeklyDownloads, fetchPyPIMonthlyDownloads, guessPackageName } = await import('../collector/package-downloads.js');
+
+  const downloadSignals: DownloadSignal[] = [];
+  console.log('\n  [Downloads] 采集下载量数据...');
+
+  for (const { repo, layer } of allRepos) {
+    const pkg = guessPackageName(repo, null);
+    if (pkg.pypi) {
+      const months = await fetchPyPIMonthlyDownloads(pkg.pypi);
+      if (months.length >= 2) {
+        const recent = months.slice(-3);
+        const totalRecent = recent.reduce((s, m) => s + m.downloads, 0);
+        const avgRecent = totalRecent / recent.length;
+        const older = months.slice(-6, -3);
+        const avgOlder = older.length > 0 ? older.reduce((s, m) => s + m.downloads, 0) / older.length : avgRecent;
+        const trend = avgRecent > avgOlder * 2 ? 'accelerating' : avgRecent > avgOlder * 1.2 ? 'growing' : 'stable';
+
+        downloadSignals.push({
+          repo, packageName: pkg.pypi, registry: 'pypi',
+          weeklyDownloads: Math.round(avgRecent / 4), trend,
+        });
+        console.log(`    ${pkg.pypi} (PyPI): ${Math.round(avgRecent).toLocaleString()}/月 [${trend}]`);
+      }
+    }
+    if (pkg.npm) {
+      const weeks = await fetchNpmWeeklyDownloads(pkg.npm, 8);
+      if (weeks.length >= 4) {
+        const recent = weeks.slice(-4);
+        const avgRecent = recent.reduce((s, w) => s + w.downloads, 0) / recent.length;
+        const older = weeks.slice(0, 4);
+        const avgOlder = older.reduce((s, w) => s + w.downloads, 0) / older.length;
+        const trend = avgRecent > avgOlder * 2 ? 'accelerating' : avgRecent > avgOlder * 1.2 ? 'growing' : 'stable';
+
+        downloadSignals.push({
+          repo, packageName: pkg.npm, registry: 'npm',
+          weeklyDownloads: Math.round(avgRecent), trend,
+        });
+        console.log(`    ${pkg.npm} (npm): ${Math.round(avgRecent).toLocaleString()}/周 [${trend}]`);
+      }
+    }
+  }
+
   return {
     target: validationTarget,
     params,
     detectedSignals: signals,
+    downloadSignals,
     predictedEruptionDate,
     predictedLeadMonths,
     actualEruptionDate: validationTarget.eruptionDate,
@@ -515,13 +568,27 @@ export function formatCalibrationReport(
     lines.push(`**实际爆发日期: ${val.actualEruptionDate}**`);
     lines.push('');
 
-    lines.push('### 检测到的信号');
+    lines.push('### 检测到的信号（6 因子：stars/forks/issues/PRs/contributors/releases）');
     lines.push('');
     lines.push('| 层级 | 仓库 | 信号日期 | 领先月数 |');
     lines.push('|------|------|---------|---------|');
     for (const r of val.detectedSignals) {
       const layerLabel = { infrastructure: '基础设施', tooling: '工具', application: '应用' }[r.layer];
       lines.push(`| ${layerLabel} | ${r.repo} | ${r.signalDate ?? '-'} | ${r.leadMonths?.toFixed(1) ?? '-'} |`);
+    }
+    lines.push('');
+
+    // Download signals
+    if (val.downloadSignals.length > 0) {
+      lines.push('### 下载量信号（npm/PyPI）');
+      lines.push('');
+      lines.push('| 仓库 | 包名 | 注册表 | 周下载量 | 趋势 |');
+      lines.push('|------|------|--------|---------|------|');
+      for (const d of val.downloadSignals) {
+        const trendLabel = { accelerating: '🔺 加速', growing: '📈 增长', stable: '➡️ 稳定', unknown: '?' }[d.trend];
+        lines.push(`| ${d.repo} | ${d.packageName} | ${d.registry} | ${d.weeklyDownloads.toLocaleString()} | ${trendLabel} |`);
+      }
+      lines.push('');
     }
     lines.push('');
 

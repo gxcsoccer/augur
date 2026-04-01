@@ -15,17 +15,17 @@
 | minBaseline | 3 | 最低基线 |
 | compressionFactor | 0.6 | 压缩因子 |
 
-**综合评分: 0.815**
+**综合评分: 0.826**
 
 ### Top 5 参数组合
 
 | 排名 | threshold | window | baseline | compression | 评分 |
 |------|-----------|--------|----------|-------------|------|
-| 1 | 3 | 4 | 3 | 0.6 | 0.815 |
-| 2 | 3 | 4 | 3 | 0.7 | 0.815 |
-| 3 | 3 | 4 | 3 | 0.75 | 0.815 |
-| 4 | 3 | 4 | 3 | 0.8 | 0.815 |
-| 5 | 3 | 4 | 3 | 0.85 | 0.815 |
+| 1 | 3 | 4 | 3 | 0.6 | 0.826 |
+| 2 | 3 | 4 | 3 | 0.7 | 0.826 |
+| 3 | 3 | 4 | 3 | 0.75 | 0.826 |
+| 4 | 3 | 4 | 3 | 0.8 | 0.826 |
+| 5 | 3 | 4 | 3 | 0.85 | 0.826 |
 
 ### 训练集信号检测详情
 
@@ -61,7 +61,7 @@
 |------|------|---------|---------|
 | 基础设施 | microsoft/autogen | 2023-09-24 | 5.3 |
 | 基础设施 | openai/openai-python | 2022-12-04 | 15.1 |
-| 基础设施 | run-llama/llama_index | 2024-02-11 | 0.6 |
+| 基础设施 | run-llama/llama_index | 2023-11-05 | 3.9 |
 | 工具 | langchain-ai/langchain | 2023-09-10 | 5.8 |
 | 工具 | Significant-Gravitas/AutoGPT | 2024-01-07 | 1.8 |
 | 工具 | joaomdmoura/crewAI | - | - |
@@ -75,28 +75,40 @@
 **测试集: 专业 Agent / OpenClaw 爆发**
 **实际爆发日期: 2025-06-01**
 
-### 检测到的信号
+### 检测到的信号（6 因子：stars/forks/issues/PRs/contributors/releases）
 
 | 层级 | 仓库 | 信号日期 | 领先月数 |
 |------|------|---------|---------|
-| 基础设施 | modelcontextprotocol/specification | - | - |
+| 基础设施 | modelcontextprotocol/modelcontextprotocol | - | - |
 | 基础设施 | modelcontextprotocol/servers | - | - |
+| 基础设施 | modelcontextprotocol/python-sdk | 2025-01-05 | 1.8 |
 | 基础设施 | anthropics/anthropic-sdk-python | - | - |
 | 工具 | anthropics/claude-code | - | - |
 | 工具 | browser-use/browser-use | 2025-01-19 | 1.4 |
 | 工具 | langchain-ai/langgraph | 2024-04-21 | 10.5 |
+| 应用 | openclaw/openclaw | - | - |
 | 应用 | OpenManus/OpenManus | - | - |
 | 应用 | all-hands-ai/OpenHands | - | - |
+
+### 下载量信号（npm/PyPI）
+
+| 仓库 | 包名 | 注册表 | 周下载量 | 趋势 |
+|------|------|--------|---------|------|
+| modelcontextprotocol/python-sdk | mcp | pypi | 27,114,398 | 📈 增长 |
+| anthropics/anthropic-sdk-python | anthropic | pypi | 14,634,363 | 📈 增长 |
+| browser-use/browser-use | browser-use | pypi | 982,728 | 🔺 加速 |
+| langchain-ai/langgraph | langgraph | pypi | 8,804,247 | 📈 增长 |
+
 
 ### 预测结果
 
 | 指标 | 值 |
 |------|-----|
-| 预测爆发日期 | **2025-02-19** |
+| 预测爆发日期 | **2025-04-05** |
 | 实际爆发日期 | 2025-06-01 |
-| 预测误差 | 3.4 个月 |
-| 站在预测时的剩余时间 | -0.3 个月 |
+| 预测误差 | 1.9 个月 |
+| 站在预测时的剩余时间 | 1.2 个月 |
 
 ### 结论
 
-模型预测误差 3.4 个月，**方向正确但精度有待提升**。
+模型预测误差 1.9 个月，**预测有效**。
