@@ -15,7 +15,9 @@
  * - 有 ClickHouse GH Archive 历史数据可查
  */
 
-import { fetchWeeklyMetrics as fetchMetricsFromCH, computeAcceleration, type WeeklyMetrics } from '../util/clickhouse.js';
+import { fetchWeeklyMetrics as fetchMetricsFromCH, type WeeklyMetrics } from '../util/clickhouse.js';
+import { computeAcceleration } from '../util/math.js';
+import { computeFactors, scoreTrendingCandidate } from './trending-predictor.js';
 
 // ─── 回测目标 ──────────────────────────────────────────────────
 
@@ -211,50 +213,17 @@ async function backtestCase(testCase: TrendingBacktestCase): Promise<BacktestCas
         continue;
       }
 
-      let starVelocity = 0, forkAcceleration = 0, issueAcceleration = 0, contributorGrowth = 0;
-      let crossFactorCount = 0;
-
-      if (history.length >= 3) {
-        // Standard acceleration-based detection
-        const recentCount = Math.min(2, Math.floor(history.length / 2));
-        const recent = history.slice(-recentCount);
-        const baseline = history.slice(0, -recentCount);
-
-        starVelocity = computeAcceleration(
-          recent.map((w) => w.new_stars), baseline.map((w) => w.new_stars));
-        forkAcceleration = computeAcceleration(
-          recent.map((w) => w.new_forks), baseline.map((w) => w.new_forks));
-        issueAcceleration = computeAcceleration(
-          recent.map((w) => w.new_issues), baseline.map((w) => w.new_issues));
-        contributorGrowth = computeAcceleration(
-          recent.map((w) => w.unique_pushers), baseline.map((w) => w.unique_pushers));
-
-        const ACCEL_THRESHOLD = 1.5;
-        if (starVelocity >= ACCEL_THRESHOLD) crossFactorCount++;
-        if (forkAcceleration >= ACCEL_THRESHOLD) crossFactorCount++;
-        if (issueAcceleration >= ACCEL_THRESHOLD) crossFactorCount++;
-        if (contributorGrowth >= ACCEL_THRESHOLD) crossFactorCount++;
-      }
+      // Use production scoring model (same weights as predict --trending)
+      const factors = computeFactors(history, 0); // 0 for social score (unavailable in backtest)
+      const accelerationScore = scoreTrendingCandidate(factors);
 
       // Emergence score — handles cold-start projects with no baseline
       const emergenceScore = computeEmergenceScore(history);
 
-      // Combined score: max of acceleration-based and emergence-based
-      const starScore = Math.min(starVelocity / 5, 1);
-      const forkScore = Math.min(forkAcceleration / 4, 1);
-      const issueScore = Math.min(issueAcceleration / 3, 1);
-      const contribScore = Math.min(contributorGrowth / 3, 1);
-      const crossScore = Math.min(crossFactorCount / 4, 1);
-
-      const accelerationScore =
-        starScore * 0.30 +
-        forkScore * 0.20 +
-        issueScore * 0.10 +
-        contribScore * 0.10 +
-        crossScore * 0.30;
-
       // Take the best of acceleration or emergence signal
       const predictionScore = Math.max(accelerationScore, emergenceScore);
+
+      const { starVelocity, forkAcceleration, issueAcceleration, contributorGrowth, crossFactorCount } = factors;
 
       const DETECTION_THRESHOLD = 0.15;
 

@@ -111,9 +111,19 @@ async function searchReddit(query: string, limit: number = 30): Promise<RedditPo
 /**
  * 从 Reddit 帖子 URL 中提取 GitHub repo ID
  */
+const GITHUB_RESERVED_PATHS = new Set([
+  'settings', 'orgs', 'organizations', 'features', 'marketplace',
+  'explore', 'topics', 'trending', 'collections', 'sponsors',
+  'login', 'logout', 'signup', 'join', 'new', 'notifications',
+  'issues', 'pulls', 'codespaces', 'apps', 'about', 'pricing',
+  'security', 'customer-stories', 'readme', 'enterprise',
+]);
+
 export function extractGitHubRepo(url: string): string | null {
   const match = url.match(/github\.com\/([^/]+\/[^/]+)/);
   if (!match) return null;
+  const owner = match[1].split('/')[0].toLowerCase();
+  if (GITHUB_RESERVED_PATHS.has(owner)) return null;
   return match[1].replace(/\.git$/, '').split('/').slice(0, 2).join('/');
 }
 

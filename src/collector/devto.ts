@@ -69,8 +69,9 @@ export async function fetchOpenSourceArticles(daysBack: number = 7): Promise<Dev
   const tags = ['opensource', 'github', 'ai', 'machinelearning', 'webdev'];
   const all = new Map<number, DevToArticle>();
 
-  for (const tag of tags) {
-    const articles = await fetchArticles(tag, daysBack);
+  // DEV.to rate limit is 30/30s, 5 parallel is safe
+  const results = await Promise.all(tags.map((tag) => fetchArticles(tag, daysBack)));
+  for (const articles of results) {
     for (const a of articles) {
       if (!all.has(a.id) || a.reactionsCount > (all.get(a.id)!.reactionsCount)) {
         all.set(a.id, a);

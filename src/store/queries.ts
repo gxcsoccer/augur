@@ -136,24 +136,24 @@ export function upsertSocialBuzz(db: Database.Database, entry: SocialBuzzEntry):
   `).run(entry);
 }
 
-export function getSocialBuzzForRepo(db: Database.Database, repoId: string, daysBack: number = 30): SocialBuzzEntry[] {
+export function getSocialBuzzForRepo(db: Database.Database, repoId: string, daysBack: number = 30, referenceDate?: string): SocialBuzzEntry[] {
   return db.prepare(`
     SELECT * FROM social_buzz
     WHERE github_repo = ?
-      AND captured_at >= date('now', '-' || ? || ' days')
+      AND captured_at >= date(?, '-' || ? || ' days')
     ORDER BY score DESC
-  `).all(repoId, daysBack) as SocialBuzzEntry[];
+  `).all(repoId, referenceDate ?? 'now', daysBack) as SocialBuzzEntry[];
 }
 
-export function getSocialBuzzSummary(db: Database.Database, daysBack: number = 7): { github_repo: string; total_score: number; post_count: number }[] {
+export function getSocialBuzzSummary(db: Database.Database, daysBack: number = 7, referenceDate?: string): { github_repo: string; total_score: number; post_count: number }[] {
   return db.prepare(`
     SELECT github_repo, SUM(score) as total_score, COUNT(*) as post_count
     FROM social_buzz
     WHERE github_repo IS NOT NULL
-      AND captured_at >= date('now', '-' || ? || ' days')
+      AND captured_at >= date(?, '-' || ? || ' days')
     GROUP BY github_repo
     ORDER BY total_score DESC
-  `).all(daysBack) as { github_repo: string; total_score: number; post_count: number }[];
+  `).all(referenceDate ?? 'now', daysBack) as { github_repo: string; total_score: number; post_count: number }[];
 }
 
 // ─── Trending Predictions ────────────────────────────────────────
@@ -178,6 +178,10 @@ export function upsertTrendingPrediction(db: Database.Database, pred: TrendingPr
     ON CONFLICT(project_id, predicted_at) DO UPDATE SET
       prediction_score = excluded.prediction_score,
       factors = excluded.factors,
+      star_velocity = excluded.star_velocity,
+      social_buzz_score = excluded.social_buzz_score,
+      fork_acceleration = excluded.fork_acceleration,
+      issue_acceleration = excluded.issue_acceleration,
       actually_trended = excluded.actually_trended,
       trended_at = excluded.trended_at
   `).run(pred);

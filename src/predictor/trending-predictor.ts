@@ -23,8 +23,9 @@
  */
 
 import type Database from 'better-sqlite3';
-import { queryClickHouse, escapeSQL, computeAcceleration, type WeeklyMetrics } from '../util/clickhouse.js';
-import { fetchRepoDetails } from '../collector/github-api.js';
+import { queryClickHouse, escapeSQL, validateDate, type WeeklyMetrics } from '../util/clickhouse.js';
+import { computeAcceleration } from '../util/math.js';
+import { fetchRepoDetails, getRateLimitInfo } from '../collector/github-api.js';
 
 // ─── 类型定义 ──────────────────────────────────────────────────
 
@@ -77,9 +78,9 @@ export async function discoverRisingProjects(
   minRecentStars: number = 50,
   referenceDate?: string,
 ): Promise<{ repo: string; lifetimeStars: number; recentStars: number }[]> {
-  const to = referenceDate ?? new Date().toISOString().slice(0, 10);
-  const from = new Date(new Date(to).getTime() - lookbackWeeks * 7 * 86400000).toISOString().slice(0, 10);
-  const recentFrom = new Date(new Date(to).getTime() - 14 * 86400000).toISOString().slice(0, 10);
+  const to = validateDate(referenceDate ?? new Date().toISOString().slice(0, 10));
+  const from = validateDate(new Date(new Date(to).getTime() - lookbackWeeks * 7 * 86400000).toISOString().slice(0, 10));
+  const recentFrom = validateDate(new Date(new Date(to).getTime() - 14 * 86400000).toISOString().slice(0, 10));
 
   // Step 1: 查近期活跃度突增的候选
   const sql = `
@@ -102,6 +103,7 @@ export async function discoverRisingProjects(
         count() AS lifetime_stars
       FROM github_events
       WHERE event_type = 'WatchEvent'
+        AND created_at >= '2015-01-01'
         AND repo_name IN (SELECT repo_name FROM candidates)
       GROUP BY repo_name
     )
@@ -131,7 +133,7 @@ export async function discoverRisingProjects(
 
 // ─── 因子计算 ──────────────────────────────────────────────────
 
-function computeFactors(
+export function computeFactors(
   history: WeeklyMetrics[],
   socialScore: number = 0,
 ): TrendingFactors {
@@ -266,7 +268,7 @@ const TRENDING_WEIGHTS = {
   crossFactor: 0.15,
 };
 
-function scoreTrendingCandidate(factors: TrendingFactors): number {
+export function scoreTrendingCandidate(factors: TrendingFactors): number {
   const starScore = Math.min(factors.starVelocity / 5, 1);
   const forkScore = Math.min(factors.forkAcceleration / 4, 1);
   const issueScore = Math.min(factors.issueAcceleration / 3, 1);
@@ -323,8 +325,8 @@ async function batchFetchMetrics(
       countIf(event_type = 'ReleaseEvent') AS new_releases
     FROM github_events
     WHERE repo_name IN (${repoList})
-      AND created_at >= '${fromDate}'
-      AND created_at <= '${toDate}'
+      AND created_at >= '${validateDate(fromDate)}'
+      AND created_at <= '${validateDate(toDate)}'
     GROUP BY repo_name, week
     ORDER BY repo_name, week ASC
     FORMAT JSONEachRow
@@ -379,7 +381,9 @@ export async function predictTrendingProjects(
         GROUP BY github_repo
       `).all(to) as { github_repo: string; total_score: number }[];
       for (const b of buzz) socialScores.set(b.github_repo, b.total_score);
-    } catch {}
+    } catch (err) {
+      console.warn('[TrendPredict] 社交热度查询失败:', (err as Error).message);
+    }
   }
   if (db) {
     try {
@@ -393,7 +397,9 @@ export async function predictTrendingProjects(
           socialScores.set(repo, (socialScores.get(repo) ?? 0) + 30);
         }
       }
-    } catch {}
+    } catch (err) {
+      console.warn('[TrendPredict] HN 帖子查询失败:', (err as Error).message);
+    }
   }
 
   // Batch fetch weekly metrics
@@ -439,19 +445,23 @@ export async function predictTrendingProjects(
   if (!referenceDate) { // only for real-time predictions, not backtests
     console.log(`[TrendPredict] 通过 GitHub API 校准 ${topCandidates.length} 个候选的真实 star 数...`);
     for (const c of topCandidates) {
+      // Check rate limit before each request
+      const rateInfo = getRateLimitInfo();
+      if (rateInfo.remaining < 100) {
+        console.warn(`[TrendPredict] GitHub API rate limit low (${rateInfo.remaining} remaining), 停止校准`);
+        break;
+      }
       try {
         const details = await fetchRepoDetails(c.repo);
         if (details) {
           c.lifetimeStars = details.stars;
-          // Recalculate KPI with real star count
           const history = allMetrics.get(c.repo);
           if (history) {
-            const newKpi = forecastKPI(history, details.stars, c.factors);
-            c.kpi = newKpi;
+            c.kpi = forecastKPI(history, details.stars, c.factors);
           }
         }
-      } catch {
-        // Keep ClickHouse estimate if API fails
+      } catch (err) {
+        console.warn(`[TrendPredict] 校准 ${c.repo} 失败: ${(err as Error).message}`);
       }
     }
 
