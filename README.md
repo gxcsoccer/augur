@@ -122,7 +122,7 @@ src/
 
 ## Signal Detection
 
-**10 factors** from ClickHouse GH Archive, social media, and package registries:
+**8 core factors** from ClickHouse GH Archive + **2 social sources** for viral signal detection:
 
 | Factor | Source | Signal |
 |--------|--------|--------|

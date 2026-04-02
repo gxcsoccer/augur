@@ -1078,7 +1078,7 @@ program
     const isWeekly = opts.weekly || !opts.daily;
 
     // Step 1: Collect (always)
-    console.log('═══ Step 1/4: 采集数据 ═══');
+    console.log('═══ Step 1/8: 采集数据 ═══');
     const trending = await fetchTrending('daily');
     console.log(`[Collect] ${trending.length} 个 trending 项目`);
 
@@ -1134,6 +1134,43 @@ program
     }
     console.log(`[Collect] ${hnPosts.length} 个 HN 帖子采集完成`);
 
+    // Social media (DEV.to + Reddit)
+    console.log('[Collect] 采集社交媒体数据...');
+    try {
+      const { upsertSocialBuzz } = await import('./store/queries.js');
+      const { fetchAllDevToPosts, extractGitHubRepoFromArticle } = await import('./collector/devto.js');
+      const articles = await fetchAllDevToPosts(7);
+      for (const a of articles) {
+        const ghRepo = extractGitHubRepoFromArticle(a);
+        upsertSocialBuzz(db, {
+          id: `devto-${a.id}`, source: 'devto', title: a.title, url: a.url,
+          score: a.reactionsCount, comments: a.commentsCount, subreddit: null,
+          tags: JSON.stringify(a.tags), github_repo: ghRepo, captured_at: today,
+        });
+        if (ghRepo) upsertProject(db, { id: ghRepo, language: null, topics: null, description: a.title, created_at: null, first_seen_at: today });
+      }
+      console.log(`[Collect] DEV.to: ${articles.length} 篇文章`);
+    } catch (err) {
+      console.warn(`[Collect] DEV.to 采集失败: ${(err as Error).message}`);
+    }
+    try {
+      const { upsertSocialBuzz } = await import('./store/queries.js');
+      const { fetchAllRedditPosts, extractGitHubRepo: extractRedditRepo } = await import('./collector/reddit.js');
+      const posts = await fetchAllRedditPosts();
+      for (const p of posts) {
+        const ghRepo = extractRedditRepo(p.url);
+        upsertSocialBuzz(db, {
+          id: `reddit-${p.id}`, source: 'reddit', title: p.title, url: p.url,
+          score: p.score, comments: p.comments, subreddit: p.subreddit,
+          tags: null, github_repo: ghRepo, captured_at: today,
+        });
+        if (ghRepo) upsertProject(db, { id: ghRepo, language: null, topics: null, description: p.title, created_at: null, first_seen_at: today });
+      }
+      console.log(`[Collect] Reddit: ${posts.length} 帖子`);
+    } catch (err) {
+      console.warn(`[Collect] Reddit 采集失败: ${(err as Error).message}`);
+    }
+
     if (opts.daily && !opts.weekly) {
       console.log('\n═══ 每日采集完成 ═══');
       db.close();
@@ -1141,7 +1178,7 @@ program
     }
 
     // Step 2: Analyze (weekly)
-    console.log('\n═══ Step 2/4: 信号分析 ═══');
+    console.log('\n═══ Step 2/8: 信号分析 ═══');
     const entries = collectReportData(db, today);
     const projects = entries.map(e => {
       const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(e.id) as any;
@@ -1173,7 +1210,7 @@ program
     console.log(`[Analyze] 信号 ${classifications.length} | 共现 ${coMatrix.length}`);
 
     // Step 3: Research top signals
-    console.log('\n═══ Step 3/4: 深度调研 ═══');
+    console.log('\n═══ Step 3/8: 深度调研 ═══');
     const topSignals = db.prepare(`
       SELECT project_id, layer, domains, opportunity_score
       FROM signals WHERE week = ? ORDER BY opportunity_score DESC LIMIT 3
@@ -1190,7 +1227,7 @@ program
     }
 
     // Step 4: 浪潮预测 + 进化
-    console.log('\n═══ Step 4/7: 浪潮预测 ═══');
+    console.log('\n═══ Step 4/8: 浪潮预测 ═══');
     const { CANDIDATE_WAVES, scanWaves } = await import('./predictor/wave-scanner.js');
     const { recordPredictions, checkPendingPredictions, verifyPrediction: verifyPred, evolveParams, expireOldPredictions, getLedgerStats } = await import('./predictor/online-learner.js');
 
@@ -1237,7 +1274,7 @@ program
     }
 
     // Step 5: 自动验证
-    console.log('\n═══ Step 5/7: 自动验证 ═══');
+    console.log('\n═══ Step 5/8: 自动验证 ═══');
     const pendingForReview = checkPendingPredictions();
     if (pendingForReview.length > 0) {
       try {
@@ -1259,14 +1296,43 @@ program
     expireOldPredictions();
 
     // Step 6: 参数进化
-    console.log('\n═══ Step 6/7: 参数进化 ═══');
+    console.log('\n═══ Step 6/8: 参数进化 ═══');
     const evolution = evolveParams();
     if (evolution.changed) {
       for (const adj of evolution.adjustments) console.log(`  ${adj}`);
     }
 
-    // Step 7: 合并生成完整周报
-    console.log('\n═══ Step 7/7: 生成完整周报 ═══');
+    // Step 7: 趋势项目预测
+    console.log('\n═══ Step 7/8: 趋势项目预测 ═══');
+    let trendingCandidates: Awaited<ReturnType<typeof import('./predictor/trending-predictor.js').predictTrendingProjects>> = [];
+    try {
+      const { predictTrendingProjects, filterAlreadyTrending, formatTrendingPredictionReport } = await import('./predictor/trending-predictor.js');
+      const { upsertTrendingPrediction } = await import('./store/queries.js');
+
+      trendingCandidates = await predictTrendingProjects(db, 5000, 20);
+      trendingCandidates = filterAlreadyTrending(trendingCandidates, db);
+      console.log(`[Trending] ${trendingCandidates.length} 个候选项目`);
+
+      // Save predictions
+      for (const c of trendingCandidates) {
+        upsertTrendingPrediction(db, {
+          project_id: c.repo, predicted_at: today, prediction_score: c.predictionScore,
+          factors: JSON.stringify(c.factors), star_velocity: c.factors.starVelocity,
+          social_buzz_score: c.factors.socialBuzzScore, fork_acceleration: c.factors.forkAcceleration,
+          issue_acceleration: c.factors.issueAcceleration, actually_trended: 0, trended_at: null,
+        });
+      }
+
+      // Save standalone trending report
+      const trendingReport = formatTrendingPredictionReport(trendingCandidates, today);
+      fs.writeFileSync(path.join(opts.outputDir, `${weekLabel}-trending.md`), trendingReport, 'utf-8');
+      console.log(`[Trending] 报告已写入 ${opts.outputDir}/${weekLabel}-trending.md`);
+    } catch (e) {
+      console.warn(`[Trending] 趋势预测跳过: ${(e as Error).message}`);
+    }
+
+    // Step 8: 合并生成完整周报
+    console.log('\n═══ Step 8/8: 生成完整周报 ═══');
     const weekNum = Math.ceil((new Date(today).getTime() - new Date(new Date(today).getFullYear(), 0, 1).getTime()) / 604800000);
     const weekLabel = `${new Date(today).getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
 
@@ -1292,6 +1358,21 @@ program
         const strength = { strong: '🔴 强', moderate: '🟡 中', weak: '⚪ 弱', none: '- 无' }[p.signalStrength];
         const signals = p.validation.detectedSignals.filter(s => s.signalDate).map(s => s.repo.split('/')[1]).join(', ');
         sections.push(`| ${p.wave.name} | ${strength} | ${p.validation.predictedEruptionDate ?? '-'} | ${signals || '-'} |`);
+      }
+      sections.push('');
+    }
+
+    // Section 2.5: 趋势项目预测
+    if (trendingCandidates.length > 0) {
+      sections.push('## 趋势项目预测（即将爆火）');
+      sections.push('');
+      sections.push('| # | 项目 | 当前★ | 4周+★ | 4周后总★ | 社区活跃 | 势头 |');
+      sections.push('|---|------|-------|------|---------|---------|------|');
+      for (let i = 0; i < Math.min(10, trendingCandidates.length); i++) {
+        const c = trendingCandidates[i];
+        const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+        const momentum = { accelerating: '🚀', steady: '➡️', decelerating: '📉' }[c.kpi.growthMomentum];
+        sections.push(`| ${i + 1} | **${c.repo}** | ${fmt(c.lifetimeStars)} | +${fmt(c.kpi.predictedStars4w)} | ${fmt(c.kpi.estimatedTotalStars4w)} | ${c.kpi.communityScore}/100 | ${momentum} |`);
       }
       sections.push('');
     }

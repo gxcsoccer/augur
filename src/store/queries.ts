@@ -131,8 +131,11 @@ export interface SocialBuzzEntry {
 
 export function upsertSocialBuzz(db: Database.Database, entry: SocialBuzzEntry): void {
   db.prepare(`
-    INSERT OR REPLACE INTO social_buzz (id, source, title, url, score, comments, subreddit, tags, github_repo, captured_at)
+    INSERT INTO social_buzz (id, source, title, url, score, comments, subreddit, tags, github_repo, captured_at)
     VALUES (@id, @source, @title, @url, @score, @comments, @subreddit, @tags, @github_repo, @captured_at)
+    ON CONFLICT(id) DO UPDATE SET
+      score = MAX(social_buzz.score, excluded.score),
+      comments = MAX(social_buzz.comments, excluded.comments)
   `).run(entry);
 }
 

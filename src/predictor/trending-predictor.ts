@@ -370,6 +370,11 @@ export async function predictTrendingProjects(
   const discovered = await discoverRisingProjects(lookbackWeeks, maxStars, 30, to);
   console.log(`[TrendPredict] 发现 ${discovered.length} 个候选项目（已按全量 star 过滤）`);
 
+  if (discovered.length === 0) {
+    console.warn('[TrendPredict] 无候选项目（ClickHouse 查询可能超时或无匹配数据）');
+    return [];
+  }
+
   // Social buzz scores
   const socialScores = new Map<string, number>();
   if (db) {
@@ -442,7 +447,7 @@ export async function predictTrendingProjects(
 
   // Enrich with real star counts from GitHub API
   // (ClickHouse GH Archive undercounts stars significantly)
-  if (!referenceDate) { // only for real-time predictions, not backtests
+  if (!referenceDate && process.env.GITHUB_TOKEN) {
     console.log(`[TrendPredict] 通过 GitHub API 校准 ${topCandidates.length} 个候选的真实 star 数...`);
     for (const c of topCandidates) {
       // Check rate limit before each request
@@ -471,6 +476,8 @@ export async function predictTrendingProjects(
       console.log(`[TrendPredict] GitHub API 校准后过滤掉 ${topCandidates.length - filtered.length} 个已火项目`);
     }
     return filtered.slice(0, topN);
+  } else if (!referenceDate && !process.env.GITHUB_TOKEN) {
+    console.warn('[TrendPredict] 未设置 GITHUB_TOKEN，跳过 star 校准（ClickHouse 数据可能低估实际 star 数）');
   }
 
   return topCandidates.slice(0, topN);

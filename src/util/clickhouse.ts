@@ -26,8 +26,9 @@ export async function queryClickHouse(sql: string): Promise<string> {
       throw new Error(`ClickHouse: ${res.status} — ${text.slice(0, 200)}`);
     }
     return res.text();
-  } catch {
-    // Fallback to curl
+  } catch (fetchErr) {
+    // Fallback to curl (fetch often fails in restricted network environments)
+    console.debug?.(`[ClickHouse] fetch failed (${(fetchErr as Error).message?.slice(0, 80)}), falling back to curl`);
     return queryClickHouseCurl(sql);
   }
 }
