@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import { getDb, initSchema } from './store/schema.js';
 import { upsertProject, upsertSnapshot, upsertReadme, type Project, type Snapshot } from './store/queries.js';
+import { todayUTC } from './util/math.js';
 import { fetchTrending } from './collector/github-trending.js';
 import { fetchRepoDetails, fetchReadme, fetchStarHistory, starEventsToWeeklySnapshots, getRateLimitInfo } from './collector/github-api.js';
 import { fetchAllHNPosts, extractGitHubRepo } from './collector/hackernews.js';
@@ -37,7 +38,7 @@ program
   .action(async (opts: { period: string; details: boolean; readme: boolean; hn: boolean; social?: boolean; backfill?: boolean }) => {
     const db = getDb();
     initSchema(db);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayUTC();
     const period = opts.period as 'daily' | 'weekly' | 'monthly';
 
     // Step 1: Fetch trending
@@ -1074,7 +1075,7 @@ program
     const path = await import('node:path');
     const db = getDb();
     initSchema(db);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayUTC();
     const isWeekly = opts.weekly || !opts.daily;
 
     // Step 1: Collect (always)
@@ -1134,37 +1135,37 @@ program
     }
     console.log(`[Collect] ${hnPosts.length} 个 HN 帖子采集完成`);
 
-    // Social media (DEV.to + Reddit)
+    // Social media (DEV.to + Reddit) — batch insert for performance
     console.log('[Collect] 采集社交媒体数据...');
     try {
-      const { upsertSocialBuzz } = await import('./store/queries.js');
+      const { batchUpsertSocialBuzz } = await import('./store/queries.js');
       const { fetchAllDevToPosts, extractGitHubRepoFromArticle } = await import('./collector/devto.js');
       const articles = await fetchAllDevToPosts(7);
-      for (const a of articles) {
-        const ghRepo = extractGitHubRepoFromArticle(a);
-        upsertSocialBuzz(db, {
-          id: `devto-${a.id}`, source: 'devto', title: a.title, url: a.url,
-          score: a.reactionsCount, comments: a.commentsCount, subreddit: null,
-          tags: JSON.stringify(a.tags), github_repo: ghRepo, captured_at: today,
-        });
-        if (ghRepo) upsertProject(db, { id: ghRepo, language: null, topics: null, description: a.title, created_at: null, first_seen_at: today });
+      const devtoEntries = articles.map(a => ({
+        id: `devto-${a.id}`, source: 'devto' as const, title: a.title, url: a.url,
+        score: a.reactionsCount, comments: a.commentsCount, subreddit: null,
+        tags: JSON.stringify(a.tags), github_repo: extractGitHubRepoFromArticle(a), captured_at: today,
+      }));
+      batchUpsertSocialBuzz(db, devtoEntries);
+      for (const e of devtoEntries) {
+        if (e.github_repo) upsertProject(db, { id: e.github_repo, language: null, topics: null, description: e.title, created_at: null, first_seen_at: today });
       }
       console.log(`[Collect] DEV.to: ${articles.length} 篇文章`);
     } catch (err) {
       console.warn(`[Collect] DEV.to 采集失败: ${(err as Error).message}`);
     }
     try {
-      const { upsertSocialBuzz } = await import('./store/queries.js');
+      const { batchUpsertSocialBuzz } = await import('./store/queries.js');
       const { fetchAllRedditPosts, extractGitHubRepo: extractRedditRepo } = await import('./collector/reddit.js');
       const posts = await fetchAllRedditPosts();
-      for (const p of posts) {
-        const ghRepo = extractRedditRepo(p.url);
-        upsertSocialBuzz(db, {
-          id: `reddit-${p.id}`, source: 'reddit', title: p.title, url: p.url,
-          score: p.score, comments: p.comments, subreddit: p.subreddit,
-          tags: null, github_repo: ghRepo, captured_at: today,
-        });
-        if (ghRepo) upsertProject(db, { id: ghRepo, language: null, topics: null, description: p.title, created_at: null, first_seen_at: today });
+      const redditEntries = posts.map(p => ({
+        id: `reddit-${p.id}`, source: 'reddit' as const, title: p.title, url: p.url,
+        score: p.score, comments: p.comments, subreddit: p.subreddit,
+        tags: null, github_repo: extractRedditRepo(p.url), captured_at: today,
+      }));
+      batchUpsertSocialBuzz(db, redditEntries);
+      for (const e of redditEntries) {
+        if (e.github_repo) upsertProject(db, { id: e.github_repo, language: null, topics: null, description: e.title, created_at: null, first_seen_at: today });
       }
       console.log(`[Collect] Reddit: ${posts.length} 帖子`);
     } catch (err) {

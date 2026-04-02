@@ -24,7 +24,7 @@
 
 import type Database from 'better-sqlite3';
 import { queryClickHouse, escapeSQL, validateDate, type WeeklyMetrics } from '../util/clickhouse.js';
-import { computeAcceleration } from '../util/math.js';
+import { computeAcceleration, normalizeRepoId } from '../util/math.js';
 import { fetchRepoDetails, getRateLimitInfo } from '../collector/github-api.js';
 
 // ─── 类型定义 ──────────────────────────────────────────────────
@@ -127,7 +127,7 @@ export async function discoverRisingProjects(
   return lines.map((line) => {
     const row = JSON.parse(line);
     return {
-      repo: row.repo_name as string,
+      repo: normalizeRepoId(row.repo_name as string),
       lifetimeStars: Number(row.lifetime_stars),
       recentStars: Number(row.recent_stars),
     };
@@ -364,7 +364,7 @@ async function batchFetchMetrics(
   const result = new Map<string, WeeklyMetrics[]>();
   for (const line of lines) {
     const row = JSON.parse(line);
-    const repo = row.repo_name as string;
+    const repo = normalizeRepoId(row.repo_name as string);
     if (!result.has(repo)) result.set(repo, []);
     result.get(repo)!.push({
       week: row.week.slice(0, 10),
@@ -411,7 +411,7 @@ export async function predictTrendingProjects(
         WHERE github_repo IS NOT NULL AND captured_at >= date(?, '-14 days')
         GROUP BY github_repo
       `).all(to) as { github_repo: string; total_score: number }[];
-      for (const b of buzz) socialScores.set(b.github_repo, b.total_score);
+      for (const b of buzz) socialScores.set(normalizeRepoId(b.github_repo), b.total_score);
     } catch (err) {
       console.warn('[TrendPredict] 社交热度查询失败:', (err as Error).message);
     }
@@ -424,7 +424,7 @@ export async function predictTrendingProjects(
       for (const p of hnPosts) {
         const match = p.url?.match(/github\.com\/([^/]+\/[^/]+)/);
         if (match) {
-          const repo = match[1].replace(/\.git$/, '');
+          const repo = normalizeRepoId(match[1].replace(/\.git$/, ''));
           socialScores.set(repo, (socialScores.get(repo) ?? 0) + 30);
         }
       }
@@ -520,7 +520,7 @@ export function filterAlreadyTrending(
     SELECT DISTINCT project_id FROM snapshots
     WHERE trending_rank IS NOT NULL AND trending_rank <= 25
   `).all() as { project_id: string }[];
-  for (const r of rows) trendedIds.add(r.project_id);
+  for (const r of rows) trendedIds.add(normalizeRepoId(r.project_id));
   return candidates.filter((c) => !trendedIds.has(c.repo));
 }
 
@@ -609,8 +609,13 @@ export function formatTrendingPredictionReport(
   lines.push('');
   lines.push('### KPI 预测方法');
   lines.push('- 基于最近 2 周周均值外推，结合加速/减速趋势调整');
-  lines.push('- 加速期: 周环比 +15%，减速期: 周环比 -15%，稳定期: 持平');
+  lines.push('- 加速期: 周环比 +5%，减速期: 周环比 -5%，稳定期: 持平');
   lines.push('- 社区活跃度: Star(30) + Fork(20) + Issue(20) + PR(15) + 多因子(15) = 100');
+  lines.push('- 数据不足 (<4 周) 的项目会被施加置信度折扣');
+  lines.push('');
+  lines.push('### 免责声明');
+  lines.push('本预测基于公开的 GitHub 活动数据自动生成，仅供参考。预测结果不构成任何投资或技术选型建议。');
+  lines.push('项目被列入预测列表仅表示其近期活跃度指标符合模型的"加速"信号特征，不代表对项目质量的评价。');
 
   return lines.join('\n');
 }

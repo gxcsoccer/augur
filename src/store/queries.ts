@@ -1,4 +1,5 @@
 import type Database from 'better-sqlite3';
+import { normalizeRepoId } from '../util/math.js';
 
 export interface Project {
   id: string;
@@ -28,6 +29,7 @@ export interface Readme {
 }
 
 export function upsertProject(db: Database.Database, project: Project): void {
+  project = { ...project, id: normalizeRepoId(project.id) };
   db.prepare(`
     INSERT INTO projects (id, language, topics, description, created_at, first_seen_at)
     VALUES (@id, @language, @topics, @description, @created_at, @first_seen_at)
@@ -40,6 +42,7 @@ export function upsertProject(db: Database.Database, project: Project): void {
 }
 
 export function upsertSnapshot(db: Database.Database, snapshot: Snapshot): void {
+  snapshot = { ...snapshot, project_id: normalizeRepoId(snapshot.project_id) };
   db.prepare(`
     INSERT INTO snapshots (project_id, captured_at, stars, forks, open_issues, trending_rank, trending_period, source)
     VALUES (@project_id, @captured_at, @stars, @forks, @open_issues, @trending_rank, @trending_period, @source)
@@ -54,6 +57,7 @@ export function upsertSnapshot(db: Database.Database, snapshot: Snapshot): void 
 }
 
 export function upsertReadme(db: Database.Database, readme: Readme): void {
+  readme = { ...readme, project_id: normalizeRepoId(readme.project_id) };
   db.prepare(`
     INSERT INTO readmes (project_id, content, keywords, updated_at)
     VALUES (@project_id, @content, @keywords, @updated_at)
@@ -130,6 +134,7 @@ export interface SocialBuzzEntry {
 }
 
 export function upsertSocialBuzz(db: Database.Database, entry: SocialBuzzEntry): void {
+  if (entry.github_repo) entry = { ...entry, github_repo: normalizeRepoId(entry.github_repo) };
   db.prepare(`
     INSERT INTO social_buzz (id, source, title, url, score, comments, subreddit, tags, github_repo, captured_at)
     VALUES (@id, @source, @title, @url, @score, @comments, @subreddit, @tags, @github_repo, @captured_at)
@@ -139,25 +144,30 @@ export function upsertSocialBuzz(db: Database.Database, entry: SocialBuzzEntry):
   `).run(entry);
 }
 
-export function getSocialBuzzForRepo(db: Database.Database, repoId: string, daysBack: number = 30, referenceDate?: string): SocialBuzzEntry[] {
-  return db.prepare(`
-    SELECT * FROM social_buzz
-    WHERE github_repo = ?
-      AND captured_at >= date(?, '-' || ? || ' days')
-    ORDER BY score DESC
-  `).all(repoId, referenceDate ?? 'now', daysBack) as SocialBuzzEntry[];
+/**
+ * Batch insert social buzz entries in a single transaction.
+ * Avoids 100+ individual fsyncs — single prepare, single transaction.
+ */
+export function batchUpsertSocialBuzz(db: Database.Database, entries: SocialBuzzEntry[]): void {
+  if (entries.length === 0) return;
+  const stmt = db.prepare(`
+    INSERT INTO social_buzz (id, source, title, url, score, comments, subreddit, tags, github_repo, captured_at)
+    VALUES (@id, @source, @title, @url, @score, @comments, @subreddit, @tags, @github_repo, @captured_at)
+    ON CONFLICT(id) DO UPDATE SET
+      score = MAX(social_buzz.score, excluded.score),
+      comments = MAX(social_buzz.comments, excluded.comments)
+  `);
+  const tx = db.transaction((items: SocialBuzzEntry[]) => {
+    for (const entry of items) {
+      const normalized = entry.github_repo
+        ? { ...entry, github_repo: normalizeRepoId(entry.github_repo) }
+        : entry;
+      stmt.run(normalized);
+    }
+  });
+  tx(entries);
 }
 
-export function getSocialBuzzSummary(db: Database.Database, daysBack: number = 7, referenceDate?: string): { github_repo: string; total_score: number; post_count: number }[] {
-  return db.prepare(`
-    SELECT github_repo, SUM(score) as total_score, COUNT(*) as post_count
-    FROM social_buzz
-    WHERE github_repo IS NOT NULL
-      AND captured_at >= date(?, '-' || ? || ' days')
-    GROUP BY github_repo
-    ORDER BY total_score DESC
-  `).all(referenceDate ?? 'now', daysBack) as { github_repo: string; total_score: number; post_count: number }[];
-}
 
 // ─── Trending Predictions ────────────────────────────────────────
 
@@ -175,6 +185,7 @@ export interface TrendingPrediction {
 }
 
 export function upsertTrendingPrediction(db: Database.Database, pred: TrendingPrediction): void {
+  pred = { ...pred, project_id: normalizeRepoId(pred.project_id) };
   db.prepare(`
     INSERT INTO trending_predictions (project_id, predicted_at, prediction_score, factors, star_velocity, social_buzz_score, fork_acceleration, issue_acceleration, actually_trended, trended_at)
     VALUES (@project_id, @predicted_at, @prediction_score, @factors, @star_velocity, @social_buzz_score, @fork_acceleration, @issue_acceleration, @actually_trended, @trended_at)
@@ -190,10 +201,3 @@ export function upsertTrendingPrediction(db: Database.Database, pred: TrendingPr
   `).run(pred);
 }
 
-export function getPendingPredictions(db: Database.Database): TrendingPrediction[] {
-  return db.prepare(`
-    SELECT * FROM trending_predictions
-    WHERE actually_trended = 0 AND trended_at IS NULL
-    ORDER BY prediction_score DESC
-  `).all() as TrendingPrediction[];
-}
