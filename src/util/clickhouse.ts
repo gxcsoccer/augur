@@ -3,6 +3,11 @@
  *
  * 优先使用 Node.js fetch，若超时则回退到 curl。
  * 解决部分网络环境下 Node.js undici 无法连接 ClickHouse 的问题。
+ *
+ * ASSUMPTION: Star 事件使用 WatchEvent（非 StarEvent）。
+ * play.clickhouse.com 的 github_events 表中 star 记录为 WatchEvent。
+ * 如 ClickHouse 数据源升级区分 StarEvent，需更新查询。
+ * 验证: 2026-04-02（StarEvent 不存在于 play.clickhouse.com）。
  */
 
 import { execSync } from 'node:child_process';
@@ -103,7 +108,7 @@ export async function fetchWeeklyMetrics(
 
   const text = await queryClickHouse(sql);
   const lines = text.trim().split('\n').filter(Boolean);
-  return lines.map((line) => {
+  const allWeeks = lines.map((line) => {
     const row = JSON.parse(line);
     return {
       week: row.week.slice(0, 10),
@@ -115,4 +120,18 @@ export async function fetchWeeklyMetrics(
       new_releases: Number(row.new_releases ?? 0),
     };
   });
+
+  // Drop first week if it's likely a partial week (< 7 days of data).
+  // toStartOfWeek groups by Monday; if fromDate is mid-week, the first bucket
+  // only has a few days and will have artificially low counts, inflating acceleration.
+  if (allWeeks.length >= 3) {
+    const firstWeekStart = new Date(allWeeks[0].week);
+    const queryStart = new Date(fromDate);
+    const dayOffset = (queryStart.getTime() - firstWeekStart.getTime()) / 86400000;
+    if (dayOffset > 1) {
+      return allWeeks.slice(1); // drop partial first week
+    }
+  }
+
+  return allWeeks;
 }

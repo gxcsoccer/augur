@@ -83,6 +83,9 @@ export async function discoverRisingProjects(
   const recentFrom = validateDate(new Date(new Date(to).getTime() - 14 * 86400000).toISOString().slice(0, 10));
 
   // Step 1: 查近期活跃度突增的候选
+  // NOTE: recent_stars > period_stars * 0.3 是有意设计——偏好"突然爆发"而非"持续增长"。
+  // 持续增长的项目（每周均匀增长）的 2 周占比约 25%，会被过滤。
+  // 这是因为持续增长的项目通常已被广泛关注，不符合"即将爆发"的定义。
   const sql = `
     WITH candidates AS (
       SELECT
@@ -95,7 +98,7 @@ export async function discoverRisingProjects(
         AND event_type = 'WatchEvent'
       GROUP BY repo_name
       HAVING recent_stars >= ${minRecentStars}
-        AND recent_stars > period_stars * 0.35
+        AND recent_stars > period_stars * 0.3
     ),
     lifetime AS (
       SELECT
@@ -145,6 +148,9 @@ export function computeFactors(
     };
   }
 
+  // Use at least 2 weeks for both recent and baseline when possible.
+  // With only 2-3 weeks total, 1v1 comparison is noisy — acceleration
+  // values will be used but crossFactorCount threshold is higher (see below).
   const recentCount = Math.min(2, Math.floor(history.length / 2));
   const recent = history.slice(-recentCount);
   const baseline = history.slice(0, -recentCount);
@@ -161,6 +167,7 @@ export function computeFactors(
     recent.map((w) => w.unique_pushers), baseline.map((w) => w.unique_pushers));
   const releaseFrequency = history.slice(-4).reduce((s, w) => s + w.new_releases, 0);
 
+  // Cross-factor count: how many distinct signals are accelerating simultaneously
   const ACCEL_THRESHOLD = 1.5;
   let crossFactorCount = 0;
   if (starVelocity >= ACCEL_THRESHOLD) crossFactorCount++;
@@ -168,6 +175,8 @@ export function computeFactors(
   if (issueAcceleration >= ACCEL_THRESHOLD) crossFactorCount++;
   if (prAcceleration >= ACCEL_THRESHOLD) crossFactorCount++;
   if (contributorGrowth >= ACCEL_THRESHOLD) crossFactorCount++;
+  if (releaseFrequency >= 2) crossFactorCount++;   // 2+ releases in 4 weeks
+  if (socialScore >= 30) crossFactorCount++;        // meaningful social buzz
 
   return {
     starVelocity: round2(starVelocity),
@@ -199,8 +208,11 @@ function forecastKPI(
   const last4 = history.slice(-4);
   const last2 = history.slice(-2);
 
-  const weeklyStarRun = last4.map((w) => w.new_stars);
-  const weeklyForkRun = last4.map((w) => w.new_forks);
+  // Pad to 4 entries so the report always shows a consistent 4-week trend
+  const rawStarRun = last4.map((w) => w.new_stars);
+  const rawForkRun = last4.map((w) => w.new_forks);
+  const weeklyStarRun = [...Array(Math.max(0, 4 - rawStarRun.length)).fill(0), ...rawStarRun];
+  const weeklyForkRun = [...Array(Math.max(0, 4 - rawForkRun.length)).fill(0), ...rawForkRun];
 
   // Current weekly rate (average of last 2 weeks)
   const avgStarsPerWeek = last2.reduce((s, w) => s + w.new_stars, 0) / Math.max(last2.length, 1);
@@ -213,21 +225,21 @@ function forecastKPI(
   if (factors.starVelocity >= 1.5) momentum = 'accelerating';
   else if (factors.starVelocity < 0.8) momentum = 'decelerating';
 
-  // Trend multiplier for 4-week forecast
-  // accelerating: assume continued growth at reduced rate (regression to mean)
-  // steady: flat projection
-  // decelerating: assume further slowdown
-  const trendMultiplier = momentum === 'accelerating' ? 1.15
-    : momentum === 'decelerating' ? 0.85
+  // 4-week forecast: flat projection with linear trend adjustment (NOT compound)
+  // Regression to mean: most acceleration is temporary, so we dampen over time.
+  // Week 1: 100% of current rate, Week 2: rate * adj, Week 3: rate * adj^2... capped.
+  // Using sqrt decay: accelerating projects get +5% per week (not +15%),
+  // decelerating get -5% per week.
+  const weeklyAdj = momentum === 'accelerating' ? 1.05
+    : momentum === 'decelerating' ? 0.95
     : 1.0;
 
-  // 4-week forecast: sum of weekly projections with trend
   let predictedStars4w = 0;
   let predictedForks4w = 0;
   let predictedIssues4w = 0;
   let predictedPRs4w = 0;
   for (let w = 1; w <= 4; w++) {
-    const weekFactor = Math.pow(trendMultiplier, w - 1);
+    const weekFactor = Math.pow(weeklyAdj, w - 1);
     predictedStars4w += Math.round(avgStarsPerWeek * weekFactor);
     predictedForks4w += Math.round(avgForksPerWeek * weekFactor);
     predictedIssues4w += Math.round(avgIssuesPerWeek * weekFactor);
@@ -268,7 +280,11 @@ const TRENDING_WEIGHTS = {
   crossFactor: 0.15,
 };
 
-export function scoreTrendingCandidate(factors: TrendingFactors): number {
+/**
+ * @param historyWeeks Number of data weeks available. Short histories (< 4)
+ *   get a confidence discount to reduce false positives from noisy 1v1 comparisons.
+ */
+export function scoreTrendingCandidate(factors: TrendingFactors, historyWeeks: number = 8): number {
   const starScore = Math.min(factors.starVelocity / 5, 1);
   const forkScore = Math.min(factors.forkAcceleration / 4, 1);
   const issueScore = Math.min(factors.issueAcceleration / 3, 1);
@@ -278,7 +294,7 @@ export function scoreTrendingCandidate(factors: TrendingFactors): number {
   const socialScore = Math.min(factors.socialBuzzScore / 100, 1);
   const crossScore = Math.min(factors.crossFactorCount / 4, 1);
 
-  return round2(
+  const rawScore =
     starScore * TRENDING_WEIGHTS.starVelocity +
     forkScore * TRENDING_WEIGHTS.forkAcceleration +
     issueScore * TRENDING_WEIGHTS.issueActivity +
@@ -286,8 +302,13 @@ export function scoreTrendingCandidate(factors: TrendingFactors): number {
     contribScore * TRENDING_WEIGHTS.contributorGrowth +
     releaseScore * TRENDING_WEIGHTS.releaseFrequency +
     socialScore * TRENDING_WEIGHTS.socialBuzz +
-    crossScore * TRENDING_WEIGHTS.crossFactor
-  );
+    crossScore * TRENDING_WEIGHTS.crossFactor;
+
+  // Confidence discount for short histories: < 4 weeks of data
+  // means 1v1 week comparison which is very noisy
+  const confidenceDiscount = historyWeeks >= 4 ? 1.0 : historyWeeks >= 3 ? 0.8 : 0.6;
+
+  return round2(rawScore * confidenceDiscount);
 }
 
 function buildEvidence(factors: TrendingFactors): string[] {
@@ -305,6 +326,11 @@ function buildEvidence(factors: TrendingFactors): string[] {
 
 // ─── 批量查询 ──────────────────────────────────────────────────
 
+/**
+ * Batch query: 100 repos × ~30 chars each ≈ 3KB IN clause.
+ * play.clickhouse.com limit is ~256KB, well within range.
+ * If candidate count grows beyond ~500, should split into batches.
+ */
 async function batchFetchMetrics(
   repos: string[],
   fromDate: string,
@@ -425,7 +451,7 @@ export async function predictTrendingProjects(
 
     const socialScore = socialScores.get(d.repo) ?? 0;
     const factors = computeFactors(history, socialScore);
-    const score = scoreTrendingCandidate(factors);
+    const score = scoreTrendingCandidate(factors, history.length);
     const kpi = forecastKPI(history, d.lifetimeStars, factors);
 
     if (score > 0.15) {

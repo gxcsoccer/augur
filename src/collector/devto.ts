@@ -84,14 +84,13 @@ export async function fetchOpenSourceArticles(daysBack: number = 7): Promise<Dev
 
 /**
  * 从 DEV.to 文章中提取 GitHub repo 引用
- * 匹配标题和 URL 中的 github.com 链接
+ *
+ * NOTE: article.url 是 DEV.to 文章自身的 URL (https://dev.to/user/slug)，
+ * 不是文章中引用的 GitHub URL。DEV.to 列表 API 不返回文章正文（body）,
+ * 所以只能从标题中提取 "owner/repo" 格式的引用。
  */
 export function extractGitHubRepoFromArticle(article: DevToArticle): string | null {
-  // Check if URL itself is a GitHub repo
-  const urlMatch = article.url.match(/github\.com\/([^/]+\/[^/]+)/);
-  if (urlMatch) return cleanRepoId(urlMatch[1]);
-
-  // Check title for GitHub repo patterns like "owner/repo"
+  // Title pattern: look for "owner/repo" format in title
   // Strict: require at least 2 chars each side, exclude common false positives
   const titleMatch = article.title.match(/\b([a-zA-Z][a-zA-Z0-9_-]{1,38}\/[a-zA-Z][a-zA-Z0-9_.-]{1,100})\b/);
   if (titleMatch && !/\.(js|ts|py|com|org|io|css|html|json)$/i.test(titleMatch[1])
@@ -102,9 +101,6 @@ export function extractGitHubRepoFromArticle(article: DevToArticle): string | nu
   return null;
 }
 
-function cleanRepoId(id: string): string {
-  return id.replace(/\.git$/, '').split('/').slice(0, 2).join('/');
-}
 
 /**
  * 一站式采集：获取所有 DEV.to 帖子并提取 GitHub 关联
