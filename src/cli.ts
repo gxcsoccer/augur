@@ -500,15 +500,17 @@ program
         console.log('\n' + report);
       }
 
-      // Save predictions to DB
-      for (const c of filtered) {
-        upsertTrendingPrediction(db, {
-          project_id: c.repo, predicted_at: date, prediction_score: c.predictionScore,
-          factors: JSON.stringify(c.factors), star_velocity: c.factors.starVelocity,
-          social_buzz_score: c.factors.socialBuzzScore, fork_acceleration: c.factors.forkAcceleration,
-          issue_acceleration: c.factors.issueAcceleration, actually_trended: 0, trended_at: null,
-        });
-      }
+      // Save predictions to DB (transaction for atomicity)
+      db.transaction(() => {
+        for (const c of filtered) {
+          upsertTrendingPrediction(db, {
+            project_id: c.repo, predicted_at: date, prediction_score: c.predictionScore,
+            factors: JSON.stringify(c.factors), star_velocity: c.factors.starVelocity,
+            social_buzz_score: c.factors.socialBuzzScore, fork_acceleration: c.factors.forkAcceleration,
+            issue_acceleration: c.factors.issueAcceleration, actually_trended: 0, trended_at: null,
+          });
+        }
+      })();
       console.log(`[Predict] 已保存 ${filtered.length} 条预测到数据库`);
       db.close();
       return;
@@ -1146,11 +1148,12 @@ program
         score: a.reactionsCount, comments: a.commentsCount, subreddit: null,
         tags: JSON.stringify(a.tags), github_repo: extractGitHubRepoFromArticle(a), captured_at: today,
       }));
-      batchUpsertSocialBuzz(db, devtoEntries);
-      for (const e of devtoEntries) {
-        if (e.github_repo) upsertProject(db, { id: e.github_repo, language: null, topics: null, description: e.title, created_at: null, first_seen_at: today });
+      const withRepo = devtoEntries.filter(e => e.github_repo);
+      batchUpsertSocialBuzz(db, withRepo); // only store entries with GitHub repo links
+      for (const e of withRepo) {
+        upsertProject(db, { id: e.github_repo!, language: null, topics: null, description: e.title, created_at: null, first_seen_at: today });
       }
-      console.log(`[Collect] DEV.to: ${articles.length} 篇文章`);
+      console.log(`[Collect] DEV.to: ${articles.length} 篇文章, ${withRepo.length} 个关联 GitHub 项目`);
     } catch (err) {
       console.warn(`[Collect] DEV.to 采集失败: ${(err as Error).message}`);
     }
@@ -1163,9 +1166,10 @@ program
         score: p.score, comments: p.comments, subreddit: p.subreddit,
         tags: null, github_repo: extractRedditRepo(p.url), captured_at: today,
       }));
-      batchUpsertSocialBuzz(db, redditEntries);
-      for (const e of redditEntries) {
-        if (e.github_repo) upsertProject(db, { id: e.github_repo, language: null, topics: null, description: e.title, created_at: null, first_seen_at: today });
+      const withRepo = redditEntries.filter(e => e.github_repo);
+      batchUpsertSocialBuzz(db, withRepo);
+      for (const e of withRepo) {
+        upsertProject(db, { id: e.github_repo!, language: null, topics: null, description: e.title, created_at: null, first_seen_at: today });
       }
       console.log(`[Collect] Reddit: ${posts.length} 帖子`);
     } catch (err) {
@@ -1314,15 +1318,17 @@ program
       trendingCandidates = filterAlreadyTrending(trendingCandidates, db);
       console.log(`[Trending] ${trendingCandidates.length} 个候选项目`);
 
-      // Save predictions
-      for (const c of trendingCandidates) {
-        upsertTrendingPrediction(db, {
-          project_id: c.repo, predicted_at: today, prediction_score: c.predictionScore,
-          factors: JSON.stringify(c.factors), star_velocity: c.factors.starVelocity,
-          social_buzz_score: c.factors.socialBuzzScore, fork_acceleration: c.factors.forkAcceleration,
-          issue_acceleration: c.factors.issueAcceleration, actually_trended: 0, trended_at: null,
-        });
-      }
+      // Save predictions (transaction for atomicity)
+      db.transaction(() => {
+        for (const c of trendingCandidates) {
+          upsertTrendingPrediction(db, {
+            project_id: c.repo, predicted_at: today, prediction_score: c.predictionScore,
+            factors: JSON.stringify(c.factors), star_velocity: c.factors.starVelocity,
+            social_buzz_score: c.factors.socialBuzzScore, fork_acceleration: c.factors.forkAcceleration,
+            issue_acceleration: c.factors.issueAcceleration, actually_trended: 0, trended_at: null,
+          });
+        }
+      })();
 
       // Save standalone trending report
       const trendingReport = formatTrendingPredictionReport(trendingCandidates, today);

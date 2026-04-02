@@ -58,7 +58,13 @@ async function fetchSubreddit(
     return [];
   }
 
-  const data = (await res.json()) as RedditListingResponse;
+  let data: RedditListingResponse;
+  try {
+    data = (await res.json()) as RedditListingResponse;
+  } catch {
+    console.warn(`  [Reddit] r/${subreddit} returned non-JSON response`);
+    return [];
+  }
   return data.data.children.map((c) => ({
     id: c.data.id,
     title: c.data.title,
@@ -95,7 +101,13 @@ async function searchReddit(query: string, limit: number = 30): Promise<RedditPo
     return [];
   }
 
-  const data = (await res.json()) as RedditListingResponse;
+  let data: RedditListingResponse;
+  try {
+    data = (await res.json()) as RedditListingResponse;
+  } catch {
+    console.warn('  [Reddit] Search returned non-JSON response');
+    return [];
+  }
   return data.data.children.map((c) => ({
     id: c.data.id,
     title: c.data.title,
@@ -108,23 +120,13 @@ async function searchReddit(query: string, limit: number = 30): Promise<RedditPo
   }));
 }
 
+import { extractRepoFromUrl } from '../util/github.js';
+
 /**
  * 从 Reddit 帖子 URL 中提取 GitHub repo ID
  */
-const GITHUB_RESERVED_PATHS = new Set([
-  'settings', 'orgs', 'organizations', 'features', 'marketplace',
-  'explore', 'topics', 'trending', 'collections', 'sponsors',
-  'login', 'logout', 'signup', 'join', 'new', 'notifications',
-  'issues', 'pulls', 'codespaces', 'apps', 'about', 'pricing',
-  'security', 'customer-stories', 'readme', 'enterprise',
-]);
-
 export function extractGitHubRepo(url: string): string | null {
-  const match = url.match(/github\.com\/([^/]+\/[^/]+)/);
-  if (!match) return null;
-  const owner = match[1].split('/')[0].toLowerCase();
-  if (GITHUB_RESERVED_PATHS.has(owner)) return null;
-  return match[1].replace(/\.git$/, '').split('/').slice(0, 2).join('/');
+  return extractRepoFromUrl(url);
 }
 
 /**

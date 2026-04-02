@@ -23,7 +23,7 @@
  */
 
 import type Database from 'better-sqlite3';
-import { queryClickHouse, escapeSQL, validateDate, type WeeklyMetrics } from '../util/clickhouse.js';
+import { queryClickHouse, escapeSQL, validateDate, parseClickHouseLines, type WeeklyMetrics } from '../util/clickhouse.js';
 import { computeAcceleration, normalizeRepoId } from '../util/math.js';
 import { fetchRepoDetails, getRateLimitInfo } from '../collector/github-api.js';
 
@@ -123,9 +123,8 @@ export async function discoverRisingProjects(
   `;
 
   const text = await queryClickHouse(sql);
-  const lines = text.trim().split('\n').filter(Boolean);
-  return lines.map((line) => {
-    const row = JSON.parse(line);
+  const rows = parseClickHouseLines(text);
+  return rows.map((row) => {
     return {
       repo: normalizeRepoId(row.repo_name as string),
       lifetimeStars: Number(row.lifetime_stars),
@@ -359,11 +358,10 @@ async function batchFetchMetrics(
   `;
 
   const text = await queryClickHouse(sql);
-  const lines = text.trim().split('\n').filter(Boolean);
+  const rows = parseClickHouseLines(text);
 
   const result = new Map<string, WeeklyMetrics[]>();
-  for (const line of lines) {
-    const row = JSON.parse(line);
+  for (const row of rows) {
     const repo = normalizeRepoId(row.repo_name as string);
     if (!result.has(repo)) result.set(repo, []);
     result.get(repo)!.push({

@@ -12,7 +12,7 @@
 
 import { execSync } from 'node:child_process';
 
-const CLICKHOUSE_URL = 'https://play.clickhouse.com/?user=play';
+const CLICKHOUSE_URL = process.env.CLICKHOUSE_URL ?? 'https://play.clickhouse.com/?user=play';
 const FETCH_TIMEOUT = 15000;
 
 export async function queryClickHouse(sql: string): Promise<string> {
@@ -73,6 +73,29 @@ export function validateDate(s: string): string {
   return s;
 }
 
+/**
+ * 安全解析 ClickHouse JSONEachRow 响应
+ * 如果响应不是 JSON（如错误信息），抛出带上下文的错误
+ */
+export function parseClickHouseLines(text: string): Record<string, unknown>[] {
+  const lines = text.trim().split('\n').filter(Boolean);
+  if (lines.length === 0) return [];
+
+  // Check first line is valid JSON (not an error message)
+  const firstChar = lines[0].trimStart()[0];
+  if (firstChar !== '{') {
+    throw new Error(`ClickHouse returned non-JSON response: ${lines[0].slice(0, 200)}`);
+  }
+
+  return lines.map((line, i) => {
+    try {
+      return JSON.parse(line) as Record<string, unknown>;
+    } catch {
+      throw new Error(`ClickHouse JSON parse error at line ${i + 1}: ${line.slice(0, 100)}`);
+    }
+  });
+}
+
 export interface WeeklyMetrics {
   week: string;
   new_stars: number;
@@ -107,9 +130,8 @@ export async function fetchWeeklyMetrics(
   `;
 
   const text = await queryClickHouse(sql);
-  const lines = text.trim().split('\n').filter(Boolean);
-  const allWeeks = lines.map((line) => {
-    const row = JSON.parse(line);
+  const rows = parseClickHouseLines(text);
+  const allWeeks = rows.map((row) => {
     return {
       week: row.week.slice(0, 10),
       new_stars: Number(row.new_stars),

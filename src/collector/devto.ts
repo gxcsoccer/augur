@@ -49,7 +49,13 @@ async function fetchArticles(
     return [];
   }
 
-  const data = (await res.json()) as DevToResponse[];
+  let data: DevToResponse[];
+  try {
+    data = (await res.json()) as DevToResponse[];
+  } catch {
+    console.warn(`  [DEV.to] tag=${tag} returned non-JSON response`);
+    return [];
+  }
   return data.map((a) => ({
     id: a.id,
     title: a.title,
