@@ -102,15 +102,13 @@ export async function fetchAIPosts(daysBack = 7, minPoints = 20): Promise<HNPost
   return [...allPosts.values()].sort((a, b) => b.points - a.points);
 }
 
+import { extractRepoFromUrl } from '../util/github.js';
+
 /**
  * 从 HN 帖子 URL 中提取 GitHub repo ID
  */
 export function extractGitHubRepo(url: string | null): string | null {
-  if (!url) return null;
-  const match = url.match(/github\.com\/([^/]+\/[^/]+)/);
-  if (!match) return null;
-  // Clean up trailing .git, /tree/xxx, etc.
-  return match[1].replace(/\.git$/, '').split('/').slice(0, 2).join('/');
+  return extractRepoFromUrl(url);
 }
 
 /**

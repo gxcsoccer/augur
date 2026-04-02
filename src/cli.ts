@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import { getDb, initSchema } from './store/schema.js';
 import { upsertProject, upsertSnapshot, upsertReadme, type Project, type Snapshot } from './store/queries.js';
+import { todayUTC } from './util/math.js';
 import { fetchTrending } from './collector/github-trending.js';
 import { fetchRepoDetails, fetchReadme, fetchStarHistory, starEventsToWeeklySnapshots, getRateLimitInfo } from './collector/github-api.js';
 import { fetchAllHNPosts, extractGitHubRepo } from './collector/hackernews.js';
@@ -32,11 +33,12 @@ program
   .option('--no-details', '跳过 GitHub API 详情补充')
   .option('--no-readme', '跳过 README 采集')
   .option('--no-hn', '跳过 HackerNews 采集')
+  .option('--social', '采集 DEV.to + Reddit 社交媒体数据')
   .option('--backfill', '回填 star 历史数据（冷启动用，首次运行建议加上）')
-  .action(async (opts: { period: string; details: boolean; readme: boolean; hn: boolean; backfill?: boolean }) => {
+  .action(async (opts: { period: string; details: boolean; readme: boolean; hn: boolean; social?: boolean; backfill?: boolean }) => {
     const db = getDb();
     initSchema(db);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayUTC();
     const period = opts.period as 'daily' | 'weekly' | 'monthly';
 
     // Step 1: Fetch trending
@@ -158,7 +160,56 @@ program
       console.log(`[Collect] 已保存 ${saved} 个 HN 帖子`);
     }
 
-    // Step 6: Watchlist — 追踪候选浪潮的关键 repo
+    // Step 6: Social media (DEV.to + Reddit)
+    if (opts.social) {
+      const { upsertSocialBuzz } = await import('./store/queries.js');
+
+      console.log('[Collect] 正在采集 DEV.to...');
+      try {
+        const { fetchAllDevToPosts, extractGitHubRepoFromArticle } = await import('./collector/devto.js');
+        const articles = await fetchAllDevToPosts(7);
+        let devtoGH = 0;
+        for (const a of articles) {
+          const ghRepo = extractGitHubRepoFromArticle(a);
+          upsertSocialBuzz(db, {
+            id: `devto-${a.id}`, source: 'devto', title: a.title, url: a.url,
+            score: a.reactionsCount, comments: a.commentsCount, subreddit: null,
+            tags: JSON.stringify(a.tags), github_repo: ghRepo, captured_at: today,
+          });
+          if (ghRepo) {
+            upsertProject(db, { id: ghRepo, language: null, topics: null, description: a.title, created_at: null, first_seen_at: today });
+            devtoGH++;
+          }
+        }
+        console.log(`[Collect] DEV.to: ${articles.length} 篇文章, ${devtoGH} 个关联 GitHub 项目`);
+      } catch (err) {
+        console.warn(`[Collect] DEV.to 采集失败: ${(err as Error).message}`);
+      }
+
+      console.log('[Collect] 正在采集 Reddit...');
+      try {
+        const { fetchAllRedditPosts, extractGitHubRepo: extractRedditRepo } = await import('./collector/reddit.js');
+        const posts = await fetchAllRedditPosts();
+        let redditGH = 0;
+        for (const p of posts) {
+          const ghRepo = extractRedditRepo(p.url);
+          upsertSocialBuzz(db, {
+            id: `reddit-${p.id}`, source: 'reddit', title: p.title, url: p.url,
+            score: p.score, comments: p.comments, subreddit: p.subreddit,
+            tags: null, github_repo: ghRepo, captured_at: today,
+          });
+          if (ghRepo) {
+            upsertProject(db, { id: ghRepo, language: null, topics: null, description: p.title, created_at: null, first_seen_at: today });
+            redditGH++;
+          }
+        }
+        console.log(`[Collect] Reddit: ${posts.length} 帖子, ${redditGH} 个关联 GitHub 项目`);
+      } catch (err) {
+        console.warn(`[Collect] Reddit 采集失败: ${(err as Error).message}`);
+      }
+    }
+
+    // Step 7: Watchlist — 追踪候选浪潮的关键 repo
     console.log('[Collect] 正在追踪 watchlist repo...');
     let watchlistCount = 0;
     try {
@@ -407,15 +458,65 @@ program
 // ─── augur predict ──────────────────────────────────────────────
 program
   .command('predict')
-  .description('域级预测：相位检测 + 爆发时间预测')
+  .description('域级预测：相位检测 + 爆发时间预测；--trending 预测即将爆火的项目')
   .option('-d, --date <date>', '指定日期 (YYYY-MM-DD)')
   .option('--domain <domain>', '指定域深度预测')
+  .option('--trending', '预测即将登上 GitHub Trending 的项目（排除已火项目）')
+  .option('-n, --top <n>', 'Trending 预测返回 Top N', '20')
+  .option('--max-stars <stars>', '排除 star 超过此数的项目', '5000')
   .option('-o, --output <file>', '输出到文件')
-  .action(async (opts: { date?: string; domain?: string; output?: string }) => {
+  .action(async (opts: { date?: string; domain?: string; trending?: boolean; top: string; maxStars: string; output?: string }) => {
     const db = getDb();
     initSchema(db);
 
     const date = opts.date ?? new Date().toISOString().slice(0, 10);
+
+    // ── Trending project prediction mode ──
+    if (opts.trending) {
+      const { predictTrendingProjects, filterAlreadyTrending, formatTrendingPredictionReport } = await import('./predictor/trending-predictor.js');
+      const { upsertTrendingPrediction } = await import('./store/queries.js');
+      const topN = parseInt(opts.top, 10);
+      const maxStars = parseInt(opts.maxStars, 10);
+
+      console.log(`[Predict] 趋势项目预测 (Top ${topN}, star < ${maxStars})...`);
+      const candidates = await predictTrendingProjects(db, maxStars, topN * 2, opts.date);
+      const filtered = filterAlreadyTrending(candidates, db).slice(0, topN);
+      console.log(`[Predict] 过滤后: ${filtered.length} 个候选项目`);
+
+      if (filtered.length > 0) {
+        console.log('\n[Predict] Top 预测:');
+        for (let i = 0; i < Math.min(10, filtered.length); i++) {
+          const c = filtered[i];
+          console.log(`  ${i + 1}. ${c.repo} (得分 ${c.predictionScore.toFixed(2)}) — ${c.evidence.slice(0, 2).join(', ')}`);
+        }
+      }
+
+      const report = formatTrendingPredictionReport(filtered, opts.date);
+      if (opts.output) {
+        const fs = await import('node:fs');
+        fs.writeFileSync(opts.output, report, 'utf-8');
+        console.log(`\n[Predict] 报告已写入 ${opts.output}`);
+      } else {
+        console.log('\n' + report);
+      }
+
+      // Save predictions to DB (transaction for atomicity)
+      db.transaction(() => {
+        for (const c of filtered) {
+          upsertTrendingPrediction(db, {
+            project_id: c.repo, predicted_at: date, prediction_score: c.predictionScore,
+            factors: JSON.stringify(c.factors), star_velocity: c.factors.starVelocity,
+            social_buzz_score: c.factors.socialBuzzScore, fork_acceleration: c.factors.forkAcceleration,
+            issue_acceleration: c.factors.issueAcceleration, actually_trended: 0, trended_at: null,
+          });
+        }
+      })();
+      console.log(`[Predict] 已保存 ${filtered.length} 条预测到数据库`);
+      db.close();
+      return;
+    }
+
+    // ── Domain-level prediction mode (default) ──
     console.log(`[Predict] 正在生成域级预测...`);
 
     // 1. Aggregate domains
@@ -726,7 +827,7 @@ program
 
     // 测试集: 专业 Agent / OpenClaw
     console.log('\n═══ Phase 2: 验证（OpenClaw 预测）═══\n');
-    const validationTarget: backtest.BacktestTarget = {
+    const validationTarget: import('./predictor/backtest.js').BacktestTarget = {
       name: '专业 Agent / OpenClaw 爆发',
       eruptionDate: '2025-06-01',
       description: '专业 Agent 浪潮，OpenClaw 等垂直 Agent 产品涌现',
@@ -976,11 +1077,11 @@ program
     const path = await import('node:path');
     const db = getDb();
     initSchema(db);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayUTC();
     const isWeekly = opts.weekly || !opts.daily;
 
     // Step 1: Collect (always)
-    console.log('═══ Step 1/4: 采集数据 ═══');
+    console.log('═══ Step 1/8: 采集数据 ═══');
     const trending = await fetchTrending('daily');
     console.log(`[Collect] ${trending.length} 个 trending 项目`);
 
@@ -1036,6 +1137,45 @@ program
     }
     console.log(`[Collect] ${hnPosts.length} 个 HN 帖子采集完成`);
 
+    // Social media (DEV.to + Reddit) — batch insert for performance
+    console.log('[Collect] 采集社交媒体数据...');
+    try {
+      const { batchUpsertSocialBuzz } = await import('./store/queries.js');
+      const { fetchAllDevToPosts, extractGitHubRepoFromArticle } = await import('./collector/devto.js');
+      const articles = await fetchAllDevToPosts(7);
+      const devtoEntries = articles.map(a => ({
+        id: `devto-${a.id}`, source: 'devto' as const, title: a.title, url: a.url,
+        score: a.reactionsCount, comments: a.commentsCount, subreddit: null,
+        tags: JSON.stringify(a.tags), github_repo: extractGitHubRepoFromArticle(a), captured_at: today,
+      }));
+      const withRepo = devtoEntries.filter(e => e.github_repo);
+      batchUpsertSocialBuzz(db, withRepo); // only store entries with GitHub repo links
+      for (const e of withRepo) {
+        upsertProject(db, { id: e.github_repo!, language: null, topics: null, description: e.title, created_at: null, first_seen_at: today });
+      }
+      console.log(`[Collect] DEV.to: ${articles.length} 篇文章, ${withRepo.length} 个关联 GitHub 项目`);
+    } catch (err) {
+      console.warn(`[Collect] DEV.to 采集失败: ${(err as Error).message}`);
+    }
+    try {
+      const { batchUpsertSocialBuzz } = await import('./store/queries.js');
+      const { fetchAllRedditPosts, extractGitHubRepo: extractRedditRepo } = await import('./collector/reddit.js');
+      const posts = await fetchAllRedditPosts();
+      const redditEntries = posts.map(p => ({
+        id: `reddit-${p.id}`, source: 'reddit' as const, title: p.title, url: p.url,
+        score: p.score, comments: p.comments, subreddit: p.subreddit,
+        tags: null, github_repo: extractRedditRepo(p.url), captured_at: today,
+      }));
+      const withRepo = redditEntries.filter(e => e.github_repo);
+      batchUpsertSocialBuzz(db, withRepo);
+      for (const e of withRepo) {
+        upsertProject(db, { id: e.github_repo!, language: null, topics: null, description: e.title, created_at: null, first_seen_at: today });
+      }
+      console.log(`[Collect] Reddit: ${posts.length} 帖子`);
+    } catch (err) {
+      console.warn(`[Collect] Reddit 采集失败: ${(err as Error).message}`);
+    }
+
     if (opts.daily && !opts.weekly) {
       console.log('\n═══ 每日采集完成 ═══');
       db.close();
@@ -1043,7 +1183,7 @@ program
     }
 
     // Step 2: Analyze (weekly)
-    console.log('\n═══ Step 2/4: 信号分析 ═══');
+    console.log('\n═══ Step 2/8: 信号分析 ═══');
     const entries = collectReportData(db, today);
     const projects = entries.map(e => {
       const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(e.id) as any;
@@ -1075,7 +1215,7 @@ program
     console.log(`[Analyze] 信号 ${classifications.length} | 共现 ${coMatrix.length}`);
 
     // Step 3: Research top signals
-    console.log('\n═══ Step 3/4: 深度调研 ═══');
+    console.log('\n═══ Step 3/8: 深度调研 ═══');
     const topSignals = db.prepare(`
       SELECT project_id, layer, domains, opportunity_score
       FROM signals WHERE week = ? ORDER BY opportunity_score DESC LIMIT 3
@@ -1092,7 +1232,7 @@ program
     }
 
     // Step 4: 浪潮预测 + 进化
-    console.log('\n═══ Step 4/7: 浪潮预测 ═══');
+    console.log('\n═══ Step 4/8: 浪潮预测 ═══');
     const { CANDIDATE_WAVES, scanWaves } = await import('./predictor/wave-scanner.js');
     const { recordPredictions, checkPendingPredictions, verifyPrediction: verifyPred, evolveParams, expireOldPredictions, getLedgerStats } = await import('./predictor/online-learner.js');
 
@@ -1139,7 +1279,7 @@ program
     }
 
     // Step 5: 自动验证
-    console.log('\n═══ Step 5/7: 自动验证 ═══');
+    console.log('\n═══ Step 5/8: 自动验证 ═══');
     const pendingForReview = checkPendingPredictions();
     if (pendingForReview.length > 0) {
       try {
@@ -1161,16 +1301,49 @@ program
     expireOldPredictions();
 
     // Step 6: 参数进化
-    console.log('\n═══ Step 6/7: 参数进化 ═══');
+    console.log('\n═══ Step 6/8: 参数进化 ═══');
     const evolution = evolveParams();
     if (evolution.changed) {
       for (const adj of evolution.adjustments) console.log(`  ${adj}`);
     }
 
-    // Step 7: 合并生成完整周报
-    console.log('\n═══ Step 7/7: 生成完整周报 ═══');
+    // Compute week label (needed by step 7 and 8)
     const weekNum = Math.ceil((new Date(today).getTime() - new Date(new Date(today).getFullYear(), 0, 1).getTime()) / 604800000);
     const weekLabel = `${new Date(today).getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+
+    // Step 7: 趋势项目预测
+    console.log('\n═══ Step 7/8: 趋势项目预测 ═══');
+    let trendingCandidates: Awaited<ReturnType<typeof import('./predictor/trending-predictor.js').predictTrendingProjects>> = [];
+    try {
+      const { predictTrendingProjects, filterAlreadyTrending, formatTrendingPredictionReport } = await import('./predictor/trending-predictor.js');
+      const { upsertTrendingPrediction } = await import('./store/queries.js');
+
+      trendingCandidates = await predictTrendingProjects(db, 5000, 20);
+      trendingCandidates = filterAlreadyTrending(trendingCandidates, db);
+      console.log(`[Trending] ${trendingCandidates.length} 个候选项目`);
+
+      // Save predictions (transaction for atomicity)
+      db.transaction(() => {
+        for (const c of trendingCandidates) {
+          upsertTrendingPrediction(db, {
+            project_id: c.repo, predicted_at: today, prediction_score: c.predictionScore,
+            factors: JSON.stringify(c.factors), star_velocity: c.factors.starVelocity,
+            social_buzz_score: c.factors.socialBuzzScore, fork_acceleration: c.factors.forkAcceleration,
+            issue_acceleration: c.factors.issueAcceleration, actually_trended: 0, trended_at: null,
+          });
+        }
+      })();
+
+      // Save standalone trending report
+      const trendingReport = formatTrendingPredictionReport(trendingCandidates, today);
+      fs.writeFileSync(path.join(opts.outputDir, `${weekLabel}-trending.md`), trendingReport, 'utf-8');
+      console.log(`[Trending] 报告已写入 ${opts.outputDir}/${weekLabel}-trending.md`);
+    } catch (e) {
+      console.warn(`[Trending] 趋势预测跳过: ${(e as Error).message}`);
+    }
+
+    // Step 8: 合并生成完整周报
+    console.log('\n═══ Step 8/8: 生成完整周报 ═══');
 
     const sections: string[] = [];
 
@@ -1194,6 +1367,21 @@ program
         const strength = { strong: '🔴 强', moderate: '🟡 中', weak: '⚪ 弱', none: '- 无' }[p.signalStrength];
         const signals = p.validation.detectedSignals.filter(s => s.signalDate).map(s => s.repo.split('/')[1]).join(', ');
         sections.push(`| ${p.wave.name} | ${strength} | ${p.validation.predictedEruptionDate ?? '-'} | ${signals || '-'} |`);
+      }
+      sections.push('');
+    }
+
+    // Section 2.5: 趋势项目预测
+    if (trendingCandidates.length > 0) {
+      sections.push('## 趋势项目预测（即将爆火）');
+      sections.push('');
+      sections.push('| # | 项目 | 当前★ | 4周+★ | 4周后总★ | 社区活跃 | 势头 |');
+      sections.push('|---|------|-------|------|---------|---------|------|');
+      for (let i = 0; i < Math.min(10, trendingCandidates.length); i++) {
+        const c = trendingCandidates[i];
+        const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
+        const momentum = { accelerating: '🚀', steady: '➡️', decelerating: '📉' }[c.kpi.growthMomentum];
+        sections.push(`| ${i + 1} | **${c.repo}** | ${fmt(c.lifetimeStars)} | +${fmt(c.kpi.predictedStars4w)} | ${fmt(c.kpi.estimatedTotalStars4w)} | ${c.kpi.communityScore}/100 | ${momentum} |`);
       }
       sections.push('');
     }
@@ -1328,10 +1516,28 @@ program
 // ─── augur backtest ─────────────────────────────────────────────
 program
   .command('backtest')
-  .description('历史回测：验证先导信号→爆发的时间差')
+  .description('历史回测：--trending 验证项目爆火预测；默认验证浪潮先导信号')
   .option('-t, --target <name>', '指定回测目标 (chatgpt, cursor, manus)，不指定则全部运行')
+  .option('--trending', '回测趋势项目预测（验证"即将爆火"模型）')
   .option('-o, --output <file>', '输出到文件')
-  .action(async (opts: { target?: string; output?: string }) => {
+  .action(async (opts: { target?: string; trending?: boolean; output?: string }) => {
+    // ── Trending backtest mode ──
+    if (opts.trending) {
+      const { runTrendingBacktest, formatTrendingBacktestReport } = await import('./predictor/trending-backtest.js');
+      console.log('[Backtest] 趋势项目预测回测（通过 ClickHouse GH Archive）...\n');
+      const summary = await runTrendingBacktest();
+      const report = formatTrendingBacktestReport(summary);
+      if (opts.output) {
+        const fs = await import('node:fs');
+        fs.writeFileSync(opts.output, report, 'utf-8');
+        console.log(`\n[Backtest] 报告已写入 ${opts.output}`);
+      } else {
+        console.log('\n' + report);
+      }
+      return;
+    }
+
+    // ── Wave signal backtest mode (default) ──
     let targets = BACKTEST_TARGETS;
     if (opts.target) {
       const filtered = targets.filter(t => t.name.toLowerCase().includes(opts.target!.toLowerCase()));
@@ -1376,12 +1582,18 @@ program
     const cooccurrences = (db.prepare('SELECT COUNT(*) as count FROM cooccurrences').get() as { count: number }).count;
     const latest = db.prepare('SELECT MAX(captured_at) as date FROM snapshots').get() as { date: string | null };
 
+    // Social buzz & trending predictions
+    const socialBuzz = (db.prepare('SELECT COUNT(*) as count FROM social_buzz').get() as { count: number }).count;
+    const trendingPreds = (db.prepare('SELECT COUNT(*) as count FROM trending_predictions').get() as { count: number }).count;
+
     console.log('Augur 数据库状态:');
     console.log(`  项目数: ${projects}`);
     console.log(`  快照数: ${snapshots}`);
     console.log(`  README: ${readmes}`);
     console.log(`  信号分析: ${signals}`);
     console.log(`  HN 帖子: ${hnPosts}`);
+    console.log(`  社交数据: ${socialBuzz}`);
+    console.log(`  趋势预测: ${trendingPreds}`);
     console.log(`  共现词对: ${cooccurrences}`);
     console.log(`  最新采集: ${latest.date ?? '无'}`);
 

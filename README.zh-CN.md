@@ -2,7 +2,9 @@
 
 **开源信号情报系统 -- 通过 GitHub 生态数据预测下一个技术风口。**
 
-Augur 监测 GitHub、HackerNews 和包管理器中基础设施层的加速信号，在商业爆发前 3-6 个月预测技术浪潮的到来。
+Augur 监测 GitHub、HackerNews、Reddit、DEV.to 和包管理器中基础设施层的加速信号，在商业爆发前 3-6 个月预测技术浪潮的到来。
+
+同时还能**预测哪些具体项目即将爆火** -- 在项目起飞前发现它们，提供量化 KPI 预测，历史回测命中率 **80%**。
 
 [English](./README.md)
 
@@ -40,20 +42,32 @@ Augur 在基础设施层检测加速信号，预测爆发何时到来。
 | MCP 生态 | 7 个 repo 同时加速, browser-use 下载量加速 | 2025-11 | 活跃 |
 | 端侧 AI | llama.cpp, MLX, ollama | 2026-01 | **下一个** |
 
+### 趋势项目预测
+
+同时预测哪些**具体项目**即将爆火，附量化 KPI（4 周 star/fork/issue 预测、社区活跃度、增长势头）。最新预测见 [`reports/`](./reports/)。
+
+历史回测：**80% 命中率**，平均提前 **4 周** 检测到。在 Auto-GPT、Ollama、Open Interpreter、llama.cpp、SD WebUI 等案例上验证。
+
 ## 快速开始
 
 ```bash
 # 安装依赖
 npm install
 
-# 采集数据（GitHub Trending + HackerNews + watchlist + star 历史回填）
-npx tsx src/cli.ts collect --backfill
+# 采集数据（GitHub Trending + HackerNews + 社交媒体 + watchlist + star 历史回填）
+npx tsx src/cli.ts collect --backfill --social
 
 # 信号分析（LLM 层级分类 + 共现关键词 + 评分）
 npx tsx src/cli.ts analyze
 
 # 预测下一个风口
 npx tsx src/cli.ts predict-next
+
+# 预测即将爆火的项目（附量化 KPI）
+npx tsx src/cli.ts predict --trending
+
+# 历史回测验证
+npx tsx src/cli.ts backtest --trending
 
 # 完整周度流水线（采集 + 分析 + 预测 + 进化 + 报告）
 npx tsx src/cli.ts run --weekly
@@ -75,6 +89,8 @@ src/
     github-trending.ts           # GitHub Trending 爬取（Cheerio）
     github-api.ts                # GitHub REST API + star 历史回填
     hackernews.ts                # HackerNews Algolia API
+    devto.ts                     # DEV.to Forem API（社交热度信号）
+    reddit.ts                    # Reddit JSON API（病毒传播先导信号）
     package-downloads.ts         # npm / PyPI 下载量
 
   analyzer/                      # 分析层
@@ -87,6 +103,8 @@ src/
 
   predictor/                     # 预测层
     backtest.ts                  # ClickHouse GH Archive 历史回测
+    trending-predictor.ts        # 趋势项目预测 + 量化 KPI 预测
+    trending-backtest.ts         # 趋势预测历史验证（80% 命中率）
     calibrator.ts                # 网格搜索 + 三模型集成 + LOO 交叉验证
     scorer.ts                    # 多因子机会评分
     wave-scanner.ts              # 候选浪潮扫描预测
@@ -97,8 +115,10 @@ src/
     report-generator.ts          # Markdown 报告生成
 
   store/                         # 存储层
-    schema.ts                    # SQLite 表结构
+    schema.ts                    # SQLite 表结构（含 social_buzz、trending_predictions）
     queries.ts                   # 数据访问
+  util/
+    clickhouse.ts                # ClickHouse 客户端（fetch + curl 回退）
   llm/
     client.ts                    # OpenAI 兼容 LLM 客户端（百炼 DashScope）
 ```
@@ -168,8 +188,10 @@ src/
 | 命令 | 说明 |
 |------|------|
 | `augur collect --backfill` | 采集 Trending + API + HN + star 历史回填 |
+| `augur collect --social` | 同时采集 DEV.to + Reddit 社交数据 |
 | `augur analyze` | LLM 信号分类 + 共现分析 + 机会评分 |
 | `augur predict-next` | 扫描候选浪潮，预测爆发 |
+| `augur predict --trending` | 预测即将爆火的项目 + 量化 KPI |
 | `augur discover` | LLM 自动发现新候选浪潮 |
 | `augur evolve` | 完整进化循环（发现 -> 预测 -> 验证 -> 调参）|
 | `augur calibrate --cross-validate` | 历史数据训练 + LOO 交叉验证 |
@@ -178,7 +200,8 @@ src/
 | `augur run --weekly` | 完整流水线：采集 + 分析 + 预测 + 进化 + 报告 |
 | `augur run --daily` | 仅每日数据采集 |
 | `augur publish` | 将最新报告发布为 GitHub Issue |
-| `augur backtest` | ClickHouse 历史回测 |
+| `augur backtest` | ClickHouse 历史回测（浪潮信号）|
+| `augur backtest --trending` | 回测趋势项目预测（80% 命中率）|
 | `augur status` | 查看数据库状态 |
 
 ## GitHub Actions 配置

@@ -1,4 +1,5 @@
 import type Database from 'better-sqlite3';
+import { normalizeRepoId } from '../util/math.js';
 
 export interface Project {
   id: string;
@@ -28,6 +29,7 @@ export interface Readme {
 }
 
 export function upsertProject(db: Database.Database, project: Project): void {
+  project = { ...project, id: normalizeRepoId(project.id) };
   db.prepare(`
     INSERT INTO projects (id, language, topics, description, created_at, first_seen_at)
     VALUES (@id, @language, @topics, @description, @created_at, @first_seen_at)
@@ -40,6 +42,7 @@ export function upsertProject(db: Database.Database, project: Project): void {
 }
 
 export function upsertSnapshot(db: Database.Database, snapshot: Snapshot): void {
+  snapshot = { ...snapshot, project_id: normalizeRepoId(snapshot.project_id) };
   db.prepare(`
     INSERT INTO snapshots (project_id, captured_at, stars, forks, open_issues, trending_rank, trending_period, source)
     VALUES (@project_id, @captured_at, @stars, @forks, @open_issues, @trending_rank, @trending_period, @source)
@@ -54,6 +57,7 @@ export function upsertSnapshot(db: Database.Database, snapshot: Snapshot): void 
 }
 
 export function upsertReadme(db: Database.Database, readme: Readme): void {
+  readme = { ...readme, project_id: normalizeRepoId(readme.project_id) };
   db.prepare(`
     INSERT INTO readmes (project_id, content, keywords, updated_at)
     VALUES (@project_id, @content, @keywords, @updated_at)
@@ -113,3 +117,87 @@ export function getTrendingProjects(db: Database.Database, date: string): (Proje
     ORDER BY s.trending_rank ASC
   `).all(date) as (Project & Snapshot)[];
 }
+
+// ─── Social Buzz ─────────────────────────────────────────────────
+
+export interface SocialBuzzEntry {
+  id: string;
+  source: string;
+  title: string;
+  url: string | null;
+  score: number;
+  comments: number;
+  subreddit: string | null;
+  tags: string | null;
+  github_repo: string | null;
+  captured_at: string;
+}
+
+export function upsertSocialBuzz(db: Database.Database, entry: SocialBuzzEntry): void {
+  if (entry.github_repo) entry = { ...entry, github_repo: normalizeRepoId(entry.github_repo) };
+  db.prepare(`
+    INSERT INTO social_buzz (id, source, title, url, score, comments, subreddit, tags, github_repo, captured_at)
+    VALUES (@id, @source, @title, @url, @score, @comments, @subreddit, @tags, @github_repo, @captured_at)
+    ON CONFLICT(id) DO UPDATE SET
+      score = MAX(social_buzz.score, excluded.score),
+      comments = MAX(social_buzz.comments, excluded.comments)
+  `).run(entry);
+}
+
+/**
+ * Batch insert social buzz entries in a single transaction.
+ * Avoids 100+ individual fsyncs — single prepare, single transaction.
+ */
+export function batchUpsertSocialBuzz(db: Database.Database, entries: SocialBuzzEntry[]): void {
+  if (entries.length === 0) return;
+  const stmt = db.prepare(`
+    INSERT INTO social_buzz (id, source, title, url, score, comments, subreddit, tags, github_repo, captured_at)
+    VALUES (@id, @source, @title, @url, @score, @comments, @subreddit, @tags, @github_repo, @captured_at)
+    ON CONFLICT(id) DO UPDATE SET
+      score = MAX(social_buzz.score, excluded.score),
+      comments = MAX(social_buzz.comments, excluded.comments)
+  `);
+  const tx = db.transaction((items: SocialBuzzEntry[]) => {
+    for (const entry of items) {
+      const normalized = entry.github_repo
+        ? { ...entry, github_repo: normalizeRepoId(entry.github_repo) }
+        : entry;
+      stmt.run(normalized);
+    }
+  });
+  tx(entries);
+}
+
+
+// ─── Trending Predictions ────────────────────────────────────────
+
+export interface TrendingPrediction {
+  project_id: string;
+  predicted_at: string;
+  prediction_score: number;
+  factors: string;
+  star_velocity: number;
+  social_buzz_score: number;
+  fork_acceleration: number;
+  issue_acceleration: number;
+  actually_trended: number;
+  trended_at: string | null;
+}
+
+export function upsertTrendingPrediction(db: Database.Database, pred: TrendingPrediction): void {
+  pred = { ...pred, project_id: normalizeRepoId(pred.project_id) };
+  db.prepare(`
+    INSERT INTO trending_predictions (project_id, predicted_at, prediction_score, factors, star_velocity, social_buzz_score, fork_acceleration, issue_acceleration, actually_trended, trended_at)
+    VALUES (@project_id, @predicted_at, @prediction_score, @factors, @star_velocity, @social_buzz_score, @fork_acceleration, @issue_acceleration, @actually_trended, @trended_at)
+    ON CONFLICT(project_id, predicted_at) DO UPDATE SET
+      prediction_score = excluded.prediction_score,
+      factors = excluded.factors,
+      star_velocity = excluded.star_velocity,
+      social_buzz_score = excluded.social_buzz_score,
+      fork_acceleration = excluded.fork_acceleration,
+      issue_acceleration = excluded.issue_acceleration,
+      actually_trended = excluded.actually_trended,
+      trended_at = excluded.trended_at
+  `).run(pred);
+}
+

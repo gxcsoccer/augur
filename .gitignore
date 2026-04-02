@@ -3,7 +3,9 @@ dist/
 .env
 .DS_Store
 
-# Data files are tracked in repo (GitHub-native persistence)
-# Only ignore temp files
+# Data files
+data/*.db
 data/*.tmp
 data/*.bak
+data/*.db-shm
+data/*.db-wal

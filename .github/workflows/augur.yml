@@ -1,5 +1,9 @@
 name: Augur Signal Intelligence
 
+concurrency:
+  group: augur-pipeline
+  cancel-in-progress: false
+
 on:
   schedule:
     # 每日采集：UTC 00:00 (北京时间 08:00)
