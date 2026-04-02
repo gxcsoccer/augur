@@ -827,7 +827,7 @@ program
 
     // 测试集: 专业 Agent / OpenClaw
     console.log('\n═══ Phase 2: 验证（OpenClaw 预测）═══\n');
-    const validationTarget: backtest.BacktestTarget = {
+    const validationTarget: import('./predictor/backtest.js').BacktestTarget = {
       name: '专业 Agent / OpenClaw 爆发',
       eruptionDate: '2025-06-01',
       description: '专业 Agent 浪潮，OpenClaw 等垂直 Agent 产品涌现',
@@ -1307,6 +1307,10 @@ program
       for (const adj of evolution.adjustments) console.log(`  ${adj}`);
     }
 
+    // Compute week label (needed by step 7 and 8)
+    const weekNum = Math.ceil((new Date(today).getTime() - new Date(new Date(today).getFullYear(), 0, 1).getTime()) / 604800000);
+    const weekLabel = `${new Date(today).getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+
     // Step 7: 趋势项目预测
     console.log('\n═══ Step 7/8: 趋势项目预测 ═══');
     let trendingCandidates: Awaited<ReturnType<typeof import('./predictor/trending-predictor.js').predictTrendingProjects>> = [];
@@ -1340,8 +1344,6 @@ program
 
     // Step 8: 合并生成完整周报
     console.log('\n═══ Step 8/8: 生成完整周报 ═══');
-    const weekNum = Math.ceil((new Date(today).getTime() - new Date(new Date(today).getFullYear(), 0, 1).getTime()) / 604800000);
-    const weekLabel = `${new Date(today).getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
 
     const sections: string[] = [];
 

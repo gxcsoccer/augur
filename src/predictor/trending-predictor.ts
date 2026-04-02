@@ -365,7 +365,7 @@ async function batchFetchMetrics(
     const repo = normalizeRepoId(row.repo_name as string);
     if (!result.has(repo)) result.set(repo, []);
     result.get(repo)!.push({
-      week: row.week.slice(0, 10),
+      week: (row.week as string).slice(0, 10),
       new_stars: Number(row.new_stars),
       new_forks: Number(row.new_forks),
       new_issues: Number(row.new_issues),
