@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-02",
+  "updatedAt": "2026-04-06",
   "scorerWeights": {
     "layer": 0.25,
     "growth": 0.25,
@@ -9,7 +9,7 @@
     "signalBonus": 0.15
   },
   "signalDetection": {
-    "accelerationThreshold": 2.5,
+    "accelerationThreshold": 2,
     "windowSize": 4,
     "minBaseline": 3,
     "biasCorrection": 0.5,

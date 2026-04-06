@@ -596,6 +596,221 @@
       "id": "pred_1775095995109_t75a",
       "status": "miss",
       "verifiedAt": "2026-04-02"
+    },
+    {
+      "createdAt": "2026-04-06",
+      "wave": "Agentic Infrastructure / MCP 生态",
+      "predictedEruption": "2025-11-06",
+      "confidenceLower": "",
+      "confidenceUpper": "",
+      "signalStrength": "strong",
+      "signalCount": 6,
+      "keySignals": [
+        "modelcontextprotocol/modelcontextprotocol",
+        "modelcontextprotocol/python-sdk",
+        "modelcontextprotocol/typescript-sdk",
+        "modelcontextprotocol/servers",
+        "browser-use/browser-use",
+        "anthropics/claude-code"
+      ],
+      "params": {
+        "accelerationThreshold": 2.5,
+        "windowSize": 4,
+        "minBaseline": 3,
+        "layerWeight": 0.25,
+        "growthWeight": 0.25,
+        "usageWeight": 0.2,
+        "activityWeight": 0.15,
+        "signalBonusWeight": 0.15,
+        "compressionFactor": 0.6,
+        "biasCorrection": 0.5,
+        "recencyBoost": 0.5
+      },
+      "id": "pred_1775444667858_ejxy",
+      "status": "miss",
+      "verifiedAt": "2026-04-06"
+    },
+    {
+      "createdAt": "2026-04-06",
+      "wave": "Voice AI / 实时多模态",
+      "predictedEruption": "2025-09-13",
+      "confidenceLower": "",
+      "confidenceUpper": "",
+      "signalStrength": "moderate",
+      "signalCount": 3,
+      "keySignals": [
+        "TEN-framework/ten-framework",
+        "resemble-ai/chatterbox",
+        "kyutai-labs/moshi"
+      ],
+      "params": {
+        "accelerationThreshold": 2.5,
+        "windowSize": 4,
+        "minBaseline": 3,
+        "layerWeight": 0.25,
+        "growthWeight": 0.25,
+        "usageWeight": 0.2,
+        "activityWeight": 0.15,
+        "signalBonusWeight": 0.15,
+        "compressionFactor": 0.6,
+        "biasCorrection": 0.5,
+        "recencyBoost": 0.5
+      },
+      "id": "pred_1775444667859_pg4i",
+      "status": "hit",
+      "verifiedAt": "2026-04-06"
+    },
+    {
+      "createdAt": "2026-04-06",
+      "wave": "On-device / Edge AI",
+      "predictedEruption": "2026-01-02",
+      "confidenceLower": "",
+      "confidenceUpper": "",
+      "signalStrength": "moderate",
+      "signalCount": 4,
+      "keySignals": [
+        "ggml-org/llama.cpp",
+        "google-ai-edge/mediapipe",
+        "ollama/ollama",
+        "open-webui/open-webui"
+      ],
+      "params": {
+        "accelerationThreshold": 2.5,
+        "windowSize": 4,
+        "minBaseline": 3,
+        "layerWeight": 0.25,
+        "growthWeight": 0.25,
+        "usageWeight": 0.2,
+        "activityWeight": 0.15,
+        "signalBonusWeight": 0.15,
+        "compressionFactor": 0.6,
+        "biasCorrection": 0.5,
+        "recencyBoost": 0.5
+      },
+      "id": "pred_1775444667859_t83i",
+      "status": "miss",
+      "verifiedAt": "2026-04-06"
+    },
+    {
+      "createdAt": "2026-04-06",
+      "wave": "AI-native DevOps",
+      "predictedEruption": "2025-07-04",
+      "confidenceLower": "",
+      "confidenceUpper": "",
+      "signalStrength": "moderate",
+      "signalCount": 3,
+      "keySignals": [
+        "anthropics/claude-code",
+        "qodo-ai/pr-agent",
+        "microsoft/playwright"
+      ],
+      "params": {
+        "accelerationThreshold": 2.5,
+        "windowSize": 4,
+        "minBaseline": 3,
+        "layerWeight": 0.25,
+        "growthWeight": 0.25,
+        "usageWeight": 0.2,
+        "activityWeight": 0.15,
+        "signalBonusWeight": 0.15,
+        "compressionFactor": 0.6,
+        "biasCorrection": 0.5,
+        "recencyBoost": 0.5
+      },
+      "id": "pred_1775444667860_ioss",
+      "status": "hit",
+      "verifiedAt": "2026-04-06"
+    },
+    {
+      "createdAt": "2026-04-06",
+      "wave": "Autonomous Commerce / AI Economy",
+      "predictedEruption": "2025-05-06",
+      "confidenceLower": "",
+      "confidenceUpper": "",
+      "signalStrength": "moderate",
+      "signalCount": 4,
+      "keySignals": [
+        "elizaOS/eliza",
+        "goat-sdk/goat",
+        "sendaifun/solana-agent-kit",
+        "HKUDS/AI-Trader"
+      ],
+      "params": {
+        "accelerationThreshold": 2.5,
+        "windowSize": 4,
+        "minBaseline": 3,
+        "layerWeight": 0.25,
+        "growthWeight": 0.25,
+        "usageWeight": 0.2,
+        "activityWeight": 0.15,
+        "signalBonusWeight": 0.15,
+        "compressionFactor": 0.6,
+        "biasCorrection": 0.5,
+        "recencyBoost": 0.5
+      },
+      "id": "pred_1775444667860_wvaz",
+      "status": "miss",
+      "verifiedAt": "2026-04-06"
+    },
+    {
+      "createdAt": "2026-04-06",
+      "wave": "Embodied AI / 机器人",
+      "predictedEruption": "2025-11-26",
+      "confidenceLower": "",
+      "confidenceUpper": "",
+      "signalStrength": "moderate",
+      "signalCount": 4,
+      "keySignals": [
+        "Physical-Intelligence/openpi",
+        "LeCAR-Lab/HumanoidVerse",
+        "NVIDIA/Isaac-GR00T",
+        "OpenDriveLab/AgiBot-World"
+      ],
+      "params": {
+        "accelerationThreshold": 2.5,
+        "windowSize": 4,
+        "minBaseline": 3,
+        "layerWeight": 0.25,
+        "growthWeight": 0.25,
+        "usageWeight": 0.2,
+        "activityWeight": 0.15,
+        "signalBonusWeight": 0.15,
+        "compressionFactor": 0.6,
+        "biasCorrection": 0.5,
+        "recencyBoost": 0.5
+      },
+      "id": "pred_1775444667861_86o4",
+      "status": "miss",
+      "verifiedAt": "2026-04-06"
+    },
+    {
+      "createdAt": "2026-04-06",
+      "wave": "AI for Science",
+      "predictedEruption": "2025-10-27",
+      "confidenceLower": "",
+      "confidenceUpper": "",
+      "signalStrength": "moderate",
+      "signalCount": 2,
+      "keySignals": [
+        "google-deepmind/alphafold3",
+        "jwohlwend/boltz"
+      ],
+      "params": {
+        "accelerationThreshold": 2.5,
+        "windowSize": 4,
+        "minBaseline": 3,
+        "layerWeight": 0.25,
+        "growthWeight": 0.25,
+        "usageWeight": 0.2,
+        "activityWeight": 0.15,
+        "signalBonusWeight": 0.15,
+        "compressionFactor": 0.6,
+        "biasCorrection": 0.5,
+        "recencyBoost": 0.5
+      },
+      "id": "pred_1775444667861_w3lq",
+      "status": "miss",
+      "verifiedAt": "2026-04-06"
     }
   ]
 }
