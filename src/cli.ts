@@ -1342,6 +1342,16 @@ program
       console.warn(`[Trending] 趋势预测跳过: ${(e as Error).message}`);
     }
 
+    // Step 7.5: 生成 Crux 日报数据源（daily-brief.json）
+    try {
+      const { generateDailyBrief } = await import('./pipeline/daily-brief.js');
+      const brief = generateDailyBrief(db, today, trendingCandidates, wavePredictions);
+      fs.writeFileSync('data/daily-brief.json', JSON.stringify(brief, null, 2), 'utf-8');
+      console.log(`[DailyBrief] 生成 ${brief.items.length} 条增量信号 → data/daily-brief.json`);
+    } catch (e) {
+      console.warn(`[DailyBrief] 生成失败: ${(e as Error).message}`);
+    }
+
     // Step 8: 合并生成完整周报
     console.log('\n═══ Step 8/8: 生成完整周报 ═══');
 
