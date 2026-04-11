@@ -1,0 +1,418 @@
+{
+  "date": "2026-04-11",
+  "items": [
+    {
+      "type": "resurging",
+      "repo": "chenglou/pretext",
+      "title": "chenglou/pretext (42.8k★) 出现二次爆发信号",
+      "summary": "拥有 42.8k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 12.9k star。Star 加速 25.35x，Fork 加速 36.11x。",
+      "evidence": [
+        "Star 加速 25.35x",
+        "Fork 加速 36.11x",
+        "Issue 活跃度上升 10x",
+        "PR 活跃度上升 10x",
+        "4 个因子同时加速"
+      ],
+      "score": 0.78,
+      "stars": 42816,
+      "predicted_stars_4w": 12869,
+      "url": "https://github.com/chenglou/pretext"
+    },
+    {
+      "type": "resurging",
+      "repo": "siddharthvaddem/openscreen",
+      "title": "siddharthvaddem/openscreen (27.8k★) 出现二次爆发信号",
+      "summary": "拥有 27.8k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 7.8k star。Star 加速 34.32x，Fork 加速 24.15x。",
+      "evidence": [
+        "Star 加速 34.32x",
+        "Fork 加速 24.15x",
+        "Issue 活跃度上升 2.98x",
+        "PR 活跃度上升 2.5x",
+        "4 个因子同时加速"
+      ],
+      "score": 0.77,
+      "stars": 27756,
+      "predicted_stars_4w": 7778,
+      "url": "https://github.com/siddharthvaddem/openscreen"
+    },
+    {
+      "type": "resurging",
+      "repo": "google-ai-edge/gallery",
+      "title": "google-ai-edge/gallery (20.3k★) 出现二次爆发信号",
+      "summary": "拥有 20.3k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 2.1k star。Star 加速 30.09x，Fork 加速 26.41x。",
+      "evidence": [
+        "Star 加速 30.09x",
+        "Fork 加速 26.41x",
+        "Issue 活跃度上升 6.5x",
+        "PR 活跃度上升 1.58x",
+        "新贡献者增长 1.5x",
+        "5 个因子同时加速"
+      ],
+      "score": 0.75,
+      "stars": 20288,
+      "predicted_stars_4w": 2112,
+      "url": "https://github.com/google-ai-edge/gallery"
+    },
+    {
+      "type": "resurging",
+      "repo": "anthropics/claude-code",
+      "title": "anthropics/claude-code (112.3k★) 出现二次爆发信号",
+      "summary": "拥有 112.3k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 8.7k star。Star 加速 3.53x，Fork 加速 10.43x。",
+      "evidence": [
+        "Star 加速 3.53x",
+        "Fork 加速 10.43x",
+        "近 4 周发布 4 次",
+        "社交热度 60 分",
+        "4 个因子同时加速"
+      ],
+      "score": 0.69,
+      "stars": 112335,
+      "predicted_stars_4w": 8722,
+      "url": "https://github.com/anthropics/claude-code"
+    },
+    {
+      "type": "resurging",
+      "repo": "cmliu/edgetunnel",
+      "title": "cmliu/edgetunnel (30.4k★) 出现二次爆发信号",
+      "summary": "拥有 30.4k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 1.2k star。Star 加速 6.38x，Fork 加速 3.28x。",
+      "evidence": [
+        "Star 加速 6.38x",
+        "Fork 加速 3.28x",
+        "Issue 活跃度上升 3x",
+        "3 个因子同时加速"
+      ],
+      "score": 0.63,
+      "stars": 30382,
+      "predicted_stars_4w": 1180,
+      "url": "https://github.com/cmliu/edgetunnel"
+    },
+    {
+      "type": "resurging",
+      "repo": "roboflow/supervision",
+      "title": "roboflow/supervision (37.9k★) 出现二次爆发信号",
+      "summary": "拥有 37.9k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 461 star。Star 加速 9.86x，Fork 加速 6.19x。",
+      "evidence": [
+        "Star 加速 9.86x",
+        "Fork 加速 6.19x",
+        "PR 活跃度上升 1.66x",
+        "3 个因子同时加速"
+      ],
+      "score": 0.61,
+      "stars": 37897,
+      "predicted_stars_4w": 461,
+      "url": "https://github.com/roboflow/supervision"
+    },
+    {
+      "type": "resurging",
+      "repo": "sherlock-project/sherlock",
+      "title": "sherlock-project/sherlock (80.8k★) 出现二次爆发信号",
+      "summary": "拥有 80.8k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 2.6k star。Star 加速 10.97x，Fork 加速 5.25x。",
+      "evidence": [
+        "Star 加速 10.97x",
+        "Fork 加速 5.25x",
+        "PR 活跃度上升 1.59x",
+        "3 个因子同时加速"
+      ],
+      "score": 0.59,
+      "stars": 80785,
+      "predicted_stars_4w": 2615,
+      "url": "https://github.com/sherlock-project/sherlock"
+    },
+    {
+      "type": "resurging",
+      "repo": "onyx-dot-app/onyx",
+      "title": "onyx-dot-app/onyx (26.5k★) 出现二次爆发信号",
+      "summary": "拥有 26.5k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 3.2k star。Star 加速 15.42x，Fork 加速 10.23x。",
+      "evidence": [
+        "Star 加速 15.42x",
+        "Fork 加速 10.23x"
+      ],
+      "score": 0.57,
+      "stars": 26465,
+      "predicted_stars_4w": 3153,
+      "url": "https://github.com/onyx-dot-app/onyx"
+    },
+    {
+      "type": "resurging",
+      "repo": "google-research/timesfm",
+      "title": "google-research/timesfm (16.3k★) 出现二次爆发信号",
+      "summary": "拥有 16.3k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 2.4k star。Star 加速 5.73x，Fork 加速 9.8x。",
+      "evidence": [
+        "Star 加速 5.73x",
+        "Fork 加速 9.8x",
+        "PR 活跃度上升 1.5x",
+        "3 个因子同时加速"
+      ],
+      "score": 0.56,
+      "stars": 16323,
+      "predicted_stars_4w": 2353,
+      "url": "https://github.com/google-research/timesfm"
+    },
+    {
+      "type": "resurging",
+      "repo": "telegramdesktop/tdesktop",
+      "title": "telegramdesktop/tdesktop (31.4k★) 出现二次爆发信号",
+      "summary": "拥有 31.4k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 507 star。Star 加速 6.38x，Fork 加速 1.75x。",
+      "evidence": [
+        "Star 加速 6.38x",
+        "Fork 加速 1.75x"
+      ],
+      "score": 0.48,
+      "stars": 31351,
+      "predicted_stars_4w": 507,
+      "url": "https://github.com/telegramdesktop/tdesktop"
+    },
+    {
+      "type": "resurging",
+      "repo": "block/goose",
+      "title": "block/goose (41.0k★) 出现二次爆发信号",
+      "summary": "拥有 41.0k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 2.3k star。Star 加速 4.51x，Fork 加速 2.5x。",
+      "evidence": [
+        "Star 加速 4.51x",
+        "Fork 加速 2.5x"
+      ],
+      "score": 0.44,
+      "stars": 41010,
+      "predicted_stars_4w": 2345,
+      "url": "https://github.com/block/goose"
+    },
+    {
+      "type": "resurging",
+      "repo": "vadimdemedes/ink",
+      "title": "vadimdemedes/ink (37.5k★) 出现二次爆发信号",
+      "summary": "拥有 37.5k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 509 star。Star 加速 3.91x，Fork 加速 5.5x。",
+      "evidence": [
+        "Star 加速 3.91x",
+        "Fork 加速 5.5x"
+      ],
+      "score": 0.44,
+      "stars": 37533,
+      "predicted_stars_4w": 509,
+      "url": "https://github.com/vadimdemedes/ink"
+    },
+    {
+      "type": "resurging",
+      "repo": "fathyb/carbonyl",
+      "title": "fathyb/carbonyl (18.3k★) 出现二次爆发信号",
+      "summary": "拥有 18.3k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 425 star。Star 加速 3.9x，Fork 加速 8.75x。",
+      "evidence": [
+        "Star 加速 3.9x",
+        "Fork 加速 8.75x"
+      ],
+      "score": 0.42,
+      "stars": 18311,
+      "predicted_stars_4w": 425,
+      "url": "https://github.com/fathyb/carbonyl"
+    },
+    {
+      "type": "resurging",
+      "repo": "jwasham/coding-interview-university",
+      "title": "jwasham/coding-interview-university (340.7k★) 出现二次爆发信号",
+      "summary": "拥有 340.7k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 805 star。Star 加速 2.74x，Fork 加速 2.13x。",
+      "evidence": [
+        "Star 加速 2.74x",
+        "Fork 加速 2.13x"
+      ],
+      "score": 0.29,
+      "stars": 340748,
+      "predicted_stars_4w": 805,
+      "url": "https://github.com/jwasham/coding-interview-university"
+    },
+    {
+      "type": "resurging",
+      "repo": "twentyhq/twenty",
+      "title": "twentyhq/twenty (43.8k★) 出现二次爆发信号",
+      "summary": "拥有 43.8k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 469 star。。",
+      "evidence": [],
+      "score": 0.29,
+      "stars": 43804,
+      "predicted_stars_4w": 469,
+      "url": "https://github.com/twentyhq/twenty"
+    },
+    {
+      "type": "resurging",
+      "repo": "ultraworkers/claw-code",
+      "title": "ultraworkers/claw-code (181.0k★) 出现二次爆发信号",
+      "summary": "拥有 181.0k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 22.4k star。Fork 加速 7.24x，新贡献者增长 2x。",
+      "evidence": [
+        "Fork 加速 7.24x",
+        "新贡献者增长 2x"
+      ],
+      "score": 0.18,
+      "stars": 181017,
+      "predicted_stars_4w": 22363,
+      "url": "https://github.com/ultraworkers/claw-code"
+    },
+    {
+      "type": "new_wave",
+      "title": "新技术浪潮信号：Agentic Infrastructure / MCP 生态",
+      "summary": "检测到 \"Agentic Infrastructure / MCP 生态\" 浪潮的强信号，预测爆发时间 2025-06-04。关键项目：modelcontextprotocol/modelcontextprotocol、modelcontextprotocol/python-sdk、modelcontextprotocol/typescript-sdk。",
+      "evidence": [
+        "信号强度: strong",
+        "关键项目: modelcontextprotocol/modelcontextprotocol, modelcontextprotocol/python-sdk, modelcontextprotocol/typescript-sdk"
+      ]
+    },
+    {
+      "type": "new_entry",
+      "repo": "matthartman/ghost-pepper",
+      "title": "新发现：matthartman/ghost-pepper 展现爆发早期信号",
+      "summary": "当前 2.0k star，预测得分 0.80，预计 4 周内新增 746 star。Star 加速 69.2x，Fork 加速 7x。",
+      "evidence": [
+        "Star 加速 69.2x",
+        "Fork 加速 7x",
+        "Issue 活跃度上升 5x",
+        "近 4 周发布 5 次",
+        "社交热度 30 分",
+        "5 个因子同时加速"
+      ],
+      "score": 0.8,
+      "stars": 1978,
+      "predicted_stars_4w": 746,
+      "url": "https://github.com/matthartman/ghost-pepper"
+    },
+    {
+      "type": "new_entry",
+      "repo": "breferrari/obsidian-mind",
+      "title": "新发现：breferrari/obsidian-mind 展现爆发早期信号",
+      "summary": "当前 1.8k star，预测得分 0.63，预计 4 周内新增 869 star。Star 加速 201.5x，Fork 加速 10x。",
+      "evidence": [
+        "Star 加速 201.5x",
+        "Fork 加速 10x",
+        "PR 活跃度上升 10x",
+        "3 个因子同时加速"
+      ],
+      "score": 0.63,
+      "stars": 1754,
+      "predicted_stars_4w": 869,
+      "url": "https://github.com/breferrari/obsidian-mind"
+    },
+    {
+      "type": "new_entry",
+      "repo": "capcom6/android-sms-gateway",
+      "title": "新发现：capcom6/android-sms-gateway 展现爆发早期信号",
+      "summary": "当前 4.0k star，预测得分 0.56，预计 4 周内新增 1.3k star。Star 加速 19.48x，Fork 加速 11.47x。",
+      "evidence": [
+        "Star 加速 19.48x",
+        "Fork 加速 11.47x",
+        "新贡献者增长 1.5x",
+        "3 个因子同时加速"
+      ],
+      "score": 0.56,
+      "stars": 3968,
+      "predicted_stars_4w": 1302,
+      "url": "https://github.com/capcom6/android-sms-gateway"
+    },
+    {
+      "type": "new_entry",
+      "repo": "liquidslr/system-design-notes",
+      "title": "新发现：liquidslr/system-design-notes 展现爆发早期信号",
+      "summary": "当前 4.9k star，预测得分 0.48，预计 4 周内新增 1.2k star。Star 加速 48.19x，Fork 加速 36.75x。",
+      "evidence": [
+        "Star 加速 48.19x",
+        "Fork 加速 36.75x"
+      ],
+      "score": 0.48,
+      "stars": 4876,
+      "predicted_stars_4w": 1158,
+      "url": "https://github.com/liquidslr/system-design-notes"
+    },
+    {
+      "type": "new_entry",
+      "repo": "getcompanion-ai/feynman",
+      "title": "新发现：getcompanion-ai/feynman 展现爆发早期信号",
+      "summary": "当前 4.2k star，预测得分 0.42，预计 4 周内新增 935 star。Star 加速 3.6x，Fork 加速 4.3x。",
+      "evidence": [
+        "Star 加速 3.6x",
+        "Fork 加速 4.3x",
+        "Issue 活跃度上升 1.5x",
+        "3 个因子同时加速"
+      ],
+      "score": 0.42,
+      "stars": 4209,
+      "predicted_stars_4w": 935,
+      "url": "https://github.com/getcompanion-ai/feynman"
+    },
+    {
+      "type": "new_entry",
+      "repo": "iflytek/skillhub",
+      "title": "新发现：iflytek/skillhub 展现爆发早期信号",
+      "summary": "当前 2.3k star，预测得分 0.42，预计 4 周内新增 742 star。Star 加速 3.19x，Issue 活跃度上升 4.88x。",
+      "evidence": [
+        "Star 加速 3.19x",
+        "Issue 活跃度上升 4.88x"
+      ],
+      "score": 0.42,
+      "stars": 2281,
+      "predicted_stars_4w": 742,
+      "url": "https://github.com/iflytek/skillhub"
+    },
+    {
+      "type": "new_entry",
+      "repo": "maaslalani/sheets",
+      "title": "新发现：maaslalani/sheets 展现爆发早期信号",
+      "summary": "当前 1.8k star，预测得分 0.37，预计 4 周内新增 771 star。Star 加速 2.48x，Fork 加速 9x。",
+      "evidence": [
+        "Star 加速 2.48x",
+        "Fork 加速 9x",
+        "Issue 活跃度上升 2x",
+        "PR 活跃度上升 3x",
+        "4 个因子同时加速"
+      ],
+      "score": 0.37,
+      "stars": 1817,
+      "predicted_stars_4w": 771,
+      "url": "https://github.com/maaslalani/sheets"
+    },
+    {
+      "type": "new_entry",
+      "repo": "averygan/reclip",
+      "title": "新发现：averygan/reclip 展现爆发早期信号",
+      "summary": "当前 3.6k star，预测得分 0.27，预计 4 周内新增 1.2k star。Star 加速 4.55x，Fork 加速 4.06x。",
+      "evidence": [
+        "Star 加速 4.55x",
+        "Fork 加速 4.06x"
+      ],
+      "score": 0.27,
+      "stars": 3624,
+      "predicted_stars_4w": 1220,
+      "url": "https://github.com/averygan/reclip"
+    },
+    {
+      "type": "new_entry",
+      "repo": "midudev/autoskills",
+      "title": "新发现：midudev/autoskills 展现爆发早期信号",
+      "summary": "当前 2.2k star，预测得分 0.22，预计 4 周内新增 845 star。Issue 活跃度上升 4x。",
+      "evidence": [
+        "Issue 活跃度上升 4x"
+      ],
+      "score": 0.22,
+      "stars": 2208,
+      "predicted_stars_4w": 845,
+      "url": "https://github.com/midudev/autoskills"
+    },
+    {
+      "type": "new_entry",
+      "repo": "leilei926524-tech/anti-distill",
+      "title": "新发现：leilei926524-tech/anti-distill 展现爆发早期信号",
+      "summary": "当前 1.7k star，预测得分 0.18，预计 4 周内新增 813 star。Issue 活跃度上升 10x。",
+      "evidence": [
+        "Issue 活跃度上升 10x"
+      ],
+      "score": 0.18,
+      "stars": 1708,
+      "predicted_stars_4w": 813,
+      "url": "https://github.com/leilei926524-tech/anti-distill"
+    },
+    {
+      "type": "new_entry",
+      "repo": "eze-is/web-access",
+      "title": "新发现：eze-is/web-access 展现爆发早期信号",
+      "summary": "当前 4.6k star，预测得分 0.17，预计 4 周内新增 688 star。。",
+      "evidence": [],
+      "score": 0.17,
+      "stars": 4567,
+      "predicted_stars_4w": 688,
+      "url": "https://github.com/eze-is/web-access"
+    }
+  ]
+}
