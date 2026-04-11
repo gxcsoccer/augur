@@ -1018,7 +1018,7 @@ program
     initSchema(db);
 
     const date = opts.date ?? new Date().toISOString().slice(0, 10);
-    const weekLabel = `${new Date(date).getFullYear()}-W${String(Math.ceil((new Date(date).getTime() - new Date(new Date(date).getFullYear(), 0, 1).getTime()) / 604800000)).padStart(2, '0')}`;
+    const dateLabel = date; // YYYY-MM-DD
 
     console.log(`[Report] 生成日报，基准日期: ${date}`);
 
@@ -1051,7 +1051,7 @@ program
       }
     }
 
-    const report = formatReport(entries, weekLabel, date);
+    const report = formatReport(entries, dateLabel, date);
 
     if (opts.output) {
       const fs = await import('node:fs');
@@ -1307,9 +1307,8 @@ program
       for (const adj of evolution.adjustments) console.log(`  ${adj}`);
     }
 
-    // Compute week label (needed by step 7 and 8)
-    const weekNum = Math.ceil((new Date(today).getTime() - new Date(new Date(today).getFullYear(), 0, 1).getTime()) / 604800000);
-    const weekLabel = `${new Date(today).getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+    // 日期标签，用于报告文件名和标题
+    const dateLabel = today; // YYYY-MM-DD
 
     // Step 7: 趋势项目预测
     console.log('\n═══ Step 7/8: 趋势项目预测 ═══');
@@ -1336,8 +1335,8 @@ program
 
       // Save standalone trending report
       const trendingReport = formatTrendingPredictionReport(trendingCandidates, today);
-      fs.writeFileSync(path.join(opts.outputDir, `${weekLabel}-trending.md`), trendingReport, 'utf-8');
-      console.log(`[Trending] 报告已写入 ${opts.outputDir}/${weekLabel}-trending.md`);
+      fs.writeFileSync(path.join(opts.outputDir, `${dateLabel}-trending.md`), trendingReport, 'utf-8');
+      console.log(`[Trending] 报告已写入 ${opts.outputDir}/${dateLabel}-trending.md`);
     } catch (e) {
       console.warn(`[Trending] 趋势预测跳过: ${(e as Error).message}`);
     }
@@ -1358,7 +1357,7 @@ program
     const sections: string[] = [];
 
     // Section 1: 标题 + 概览
-    sections.push(`# Augur 日报 — ${weekLabel}`);
+    sections.push(`# Augur 日报 — ${dateLabel}`);
     sections.push('');
     sections.push(`> 生成日期: ${today} | 项目: ${entries.length} | 浪潮: ${wavePredictions.length}`);
     const ledgerStats = getLedgerStats();
@@ -1397,7 +1396,7 @@ program
     }
 
     // Section 3: 本周信号（trending 项目评分）
-    const signalReport = formatReport(entries, weekLabel, today);
+    const signalReport = formatReport(entries, dateLabel, today);
     // 去掉 signalReport 的标题（避免重复）
     const signalBody = signalReport.replace(/^#\s+.*\n+>.*\n*/m, '');
     sections.push('## 本周项目信号');
@@ -1454,7 +1453,7 @@ program
 
     // Save report
     fs.mkdirSync(opts.outputDir, { recursive: true });
-    const reportPath = path.join(opts.outputDir, `${weekLabel}.md`);
+    const reportPath = path.join(opts.outputDir, `${dateLabel}.md`);
     fs.writeFileSync(reportPath, fullReport, 'utf-8');
     console.log(`[Report] 已写入 ${reportPath}`);
 
