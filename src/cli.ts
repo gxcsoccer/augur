@@ -1370,12 +1370,22 @@ program
     if (wavePredictions.length > 0) {
       sections.push('## 浪潮预测');
       sections.push('');
-      sections.push('| 候选浪潮 | 信号强度 | 预测爆发 | 关键信号 |');
-      sections.push('|---------|---------|---------|---------|');
+      sections.push('| 候选浪潮 | 信号强度 | 状态 | 关键信号 |');
+      sections.push('|---------|---------|------|---------|');
+      const todayMs = new Date(today).getTime();
       for (const p of wavePredictions) {
         const strength = { strong: '🔴 强', moderate: '🟡 中', weak: '⚪ 弱', none: '- 无' }[p.signalStrength];
         const signals = p.validation.detectedSignals.filter(s => s.signalDate).map(s => s.repo.split('/')[1]).join(', ');
-        sections.push(`| ${p.wave.name} | ${strength} | ${p.validation.predictedEruptionDate ?? '-'} | ${signals || '-'} |`);
+        let status = '-';
+        if (p.validation.predictedEruptionDate) {
+          const eruptionMs = new Date(p.validation.predictedEruptionDate).getTime();
+          if (eruptionMs < todayMs) {
+            status = `✅ 已爆发 (${p.validation.predictedEruptionDate})`;
+          } else {
+            status = `⏳ 预计 ${p.validation.predictedEruptionDate}`;
+          }
+        }
+        sections.push(`| ${p.wave.name} | ${strength} | ${status} | ${signals || '-'} |`);
       }
       sections.push('');
     }
