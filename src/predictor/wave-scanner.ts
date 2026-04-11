@@ -217,22 +217,37 @@ export function formatWavePredictionReport(
   // Summary table
   lines.push('## 总览');
   lines.push('');
-  lines.push('| 排名 | 候选浪潮 | 信号强度 | 状态 | 关键信号 |');
-  lines.push('|------|---------|---------|------|---------|');
-
   const nowMs = Date.now();
-  for (const [i, p] of predictions.entries()) {
-    const strength = { strong: '🔴 强', moderate: '🟡 中', weak: '⚪ 弱', none: '- 无' }[p.signalStrength];
-    const detected = p.validation.detectedSignals.filter(s => s.signalDate).map(s => s.repo.split('/')[1]).join(', ');
-    let status = '-';
-    if (p.validation.predictedEruptionDate) {
-      if (new Date(p.validation.predictedEruptionDate).getTime() < nowMs) {
-        status = `✅ 已爆发 (${p.validation.predictedEruptionDate})`;
-      } else {
-        status = `⏳ 预计 ${p.validation.predictedEruptionDate}`;
-      }
+  const upcoming = predictions.filter(p =>
+    !p.validation.predictedEruptionDate || new Date(p.validation.predictedEruptionDate).getTime() >= nowMs
+  );
+  const erupted = predictions.filter(p =>
+    p.validation.predictedEruptionDate && new Date(p.validation.predictedEruptionDate).getTime() < nowMs
+  );
+
+  if (upcoming.length > 0) {
+    lines.push('### 未来预测');
+    lines.push('');
+    lines.push('| 排名 | 候选浪潮 | 信号强度 | 预计爆发 | 关键信号 |');
+    lines.push('|------|---------|---------|---------|---------|');
+    for (const [i, p] of upcoming.entries()) {
+      const strength = { strong: '🔴 强', moderate: '🟡 中', weak: '⚪ 弱', none: '- 无' }[p.signalStrength];
+      const detected = p.validation.detectedSignals.filter(s => s.signalDate).map(s => s.repo.split('/')[1]).join(', ');
+      lines.push(`| ${i + 1} | ${p.wave.name} | ${strength} | ⏳ ${p.validation.predictedEruptionDate ?? '-'} | ${detected || '-'} |`);
     }
-    lines.push(`| ${i + 1} | ${p.wave.name} | ${strength} | ${status} | ${detected || '-'} |`);
+  }
+
+  if (erupted.length > 0) {
+    lines.push('');
+    lines.push('### 已验证浪潮');
+    lines.push('');
+    lines.push('| 浪潮 | 信号强度 | 爆发时间 | 生态项目 |');
+    lines.push('|------|---------|---------|---------|');
+    for (const p of erupted) {
+      const strength = { strong: '🔴 强', moderate: '🟡 中', weak: '⚪ 弱', none: '- 无' }[p.signalStrength];
+      const detected = p.validation.detectedSignals.filter(s => s.signalDate).map(s => s.repo.split('/')[1]).join(', ');
+      lines.push(`| ${p.wave.name} | ${strength} | ✅ ${p.validation.predictedEruptionDate} | ${detected || '-'} |`);
+    }
   }
   lines.push('');
 

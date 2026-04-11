@@ -1366,28 +1366,43 @@ program
     }
     sections.push('');
 
-    // Section 2: 浪潮预测总览
+    // Section 2: 浪潮预测总览（分为未来预测 + 已验证两部分）
     if (wavePredictions.length > 0) {
-      sections.push('## 浪潮预测');
-      sections.push('');
-      sections.push('| 候选浪潮 | 信号强度 | 状态 | 关键信号 |');
-      sections.push('|---------|---------|------|---------|');
       const todayMs = new Date(today).getTime();
-      for (const p of wavePredictions) {
-        const strength = { strong: '🔴 强', moderate: '🟡 中', weak: '⚪ 弱', none: '- 无' }[p.signalStrength];
-        const signals = p.validation.detectedSignals.filter(s => s.signalDate).map(s => s.repo.split('/')[1]).join(', ');
-        let status = '-';
-        if (p.validation.predictedEruptionDate) {
-          const eruptionMs = new Date(p.validation.predictedEruptionDate).getTime();
-          if (eruptionMs < todayMs) {
-            status = `✅ 已爆发 (${p.validation.predictedEruptionDate})`;
-          } else {
-            status = `⏳ 预计 ${p.validation.predictedEruptionDate}`;
-          }
+      const upcoming = wavePredictions.filter(p =>
+        !p.validation.predictedEruptionDate || new Date(p.validation.predictedEruptionDate).getTime() >= todayMs
+      );
+      const erupted = wavePredictions.filter(p =>
+        p.validation.predictedEruptionDate && new Date(p.validation.predictedEruptionDate).getTime() < todayMs
+      );
+
+      if (upcoming.length > 0) {
+        sections.push('## 浪潮预测');
+        sections.push('');
+        sections.push('| 候选浪潮 | 信号强度 | 预计爆发 | 关键信号 |');
+        sections.push('|---------|---------|---------|---------|');
+        for (const p of upcoming) {
+          const strength = { strong: '🔴 强', moderate: '🟡 中', weak: '⚪ 弱', none: '- 无' }[p.signalStrength];
+          const signals = p.validation.detectedSignals.filter(s => s.signalDate).map(s => s.repo.split('/')[1]).join(', ');
+          sections.push(`| ${p.wave.name} | ${strength} | ⏳ ${p.validation.predictedEruptionDate ?? '-'} | ${signals || '-'} |`);
         }
-        sections.push(`| ${p.wave.name} | ${strength} | ${status} | ${signals || '-'} |`);
+        sections.push('');
       }
-      sections.push('');
+
+      if (erupted.length > 0) {
+        sections.push('## 已验证浪潮');
+        sections.push('');
+        sections.push('> 以下浪潮已经爆发，持续跟踪其生态演进。');
+        sections.push('');
+        sections.push('| 浪潮 | 信号强度 | 爆发时间 | 生态项目 |');
+        sections.push('|------|---------|---------|---------|');
+        for (const p of erupted) {
+          const strength = { strong: '🔴 强', moderate: '🟡 中', weak: '⚪ 弱', none: '- 无' }[p.signalStrength];
+          const signals = p.validation.detectedSignals.filter(s => s.signalDate).map(s => s.repo.split('/')[1]).join(', ');
+          sections.push(`| ${p.wave.name} | ${strength} | ✅ ${p.validation.predictedEruptionDate} | ${signals || '-'} |`);
+        }
+        sections.push('');
+      }
     }
 
     // Section 2.5: 趋势项目预测
