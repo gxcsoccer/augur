@@ -6,7 +6,7 @@
  * 自动生成结构化深度调研报告。
  */
 
-import { getLlm, LLM_MODEL } from '../llm/client.js';
+import { getLlm, LLM_MODEL, LLM_THINKING_ON } from '../llm/client.js';
 import type Database from 'better-sqlite3';
 
 export interface ResearchInput {
@@ -103,6 +103,8 @@ ${keywords}`;
         { role: 'system', content: RESEARCH_PROMPT },
         { role: 'user', content: userContent },
       ],
+      // @ts-expect-error GLM 5.1 ultrathink extension
+      thinking: LLM_THINKING_ON,
     });
 
     const fullReport = response.choices[0]?.message?.content?.trim() ?? '';

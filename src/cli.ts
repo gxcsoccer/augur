@@ -186,26 +186,26 @@ program
         console.warn(`[Collect] DEV.to 采集失败: ${(err as Error).message}`);
       }
 
-      console.log('[Collect] 正在采集 Reddit...');
+      console.log('[Collect] 正在采集 Lobsters...');
       try {
-        const { fetchAllRedditPosts, extractGitHubRepo: extractRedditRepo } = await import('./collector/reddit.js');
-        const posts = await fetchAllRedditPosts();
-        let redditGH = 0;
+        const { fetchAllLobstersPosts, extractGitHubRepo: extractLobstersRepo } = await import('./collector/lobsters.js');
+        const posts = await fetchAllLobstersPosts();
+        let lobstersGH = 0;
         for (const p of posts) {
-          const ghRepo = extractRedditRepo(p.url);
+          const ghRepo = extractLobstersRepo(p.url);
           upsertSocialBuzz(db, {
-            id: `reddit-${p.id}`, source: 'reddit', title: p.title, url: p.url,
-            score: p.score, comments: p.comments, subreddit: p.subreddit,
-            tags: null, github_repo: ghRepo, captured_at: today,
+            id: `lobsters-${p.id}`, source: 'lobsters', title: p.title, url: p.url,
+            score: p.score, comments: p.comments, subreddit: null,
+            tags: JSON.stringify(p.tags), github_repo: ghRepo, captured_at: today,
           });
           if (ghRepo) {
             upsertProject(db, { id: ghRepo, language: null, topics: null, description: p.title, created_at: null, first_seen_at: today });
-            redditGH++;
+            lobstersGH++;
           }
         }
-        console.log(`[Collect] Reddit: ${posts.length} 帖子, ${redditGH} 个关联 GitHub 项目`);
+        console.log(`[Collect] Lobsters: ${posts.length} 帖子, ${lobstersGH} 个关联 GitHub 项目`);
       } catch (err) {
-        console.warn(`[Collect] Reddit 采集失败: ${(err as Error).message}`);
+        console.warn(`[Collect] Lobsters 采集失败: ${(err as Error).message}`);
       }
     }
 
@@ -1159,21 +1159,21 @@ program
     }
     try {
       const { batchUpsertSocialBuzz } = await import('./store/queries.js');
-      const { fetchAllRedditPosts, extractGitHubRepo: extractRedditRepo } = await import('./collector/reddit.js');
-      const posts = await fetchAllRedditPosts();
-      const redditEntries = posts.map(p => ({
-        id: `reddit-${p.id}`, source: 'reddit' as const, title: p.title, url: p.url,
-        score: p.score, comments: p.comments, subreddit: p.subreddit,
-        tags: null, github_repo: extractRedditRepo(p.url), captured_at: today,
+      const { fetchAllLobstersPosts, extractGitHubRepo: extractLobstersRepo } = await import('./collector/lobsters.js');
+      const posts = await fetchAllLobstersPosts();
+      const lobstersEntries = posts.map(p => ({
+        id: `lobsters-${p.id}`, source: 'lobsters' as const, title: p.title, url: p.url,
+        score: p.score, comments: p.comments, subreddit: null,
+        tags: JSON.stringify(p.tags), github_repo: extractLobstersRepo(p.url), captured_at: today,
       }));
-      const withRepo = redditEntries.filter(e => e.github_repo);
+      const withRepo = lobstersEntries.filter(e => e.github_repo);
       batchUpsertSocialBuzz(db, withRepo);
       for (const e of withRepo) {
         upsertProject(db, { id: e.github_repo!, language: null, topics: null, description: e.title, created_at: null, first_seen_at: today });
       }
-      console.log(`[Collect] Reddit: ${posts.length} 帖子`);
+      console.log(`[Collect] Lobsters: ${posts.length} 帖子`);
     } catch (err) {
-      console.warn(`[Collect] Reddit 采集失败: ${(err as Error).message}`);
+      console.warn(`[Collect] Lobsters 采集失败: ${(err as Error).message}`);
     }
 
     if (opts.daily && !opts.weekly) {
@@ -1318,7 +1318,7 @@ program
       const { predictTrendingProjects, filterAlreadyTrending, formatTrendingPredictionReport } = await import('./predictor/trending-predictor.js');
       const { upsertTrendingPrediction } = await import('./store/queries.js');
 
-      trendingCandidates = await predictTrendingProjects(db, 5000, 20);
+      trendingCandidates = await predictTrendingProjects(db, 5000, 30);
       trendingCandidates = filterAlreadyTrending(trendingCandidates, db);
       console.log(`[Trending] ${trendingCandidates.length} 个候选项目`);
 

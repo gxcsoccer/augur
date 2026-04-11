@@ -12,7 +12,7 @@
  */
 
 import type Database from 'better-sqlite3';
-import { getLlm, LLM_MODEL } from '../llm/client.js';
+import { getLlm, LLM_MODEL, LLM_THINKING_ON } from '../llm/client.js';
 import type { BacktestTarget } from '../predictor/backtest.js';
 
 interface ProjectSignal {
@@ -170,6 +170,8 @@ export async function discoverWaves(db: Database.Database): Promise<BacktestTarg
         { role: 'system', content: DISCOVERY_PROMPT },
         { role: 'user', content: userContent },
       ],
+      // @ts-expect-error GLM 5.1 ultrathink extension
+      thinking: LLM_THINKING_ON,
     });
 
     const content = response.choices[0]?.message?.content?.trim();

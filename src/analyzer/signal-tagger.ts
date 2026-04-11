@@ -5,7 +5,7 @@
  * 并识别所属技术域。支持批量处理以降低 LLM 调用次数。
  */
 
-import { getLlm, LLM_MODEL } from '../llm/client.js';
+import { getLlm, LLM_MODEL, LLM_THINKING_OFF } from '../llm/client.js';
 
 export interface SignalClassification {
   projectId: string;
@@ -68,6 +68,8 @@ export async function classifyProjects(
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: `请分类以下 ${batch.length} 个项目：\n\n${userContent}` },
         ],
+        // @ts-expect-error GLM 5.1: 分类任务无需深度思考
+        thinking: LLM_THINKING_OFF,
       });
 
       const content = response.choices[0]?.message?.content?.trim();

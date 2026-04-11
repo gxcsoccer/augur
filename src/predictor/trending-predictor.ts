@@ -133,6 +133,72 @@ export async function discoverRisingProjects(
   });
 }
 
+/**
+ * 发现"再爆发"项目：已有较高 star 的成熟项目经历新一轮加速增长
+ *
+ * 与 discoverRisingProjects 互补：后者找小项目的首次爆发，
+ * 本函数找大项目（>5000 star）的二次爆发，如 hermes-agent 这类。
+ *
+ * 使用更严格的加速度门槛（0.4）来减少噪音——大项目的基线活跃度高，
+ * 需要更显著的加速才值得关注。
+ */
+export async function discoverResurgingProjects(
+  lookbackWeeks: number = 8,
+  minLifetimeStars: number = 5000,
+  minRecentStars: number = 200,
+  referenceDate?: string,
+): Promise<{ repo: string; lifetimeStars: number; recentStars: number }[]> {
+  const to = validateDate(referenceDate ?? new Date().toISOString().slice(0, 10));
+  const from = validateDate(new Date(new Date(to).getTime() - lookbackWeeks * 7 * 86400000).toISOString().slice(0, 10));
+  const recentFrom = validateDate(new Date(new Date(to).getTime() - 14 * 86400000).toISOString().slice(0, 10));
+
+  const sql = `
+    WITH candidates AS (
+      SELECT
+        repo_name,
+        countIf(event_type = 'WatchEvent' AND created_at >= '${recentFrom}') AS recent_stars,
+        countIf(event_type = 'WatchEvent') AS period_stars
+      FROM github_events
+      WHERE created_at >= '${from}'
+        AND created_at <= '${to}'
+        AND event_type = 'WatchEvent'
+      GROUP BY repo_name
+      HAVING recent_stars >= ${minRecentStars}
+        AND recent_stars > period_stars * 0.4
+    ),
+    lifetime AS (
+      SELECT
+        repo_name,
+        count() AS lifetime_stars
+      FROM github_events
+      WHERE event_type = 'WatchEvent'
+        AND created_at >= '2015-01-01'
+        AND repo_name IN (SELECT repo_name FROM candidates)
+      GROUP BY repo_name
+    )
+    SELECT
+      c.repo_name,
+      l.lifetime_stars,
+      c.recent_stars
+    FROM candidates c
+    JOIN lifetime l ON c.repo_name = l.repo_name
+    WHERE l.lifetime_stars > ${minLifetimeStars}
+    ORDER BY c.recent_stars DESC
+    LIMIT 50
+    FORMAT JSONEachRow
+  `;
+
+  const text = await queryClickHouse(sql);
+  const rows = parseClickHouseLines(text);
+  return rows.map((row) => {
+    return {
+      repo: normalizeRepoId(row.repo_name as string),
+      lifetimeStars: Number(row.lifetime_stars),
+      recentStars: Number(row.recent_stars),
+    };
+  });
+}
+
 // ─── 因子计算 ──────────────────────────────────────────────────
 
 export function computeFactors(
@@ -390,9 +456,25 @@ export async function predictTrendingProjects(
   const lookbackWeeks = 8;
   const from = new Date(new Date(to).getTime() - lookbackWeeks * 7 * 86400000).toISOString().slice(0, 10);
 
+  // 双路发现：小项目首次爆发 + 大项目再爆发
   console.log(`[TrendPredict] 发现活跃度突增的项目 (${from} ~ ${to}, 全量 star < ${maxStars})...`);
-  const discovered = await discoverRisingProjects(lookbackWeeks, maxStars, 30, to);
-  console.log(`[TrendPredict] 发现 ${discovered.length} 个候选项目（已按全量 star 过滤）`);
+  const rising = await discoverRisingProjects(lookbackWeeks, maxStars, 30, to);
+  console.log(`[TrendPredict] 发现 ${rising.length} 个新兴候选项目`);
+
+  console.log(`[TrendPredict] 发现再爆发的成熟项目 (全量 star > ${maxStars})...`);
+  const resurging = await discoverResurgingProjects(lookbackWeeks, maxStars, 200, to);
+  console.log(`[TrendPredict] 发现 ${resurging.length} 个再爆发候选项目`);
+
+  // 合并去重
+  const seenRepos = new Set<string>();
+  const discovered: { repo: string; lifetimeStars: number; recentStars: number }[] = [];
+  for (const d of [...rising, ...resurging]) {
+    if (!seenRepos.has(d.repo)) {
+      seenRepos.add(d.repo);
+      discovered.push(d);
+    }
+  }
+  console.log(`[TrendPredict] 合并后共 ${discovered.length} 个候选项目`);
 
   if (discovered.length === 0) {
     console.warn('[TrendPredict] 无候选项目（ClickHouse 查询可能超时或无匹配数据）');
@@ -494,8 +576,10 @@ export async function predictTrendingProjects(
       }
     }
 
-    // Re-filter: remove projects that are actually already popular
-    const filtered = topCandidates.filter((c) => c.lifetimeStars <= maxStars);
+    // Re-filter: 对新兴项目仍按 maxStars 过滤（ClickHouse 可能低估），
+    // 但再爆发项目（本身就超 maxStars）不受此限
+    const resurgingRepos = new Set(resurging.map((r) => r.repo));
+    const filtered = topCandidates.filter((c) => c.lifetimeStars <= maxStars || resurgingRepos.has(c.repo));
     if (filtered.length < topCandidates.length) {
       console.log(`[TrendPredict] GitHub API 校准后过滤掉 ${topCandidates.length - filtered.length} 个已火项目`);
     }

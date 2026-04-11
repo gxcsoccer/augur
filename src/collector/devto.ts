@@ -88,16 +88,37 @@ export async function fetchOpenSourceArticles(daysBack: number = 7): Promise<Dev
   return [...all.values()].sort((a, b) => b.reactionsCount - a.reactionsCount);
 }
 
+import { extractRepoFromUrl } from '../util/github.js';
+
+/**
+ * 获取单篇文章详情（包含正文 body_html），提取 GitHub repo 链接
+ */
+async function fetchArticleGitHubRepo(articleId: number): Promise<string | null> {
+  const res = await fetch(`${DEVTO_API}/articles/${articleId}`, {
+    headers: { 'User-Agent': 'Augur/1.0 (github.com/gxcsoccer/augur)' },
+  });
+  if (!res.ok) return null;
+
+  try {
+    const data = (await res.json()) as { body_html?: string; body_markdown?: string };
+    const body = data.body_markdown ?? data.body_html ?? '';
+    // 提取所有 GitHub repo 链接，返回第一个
+    const matches = body.matchAll(/github\.com\/([^/\s"'<>)]+\/[^/\s"'<>)#?]+)/g);
+    for (const m of matches) {
+      const repo = extractRepoFromUrl(`https://github.com/${m[1]}`);
+      if (repo) return repo;
+    }
+  } catch {}
+  return null;
+}
+
 /**
  * 从 DEV.to 文章中提取 GitHub repo 引用
  *
- * NOTE: article.url 是 DEV.to 文章自身的 URL (https://dev.to/user/slug)，
- * 不是文章中引用的 GitHub URL。DEV.to 列表 API 不返回文章正文（body）,
- * 所以只能从标题中提取 "owner/repo" 格式的引用。
+ * 先从标题匹配，如果未命中则回退到文章详情 API（需额外请求）
  */
 export function extractGitHubRepoFromArticle(article: DevToArticle): string | null {
   // Title pattern: look for "owner/repo" format in title
-  // Strict: require at least 2 chars each side, exclude common false positives
   const titleMatch = article.title.match(/\b([a-zA-Z][a-zA-Z0-9_-]{1,38}\/[a-zA-Z][a-zA-Z0-9_.-]{1,100})\b/);
   if (titleMatch && !/\.(js|ts|py|com|org|io|css|html|json)$/i.test(titleMatch[1])
     && !['node.js', 'next.js', 'vue.js', 'express.js'].some(fp => titleMatch[1].toLowerCase().includes(fp))) {
@@ -107,11 +128,31 @@ export function extractGitHubRepoFromArticle(article: DevToArticle): string | nu
   return null;
 }
 
-
 /**
- * 一站式采集：获取所有 DEV.to 帖子并提取 GitHub 关联
+ * 一站式采集：获取所有 DEV.to 帖子并从正文提取 GitHub 关联
  */
 export async function fetchAllDevToPosts(daysBack: number = 7): Promise<DevToArticle[]> {
   console.log('  [DEV.to] 采集开源相关热帖...');
-  return fetchOpenSourceArticles(daysBack);
+  const articles = await fetchOpenSourceArticles(daysBack);
+
+  // 对热度最高的文章，逐篇获取正文以提取 GitHub 链接
+  // DEV.to rate limit: 30 req/30s，取 top 20 篇足够
+  const topArticles = articles.slice(0, 20);
+  let enriched = 0;
+  for (const a of topArticles) {
+    if (extractGitHubRepoFromArticle(a)) continue; // 标题已命中，跳过
+    const repo = await fetchArticleGitHubRepo(a.id);
+    if (repo) {
+      // 将 repo 信息注入标题以便下游 extractGitHubRepoFromArticle 命中
+      a.title = `${a.title} [${repo}]`;
+      enriched++;
+    }
+    // courtesy delay: ~100ms between requests (well within 30/30s)
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  if (enriched > 0) {
+    console.log(`  [DEV.to] 从文章正文额外提取到 ${enriched} 个 GitHub 项目`);
+  }
+
+  return articles;
 }

@@ -6,28 +6,16 @@ concurrency:
 
 on:
   schedule:
-    # 每日采集：UTC 00:00 (北京时间 08:00)
-    - cron: '0 0 * * *'
-    # 每周完整分析：UTC 02:00 周一 (北京时间 10:00)
-    - cron: '0 2 * * 1'
+    # 每日完整分析：UTC 17:00 (北京时间 01:00)
+    - cron: '0 17 * * *'
   workflow_dispatch:
-    inputs:
-      mode:
-        description: '运行模式'
-        required: true
-        default: 'weekly'
-        type: choice
-        options:
-          - daily
-          - weekly
 
 permissions:
   contents: write
   issues: write
 
 jobs:
-  daily-collect:
-    if: github.event.schedule == '0 0 * * *' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'daily')
+  daily-analysis:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,38 +27,10 @@ jobs:
       - name: Install dependencies
         run: npm ci --registry=https://registry.npmmirror.com
 
-      - name: Run daily collect
+      - name: Run full pipeline (collect + analyze + predict + evolve + report)
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
-        run: npx tsx src/cli.ts run --daily
-
-      - name: Commit data
-        run: |
-          git config user.name "augur-bot"
-          git config user.email "augur-bot@users.noreply.github.com"
-          git pull --rebase origin main || true
-          git add data/ reports/
-          git diff --staged --quiet || git commit -m "data: daily collect $(date +%Y-%m-%d)"
-          git push
-
-  weekly-analysis:
-    if: github.event.schedule == '0 2 * * 1' || (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'weekly')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install dependencies
-        run: npm ci --registry=https://registry.npmmirror.com
-
-      - name: Run weekly pipeline (collect + analyze + predict + evolve + report)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
         run: npx tsx src/cli.ts run --weekly
 
       - name: Commit data and report
@@ -79,19 +39,19 @@ jobs:
           git config user.email "augur-bot@users.noreply.github.com"
           git pull --rebase origin main || true
           git add data/ reports/
-          git diff --staged --quiet || git commit -m "report: weekly analysis $(date +%Y-%m-%d)"
+          git diff --staged --quiet || git commit -m "report: daily analysis $(date +%Y-%m-%d)"
           git push
 
       - name: Publish report as GitHub Issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh label create weekly-report --color 0E8A16 --description "Augur 信号周报" 2>/dev/null || true
+          gh label create daily-report --color 0E8A16 --description "Augur 信号日报" 2>/dev/null || true
           LATEST_REPORT=$(ls -t reports/*.md 2>/dev/null | head -1)
           if [ -n "$LATEST_REPORT" ]; then
             TITLE=$(head -1 "$LATEST_REPORT" | sed 's/^# //')
             gh issue create \
               --title "$TITLE" \
-              --label "weekly-report" \
+              --label "daily-report" \
               --body-file "$LATEST_REPORT"
           fi

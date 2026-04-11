@@ -9,7 +9,7 @@
  * 2. LLM 精分：对模糊项调用 LLM 判断
  */
 
-import { getLlm, LLM_MODEL } from '../llm/client.js';
+import { getLlm, LLM_MODEL, LLM_THINKING_OFF } from '../llm/client.js';
 
 export interface GitHubIssue {
   id: number;
@@ -128,6 +128,8 @@ async function classifyByLLM(issues: GitHubIssue[]): Promise<Map<number, { categ
           { role: 'system', content: ISSUE_CLASSIFY_PROMPT },
           { role: 'user', content: userContent },
         ],
+        // @ts-expect-error GLM 5.1: 分类任务无需深度思考
+        thinking: LLM_THINKING_OFF,
       });
 
       const content = response.choices[0]?.message?.content?.trim();
