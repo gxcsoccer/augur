@@ -25,7 +25,8 @@ interface ProjectSignal {
   keywords: string[];
 }
 
-const DISCOVERY_PROMPT = `你是一个技术趋势分析师。基于以下 GitHub 项目列表和 HackerNews 热帖，识别正在形成的新技术浪潮。
+function buildDiscoveryPrompt(today: string) {
+  return `你是一个技术趋势分析师。当前日期是 ${today}。基于以下 GitHub 项目列表和 HackerNews 热帖，识别正在形成的新技术浪潮。
 
 ## 任务
 
@@ -57,6 +58,7 @@ const DISCOVERY_PROMPT = `你是一个技术趋势分析师。基于以下 GitHu
 ]
 
 只返回 JSON，不要其他内容。`;
+}
 
 /**
  * 从数据库收集当前项目信号
@@ -130,7 +132,8 @@ function collectHotKeywords(db: Database.Database): string[] {
 /**
  * LLM 驱动的浪潮发现
  */
-export async function discoverWaves(db: Database.Database): Promise<BacktestTarget[]> {
+export async function discoverWaves(db: Database.Database, today?: string): Promise<BacktestTarget[]> {
+  const currentDate = today ?? new Date().toISOString().slice(0, 10);
   const projects = collectProjectSignals(db);
   const hnTitles = collectHNTitles(db);
   const hotKeywords = collectHotKeywords(db);
@@ -167,7 +170,7 @@ export async function discoverWaves(db: Database.Database): Promise<BacktestTarg
       temperature: 0.3,
       max_tokens: 4096,
       messages: [
-        { role: 'system', content: DISCOVERY_PROMPT },
+        { role: 'system', content: buildDiscoveryPrompt(currentDate) },
         { role: 'user', content: userContent },
       ],
       // @ts-expect-error GLM 5.1 ultrathink extension

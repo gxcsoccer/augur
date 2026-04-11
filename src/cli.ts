@@ -1008,8 +1008,8 @@ program
 // ─── augur report ───────────────────────────────────────────────
 program
   .command('report')
-  .description('生成信号周报')
-  .option('-w, --week', '生成周报')
+  .description('生成信号日报')
+  .option('-w, --week', '生成日报')
   .option('-d, --date <date>', '指定日期 (YYYY-MM-DD)')
   .option('-o, --output <file>', '输出到文件')
   .option('--with-llm', '包含 LLM 信号分析（如未运行 analyze 则自动触发）')
@@ -1020,7 +1020,7 @@ program
     const date = opts.date ?? new Date().toISOString().slice(0, 10);
     const weekLabel = `${new Date(date).getFullYear()}-W${String(Math.ceil((new Date(date).getTime() - new Date(new Date(date).getFullYear(), 0, 1).getTime()) / 604800000)).padStart(2, '0')}`;
 
-    console.log(`[Report] 生成周报，基准日期: ${date}`);
+    console.log(`[Report] 生成日报，基准日期: ${date}`);
 
     const entries = collectReportData(db, date);
 
@@ -1352,13 +1352,13 @@ program
       console.warn(`[DailyBrief] 生成失败: ${(e as Error).message}`);
     }
 
-    // Step 8: 合并生成完整周报
-    console.log('\n═══ Step 8/8: 生成完整周报 ═══');
+    // Step 8: 合并生成完整日报
+    console.log('\n═══ Step 8/8: 生成完整日报 ═══');
 
     const sections: string[] = [];
 
     // Section 1: 标题 + 概览
-    sections.push(`# Augur 周报 — ${weekLabel}`);
+    sections.push(`# Augur 日报 — ${weekLabel}`);
     sections.push('');
     sections.push(`> 生成日期: ${today} | 项目: ${entries.length} | 浪潮: ${wavePredictions.length}`);
     const ledgerStats = getLedgerStats();
@@ -1465,7 +1465,7 @@ program
 // ─── augur publish ──────────────────────────────────────────────
 program
   .command('publish')
-  .description('将最新周报发布为 GitHub Issue')
+  .description('将最新日报发布为 GitHub Issue')
   .option('-f, --file <file>', '指定报告文件')
   .option('--repo <repo>', 'GitHub 仓库 (owner/repo)', 'gxcsoccer/augur')
   .action(async (opts: { file?: string; repo: string }) => {
@@ -1491,7 +1491,7 @@ program
 
     const content = fs.readFileSync(reportFile, 'utf-8');
     const titleMatch = content.match(/^#\s+(.+)/m);
-    const title = titleMatch ? titleMatch[1] : `Augur 周报 — ${new Date().toISOString().slice(0, 10)}`;
+    const title = titleMatch ? titleMatch[1] : `Augur 日报 — ${new Date().toISOString().slice(0, 10)}`;
 
     console.log(`[Publish] 发布: ${title}`);
     console.log(`[Publish] 文件: ${reportFile}`);
@@ -1508,7 +1508,7 @@ program
       // Try creating the label first if it doesn't exist
       if (error.stderr?.includes('label')) {
         try {
-          execSync(`gh label create weekly-report --repo "${opts.repo}" --color 0E8A16 --description "Augur 信号周报" 2>/dev/null || true`, { encoding: 'utf-8' });
+          execSync(`gh label create weekly-report --repo "${opts.repo}" --color 0E8A16 --description "Augur 信号日报" 2>/dev/null || true`, { encoding: 'utf-8' });
           const result = execSync(
             `gh issue create --repo "${opts.repo}" --title "${title}" --label "weekly-report" --body-file "${reportFile}"`,
             { encoding: 'utf-8' },
