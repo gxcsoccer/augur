@@ -4,8 +4,8 @@
     {
       "type": "resurging",
       "repo": "chenglou/pretext",
-      "title": "chenglou/pretext (42.9k★) 出现二次爆发信号",
-      "summary": "拥有 42.9k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 12.9k star。Star 加速 25.35x，Fork 加速 36.11x。",
+      "title": "chenglou/pretext (43.0k★) 出现二次爆发信号",
+      "summary": "拥有 43.0k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 12.9k star。Star 加速 25.35x，Fork 加速 36.11x。",
       "evidence": [
         "Star 加速 25.35x",
         "Fork 加速 36.11x",
@@ -14,7 +14,7 @@
         "4 个因子同时加速"
       ],
       "score": 0.78,
-      "stars": 42948,
+      "stars": 42950,
       "predicted_stars_4w": 12869,
       "url": "https://github.com/chenglou/pretext"
     },
@@ -31,7 +31,7 @@
         "4 个因子同时加速"
       ],
       "score": 0.77,
-      "stars": 28036,
+      "stars": 28041,
       "predicted_stars_4w": 7778,
       "url": "https://github.com/siddharthvaddem/openscreen"
     },
@@ -49,7 +49,7 @@
         "5 个因子同时加速"
       ],
       "score": 0.75,
-      "stars": 20402,
+      "stars": 20403,
       "predicted_stars_4w": 2112,
       "url": "https://github.com/google-ai-edge/gallery"
     },
@@ -66,7 +66,7 @@
         "4 个因子同时加速"
       ],
       "score": 0.69,
-      "stars": 112559,
+      "stars": 112562,
       "predicted_stars_4w": 8722,
       "url": "https://github.com/anthropics/claude-code"
     },
@@ -82,7 +82,7 @@
         "3 个因子同时加速"
       ],
       "score": 0.63,
-      "stars": 30508,
+      "stars": 30509,
       "predicted_stars_4w": 1180,
       "url": "https://github.com/cmliu/edgetunnel"
     },
@@ -128,7 +128,7 @@
         "Fork 加速 10.23x"
       ],
       "score": 0.57,
-      "stars": 26560,
+      "stars": 26562,
       "predicted_stars_4w": 3153,
       "url": "https://github.com/onyx-dot-app/onyx"
     },
@@ -144,7 +144,7 @@
         "3 个因子同时加速"
       ],
       "score": 0.56,
-      "stars": 16362,
+      "stars": 16363,
       "predicted_stars_4w": 2353,
       "url": "https://github.com/google-research/timesfm"
     },
@@ -158,7 +158,7 @@
         "Fork 加速 1.75x"
       ],
       "score": 0.48,
-      "stars": 31365,
+      "stars": 31366,
       "predicted_stars_4w": 507,
       "url": "https://github.com/telegramdesktop/tdesktop"
     },
@@ -172,7 +172,7 @@
         "Fork 加速 2.5x"
       ],
       "score": 0.44,
-      "stars": 41154,
+      "stars": 41155,
       "predicted_stars_4w": 2345,
       "url": "https://github.com/block/goose"
     },
@@ -214,7 +214,7 @@
         "Fork 加速 2.13x"
       ],
       "score": 0.29,
-      "stars": 340764,
+      "stars": 340765,
       "predicted_stars_4w": 805,
       "url": "https://github.com/jwasham/coding-interview-university"
     },
@@ -225,7 +225,7 @@
       "summary": "拥有 43.8k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 469 star。。",
       "evidence": [],
       "score": 0.29,
-      "stars": 43823,
+      "stars": 43824,
       "predicted_stars_4w": 469,
       "url": "https://github.com/twentyhq/twenty"
     },
@@ -239,7 +239,7 @@
         "新贡献者增长 2x"
       ],
       "score": 0.18,
-      "stars": 181412,
+      "stars": 181414,
       "predicted_stars_4w": 22363,
       "url": "https://github.com/ultraworkers/claw-code"
     },
@@ -328,7 +328,7 @@
         "3 个因子同时加速"
       ],
       "score": 0.42,
-      "stars": 4304,
+      "stars": 4306,
       "predicted_stars_4w": 935,
       "url": "https://github.com/getcompanion-ai/feynman"
     },
@@ -359,7 +359,7 @@
         "4 个因子同时加速"
       ],
       "score": 0.37,
-      "stars": 1840,
+      "stars": 1841,
       "predicted_stars_4w": 771,
       "url": "https://github.com/maaslalani/sheets"
     },
@@ -373,7 +373,7 @@
         "Fork 加速 4.06x"
       ],
       "score": 0.27,
-      "stars": 3699,
+      "stars": 3700,
       "predicted_stars_4w": 1220,
       "url": "https://github.com/averygan/reclip"
     },
@@ -386,7 +386,7 @@
         "Issue 活跃度上升 4x"
       ],
       "score": 0.22,
-      "stars": 2284,
+      "stars": 2285,
       "predicted_stars_4w": 845,
       "url": "https://github.com/midudev/autoskills"
     },
