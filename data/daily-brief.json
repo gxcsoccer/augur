@@ -1,54 +1,36 @@
 {
-  "date": "2026-04-24",
+  "date": "2026-04-25",
   "items": [
     {
       "type": "resurging",
       "repo": "microsoft/markitdown",
-      "title": "microsoft/markitdown (116.5k★) 出现二次爆发信号",
-      "summary": "拥有 116.5k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 7.0k star。Star 加速 7.32x，Fork 加速 4.84x。",
+      "title": "microsoft/markitdown (116.9k★) 出现二次爆发信号",
+      "summary": "拥有 116.9k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 7.0k star。Star 加速 7.41x，Fork 加速 5x。",
       "evidence": [
-        "Star 加速 7.32x",
-        "Fork 加速 4.84x",
+        "Star 加速 7.41x",
+        "Fork 加速 5x",
         "Issue 活跃度上升 10x",
-        "PR 活跃度上升 3.16x",
+        "PR 活跃度上升 3.75x",
         "4 个因子同时加速"
       ],
       "score": 0.75,
-      "stars": 116484,
+      "stars": 116872,
       "predicted_stars_4w": 7037,
       "url": "https://github.com/microsoft/markitdown"
     },
     {
       "type": "resurging",
-      "repo": "thedotmack/claude-mem",
-      "title": "thedotmack/claude-mem (66.9k★) 出现二次爆发信号",
-      "summary": "拥有 66.9k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 4.8k star。Star 加速 2.7x，Fork 加速 2.2x。",
-      "evidence": [
-        "Star 加速 2.7x",
-        "Fork 加速 2.2x",
-        "Issue 活跃度上升 4.19x",
-        "PR 活跃度上升 5.4x",
-        "近 4 周发布 4 次",
-        "5 个因子同时加速"
-      ],
-      "score": 0.62,
-      "stars": 66894,
-      "predicted_stars_4w": 4808,
-      "url": "https://github.com/thedotmack/claude-mem"
-    },
-    {
-      "type": "resurging",
       "repo": "forrestchang/andrej-karpathy-skills",
-      "title": "forrestchang/andrej-karpathy-skills (83.1k★) 出现二次爆发信号",
-      "summary": "拥有 83.1k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 12.3k star。Star 加速 108.32x，Fork 加速 71.44x。",
+      "title": "forrestchang/andrej-karpathy-skills (86.8k★) 出现二次爆发信号",
+      "summary": "拥有 86.8k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 12.3k star。Star 加速 115.64x，Fork 加速 71.44x。",
       "evidence": [
-        "Star 加速 108.32x",
+        "Star 加速 115.64x",
         "Fork 加速 71.44x",
         "PR 活跃度上升 10x",
         "3 个因子同时加速"
       ],
       "score": 0.61,
-      "stars": 83062,
+      "stars": 86801,
       "predicted_stars_4w": 12295,
       "url": "https://github.com/forrestchang/andrej-karpathy-skills"
     },
@@ -62,63 +44,49 @@
         "Fork 加速 10x"
       ],
       "score": 0.48,
-      "stars": 24051,
+      "stars": 24070,
       "predicted_stars_4w": 2069,
       "url": "https://github.com/alexpate/awesome-design-systems"
     },
     {
       "type": "resurging",
       "repo": "google/magika",
-      "title": "google/magika (16.6k★) 出现二次爆发信号",
-      "summary": "拥有 16.6k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 908 star。Star 加速 78.94x，Fork 加速 10x。",
+      "title": "google/magika (16.7k★) 出现二次爆发信号",
+      "summary": "拥有 16.7k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 908 star。Star 加速 70.17x，Fork 加速 10x。",
       "evidence": [
-        "Star 加速 78.94x",
+        "Star 加速 70.17x",
         "Fork 加速 10x"
       ],
       "score": 0.48,
-      "stars": 16602,
+      "stars": 16700,
       "predicted_stars_4w": 908,
       "url": "https://github.com/google/magika"
     },
     {
       "type": "resurging",
-      "repo": "rustfs/rustfs",
-      "title": "rustfs/rustfs (26.4k★) 出现二次爆发信号",
-      "summary": "拥有 26.4k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 738 star。Star 加速 2.72x，Fork 加速 1.57x。",
-      "evidence": [
-        "Star 加速 2.72x",
-        "Fork 加速 1.57x"
-      ],
-      "score": 0.39,
-      "stars": 26413,
-      "predicted_stars_4w": 738,
-      "url": "https://github.com/rustfs/rustfs"
-    },
-    {
-      "type": "resurging",
       "repo": "virattt/ai-hedge-fund",
-      "title": "virattt/ai-hedge-fund (57.2k★) 出现二次爆发信号",
-      "summary": "拥有 57.2k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 2.1k star。Star 加速 3.49x，Fork 加速 2.63x。",
+      "title": "virattt/ai-hedge-fund (57.3k★) 出现二次爆发信号",
+      "summary": "拥有 57.3k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 2.1k star。Star 加速 3.5x，Fork 加速 2.67x。",
       "evidence": [
-        "Star 加速 3.49x",
-        "Fork 加速 2.63x"
+        "Star 加速 3.5x",
+        "Fork 加速 2.67x"
       ],
       "score": 0.36,
-      "stars": 57246,
+      "stars": 57321,
       "predicted_stars_4w": 2106,
       "url": "https://github.com/virattt/ai-hedge-fund"
     },
     {
       "type": "resurging",
       "repo": "ahujasid/blender-mcp",
-      "title": "ahujasid/blender-mcp (20.5k★) 出现二次爆发信号",
-      "summary": "拥有 20.5k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 637 star。Star 加速 3.97x，Fork 加速 1.91x。",
+      "title": "ahujasid/blender-mcp (20.6k★) 出现二次爆发信号",
+      "summary": "拥有 20.6k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 637 star。Star 加速 4.08x，Fork 加速 1.91x。",
       "evidence": [
-        "Star 加速 3.97x",
+        "Star 加速 4.08x",
         "Fork 加速 1.91x"
       ],
       "score": 0.35,
-      "stars": 20522,
+      "stars": 20595,
       "predicted_stars_4w": 637,
       "url": "https://github.com/ahujasid/blender-mcp"
     },
@@ -135,9 +103,9 @@
       "type": "new_entry",
       "repo": "getpaseo/paseo",
       "title": "新发现：getpaseo/paseo 展现爆发早期信号",
-      "summary": "当前 4.5k star，预测得分 0.84，预计 4 周内新增 1.2k star。Star 加速 26.4x，Fork 加速 10x。",
+      "summary": "当前 4.6k star，预测得分 0.84，预计 4 周内新增 1.2k star。Star 加速 26.81x，Fork 加速 10x。",
       "evidence": [
-        "Star 加速 26.4x",
+        "Star 加速 26.81x",
         "Fork 加速 10x",
         "Issue 活跃度上升 4.38x",
         "PR 活跃度上升 8.25x",
@@ -146,7 +114,7 @@
         "6 个因子同时加速"
       ],
       "score": 0.84,
-      "stars": 4481,
+      "stars": 4577,
       "predicted_stars_4w": 1232,
       "url": "https://github.com/getpaseo/paseo"
     },
@@ -165,7 +133,7 @@
         "6 个因子同时加速"
       ],
       "score": 0.83,
-      "stars": 4054,
+      "stars": 4082,
       "predicted_stars_4w": 666,
       "url": "https://github.com/mayocream/koharu"
     },
@@ -173,16 +141,16 @@
       "type": "new_entry",
       "repo": "rohitg00/agentmemory",
       "title": "新发现：rohitg00/agentmemory 展现爆发早期信号",
-      "summary": "当前 2.0k star，预测得分 0.71，预计 4 周内新增 599 star。Star 加速 26.9x，Fork 加速 10x。",
+      "summary": "当前 2.0k star，预测得分 0.72，预计 4 周内新增 599 star。Star 加速 26.9x，Fork 加速 10x。",
       "evidence": [
         "Star 加速 26.9x",
         "Fork 加速 10x",
-        "PR 活跃度上升 2.25x",
+        "PR 活跃度上升 2.7x",
         "近 4 周发布 3 次",
         "4 个因子同时加速"
       ],
-      "score": 0.71,
-      "stars": 1969,
+      "score": 0.72,
+      "stars": 1986,
       "predicted_stars_4w": 599,
       "url": "https://github.com/rohitg00/agentmemory"
     },
@@ -190,7 +158,7 @@
       "type": "new_entry",
       "repo": "stablyai/orca",
       "title": "新发现：stablyai/orca 展现爆发早期信号",
-      "summary": "当前 1.6k star，预测得分 0.68，预计 4 周内新增 353 star。Star 加速 2.62x，Fork 加速 3.5x。",
+      "summary": "当前 1.7k star，预测得分 0.68，预计 4 周内新增 353 star。Star 加速 2.62x，Fork 加速 3.5x。",
       "evidence": [
         "Star 加速 2.62x",
         "Fork 加速 3.5x",
@@ -201,54 +169,38 @@
         "6 个因子同时加速"
       ],
       "score": 0.68,
-      "stars": 1640,
+      "stars": 1682,
       "predicted_stars_4w": 353,
       "url": "https://github.com/stablyai/orca"
     },
     {
       "type": "new_entry",
-      "repo": "outsourc-e/hermes-workspace",
-      "title": "新发现：outsourc-e/hermes-workspace 展现爆发早期信号",
-      "summary": "当前 2.2k star，预测得分 0.54，预计 4 周内新增 339 star。Star 加速 2.62x，Issue 活跃度上升 10x。",
+      "repo": "edwardkim/rhwp",
+      "title": "新发现：edwardkim/rhwp 展现爆发早期信号",
+      "summary": "当前 2.5k star，预测得分 0.63，预计 4 周内新增 321 star。Star 加速 3.24x，Fork 加速 6x。",
       "evidence": [
-        "Star 加速 2.62x",
-        "Issue 活跃度上升 10x",
+        "Star 加速 3.24x",
+        "Fork 加速 6x",
         "PR 活跃度上升 10x",
-        "3 个因子同时加速"
-      ],
-      "score": 0.54,
-      "stars": 2238,
-      "predicted_stars_4w": 339,
-      "url": "https://github.com/outsourc-e/hermes-workspace"
-    },
-    {
-      "type": "new_entry",
-      "repo": "plastic-labs/honcho",
-      "title": "新发现：plastic-labs/honcho 展现爆发早期信号",
-      "summary": "当前 2.9k star，预测得分 0.52，预计 4 周内新增 332 star。Star 加速 2.5x，Fork 加速 1.55x。",
-      "evidence": [
-        "Star 加速 2.5x",
-        "Fork 加速 1.55x",
-        "Issue 活跃度上升 4x",
-        "新贡献者增长 1.59x",
+        "新贡献者增长 1.5x",
         "4 个因子同时加速"
       ],
-      "score": 0.52,
-      "stars": 2870,
-      "predicted_stars_4w": 332,
-      "url": "https://github.com/plastic-labs/honcho"
+      "score": 0.63,
+      "stars": 2499,
+      "predicted_stars_4w": 321,
+      "url": "https://github.com/edwardkim/rhwp"
     },
     {
       "type": "new_entry",
       "repo": "nicedreamzapp/claude-code-local",
       "title": "新发现：nicedreamzapp/claude-code-local 展现爆发早期信号",
-      "summary": "当前 2.1k star，预测得分 0.49，预计 4 周内新增 321 star。Star 加速 5.96x，Fork 加速 10x。",
+      "summary": "当前 2.2k star，预测得分 0.49，预计 4 周内新增 321 star。Star 加速 5.96x，Fork 加速 10x。",
       "evidence": [
         "Star 加速 5.96x",
         "Fork 加速 10x"
       ],
       "score": 0.49,
-      "stars": 2138,
+      "stars": 2191,
       "predicted_stars_4w": 321,
       "url": "https://github.com/nicedreamzapp/claude-code-local"
     },
@@ -256,37 +208,23 @@
       "type": "new_entry",
       "repo": "markdown-viewer/skills",
       "title": "新发现：markdown-viewer/skills 展现爆发早期信号",
-      "summary": "当前 2.1k star，预测得分 0.48，预计 4 周内新增 852 star。Star 加速 10x，Fork 加速 10x。",
+      "summary": "当前 2.2k star，预测得分 0.48，预计 4 周内新增 852 star。Star 加速 10x，Fork 加速 10x。",
       "evidence": [
         "Star 加速 10x",
         "Fork 加速 10x"
       ],
       "score": 0.48,
-      "stars": 2085,
+      "stars": 2197,
       "predicted_stars_4w": 852,
       "url": "https://github.com/markdown-viewer/skills"
     },
     {
       "type": "new_entry",
-      "repo": "jo-inc/camofox-browser",
-      "title": "新发现：jo-inc/camofox-browser 展现爆发早期信号",
-      "summary": "当前 3.0k star，预测得分 0.48，预计 4 周内新增 555 star。Star 加速 7.3x，Fork 加速 4.15x。",
-      "evidence": [
-        "Star 加速 7.3x",
-        "Fork 加速 4.15x"
-      ],
-      "score": 0.48,
-      "stars": 2975,
-      "predicted_stars_4w": 555,
-      "url": "https://github.com/jo-inc/camofox-browser"
-    },
-    {
-      "type": "new_entry",
       "repo": "mswnlz/edu-knowlege",
       "title": "新发现：mswnlz/edu-knowlege 展现爆发早期信号",
-      "summary": "当前 3.7k star，预测得分 0.48，预计 4 周内新增 395 star。Star 加速 42.23x，Fork 加速 10x。",
+      "summary": "当前 3.7k star，预测得分 0.48，预计 4 周内新增 395 star。Star 加速 38.13x，Fork 加速 10x。",
       "evidence": [
-        "Star 加速 42.23x",
+        "Star 加速 38.13x",
         "Fork 加速 10x"
       ],
       "score": 0.48,
@@ -296,24 +234,55 @@
     },
     {
       "type": "new_entry",
-      "repo": "shiahonb777/web-to-app",
-      "title": "新发现：shiahonb777/web-to-app 展现爆发早期信号",
-      "summary": "当前 2.9k star，预测得分 0.39，预计 4 周内新增 330 star。Fork 加速 2.23x，Issue 活跃度上升 6.75x。",
+      "repo": "jo-inc/camofox-browser",
+      "title": "新发现：jo-inc/camofox-browser 展现爆发早期信号",
+      "summary": "当前 3.0k star，预测得分 0.48，预计 4 周内新增 555 star。Star 加速 7.37x，Fork 加速 4.5x。",
       "evidence": [
-        "Fork 加速 2.23x",
-        "Issue 活跃度上升 6.75x",
+        "Star 加速 7.37x",
+        "Fork 加速 4.5x"
+      ],
+      "score": 0.48,
+      "stars": 3043,
+      "predicted_stars_4w": 555,
+      "url": "https://github.com/jo-inc/camofox-browser"
+    },
+    {
+      "type": "new_entry",
+      "repo": "endee-io/endee",
+      "title": "新发现：endee-io/endee 展现爆发早期信号",
+      "summary": "当前 1.3k star，预测得分 0.41，预计 4 周内新增 216 star。Star 加速 2.03x，Fork 加速 1.71x。",
+      "evidence": [
+        "Star 加速 2.03x",
+        "Fork 加速 1.71x",
+        "PR 活跃度上升 2.67x",
+        "3 个因子同时加速"
+      ],
+      "score": 0.41,
+      "stars": 1326,
+      "predicted_stars_4w": 216,
+      "url": "https://github.com/endee-io/endee"
+    },
+    {
+      "type": "new_entry",
+      "repo": "zarazhangrui/tab-out",
+      "title": "新发现：zarazhangrui/tab-out 展现爆发早期信号",
+      "summary": "当前 996 star，预测得分 0.39，预计 4 周内新增 214 star。Star 加速 32x，Fork 加速 21x。",
+      "evidence": [
+        "Star 加速 32x",
+        "Fork 加速 21x",
+        "Issue 活跃度上升 10x",
         "3 个因子同时加速"
       ],
       "score": 0.39,
-      "stars": 2921,
-      "predicted_stars_4w": 330,
-      "url": "https://github.com/shiahonb777/web-to-app"
+      "stars": 996,
+      "predicted_stars_4w": 214,
+      "url": "https://github.com/zarazhangrui/tab-out"
     },
     {
       "type": "new_entry",
       "repo": "nesquena/hermes-webui",
       "title": "新发现：nesquena/hermes-webui 展现爆发早期信号",
-      "summary": "当前 4.0k star，预测得分 0.38，预计 4 周内新增 780 star。Fork 加速 2.17x，Issue 活跃度上升 5.29x。",
+      "summary": "当前 4.1k star，预测得分 0.38，预计 4 周内新增 780 star。Fork 加速 2.17x，Issue 活跃度上升 5.29x。",
       "evidence": [
         "Fork 加速 2.17x",
         "Issue 活跃度上升 5.29x",
@@ -321,7 +290,7 @@
         "3 个因子同时加速"
       ],
       "score": 0.38,
-      "stars": 3965,
+      "stars": 4145,
       "predicted_stars_4w": 780,
       "url": "https://github.com/nesquena/hermes-webui"
     },
@@ -335,21 +304,34 @@
         "Fork 加速 11x"
       ],
       "score": 0.35,
-      "stars": 1618,
+      "stars": 1624,
       "predicted_stars_4w": 328,
       "url": "https://github.com/mayukh4/linux-android"
     },
     {
       "type": "new_entry",
+      "repo": "xykong/flux-markdown",
+      "title": "新发现：xykong/flux-markdown 展现爆发早期信号",
+      "summary": "当前 698 star，预测得分 0.32，预计 4 周内新增 214 star。Star 加速 19.8x。",
+      "evidence": [
+        "Star 加速 19.8x"
+      ],
+      "score": 0.32,
+      "stars": 698,
+      "predicted_stars_4w": 214,
+      "url": "https://github.com/xykong/flux-markdown"
+    },
+    {
+      "type": "new_entry",
       "repo": "hamen/material-3-skill",
       "title": "新发现：hamen/material-3-skill 展现爆发早期信号",
-      "summary": "当前 799 star，预测得分 0.31，预计 4 周内新增 246 star。Star 加速 113x，Fork 加速 10x。",
+      "summary": "当前 805 star，预测得分 0.31，预计 4 周内新增 246 star。Star 加速 113x，Fork 加速 10x。",
       "evidence": [
         "Star 加速 113x",
         "Fork 加速 10x"
       ],
       "score": 0.31,
-      "stars": 799,
+      "stars": 805,
       "predicted_stars_4w": 246,
       "url": "https://github.com/hamen/material-3-skill"
     },
@@ -368,15 +350,41 @@
     },
     {
       "type": "new_entry",
+      "repo": "glincker/thesvg",
+      "title": "新发现：glincker/thesvg 展现爆发早期信号",
+      "summary": "当前 1.6k star，预测得分 0.29，预计 4 周内新增 243 star。Fork 加速 2.4x。",
+      "evidence": [
+        "Fork 加速 2.4x"
+      ],
+      "score": 0.29,
+      "stars": 1553,
+      "predicted_stars_4w": 243,
+      "url": "https://github.com/glincker/thesvg"
+    },
+    {
+      "type": "new_entry",
+      "repo": "tonhowtf/omniget",
+      "title": "新发现：tonhowtf/omniget 展现爆发早期信号",
+      "summary": "当前 2.2k star，预测得分 0.29，预计 4 周内新增 224 star。Fork 加速 1.91x。",
+      "evidence": [
+        "Fork 加速 1.91x"
+      ],
+      "score": 0.29,
+      "stars": 2167,
+      "predicted_stars_4w": 224,
+      "url": "https://github.com/tonhowtf/omniget"
+    },
+    {
+      "type": "new_entry",
       "repo": "vyfor/rattles",
       "title": "新发现：vyfor/rattles 展现爆发早期信号",
-      "summary": "当前 937 star，预测得分 0.25，预计 4 周内新增 459 star。Star 加速 3.02x，Fork 加速 4x。",
+      "summary": "当前 938 star，预测得分 0.25，预计 4 周内新增 459 star。Star 加速 3.02x，Fork 加速 4x。",
       "evidence": [
         "Star 加速 3.02x",
         "Fork 加速 4x"
       ],
       "score": 0.25,
-      "stars": 937,
+      "stars": 938,
       "predicted_stars_4w": 459,
       "url": "https://github.com/vyfor/rattles"
     },
@@ -384,13 +392,13 @@
       "type": "new_entry",
       "repo": "alchaincyf/obsidian-ai-orange-book",
       "title": "新发现：alchaincyf/obsidian-ai-orange-book 展现爆发早期信号",
-      "summary": "当前 721 star，预测得分 0.21，预计 4 周内新增 254 star。Star 加速 3.92x，Fork 加速 2.25x。",
+      "summary": "当前 723 star，预测得分 0.21，预计 4 周内新增 254 star。Star 加速 3.92x，Fork 加速 2.25x。",
       "evidence": [
         "Star 加速 3.92x",
         "Fork 加速 2.25x"
       ],
       "score": 0.21,
-      "stars": 721,
+      "stars": 723,
       "predicted_stars_4w": 254,
       "url": "https://github.com/alchaincyf/obsidian-ai-orange-book"
     },
@@ -398,12 +406,12 @@
       "type": "new_entry",
       "repo": "hexiecs/talk-normal",
       "title": "新发现：hexiecs/talk-normal 展现爆发早期信号",
-      "summary": "当前 1.4k star，预测得分 0.19，预计 4 周内新增 332 star。Star 加速 6.7x。",
+      "summary": "当前 1.5k star，预测得分 0.19，预计 4 周内新增 332 star。Star 加速 6.7x。",
       "evidence": [
         "Star 加速 6.7x"
       ],
       "score": 0.19,
-      "stars": 1425,
+      "stars": 1483,
       "predicted_stars_4w": 332,
       "url": "https://github.com/hexiecs/talk-normal"
     },
@@ -411,13 +419,13 @@
       "type": "new_entry",
       "repo": "retlehs/quien",
       "title": "新发现：retlehs/quien 展现爆发早期信号",
-      "summary": "当前 695 star，预测得分 0.19，预计 4 周内新增 240 star。Fork 加速 2x，近 4 周发布 5 次。",
+      "summary": "当前 705 star，预测得分 0.19，预计 4 周内新增 240 star。Fork 加速 2x，近 4 周发布 5 次。",
       "evidence": [
         "Fork 加速 2x",
         "近 4 周发布 5 次"
       ],
       "score": 0.19,
-      "stars": 695,
+      "stars": 705,
       "predicted_stars_4w": 240,
       "url": "https://github.com/retlehs/quien"
     },
@@ -425,12 +433,12 @@
       "type": "new_entry",
       "repo": "yizhiyanhua-ai/fireworks-tech-graph",
       "title": "新发现：yizhiyanhua-ai/fireworks-tech-graph 展现爆发早期信号",
-      "summary": "当前 4.3k star，预测得分 0.18，预计 4 周内新增 1.4k star。Fork 加速 2.08x。",
+      "summary": "当前 4.4k star，预测得分 0.18，预计 4 周内新增 1.4k star。Fork 加速 2.08x。",
       "evidence": [
         "Fork 加速 2.08x"
       ],
       "score": 0.18,
-      "stars": 4334,
+      "stars": 4400,
       "predicted_stars_4w": 1377,
       "url": "https://github.com/yizhiyanhua-ai/fireworks-tech-graph"
     },
@@ -438,28 +446,15 @@
       "type": "new_entry",
       "repo": "nashsu/llm_wiki",
       "title": "新发现：nashsu/llm_wiki 展现爆发早期信号",
-      "summary": "当前 3.0k star，预测得分 0.18，预计 4 周内新增 489 star。Issue 活跃度上升 10x，近 4 周发布 2 次。",
+      "summary": "当前 3.3k star，预测得分 0.18，预计 4 周内新增 489 star。Issue 活跃度上升 10x，近 4 周发布 2 次。",
       "evidence": [
         "Issue 活跃度上升 10x",
         "近 4 周发布 2 次"
       ],
       "score": 0.18,
-      "stars": 3040,
+      "stars": 3349,
       "predicted_stars_4w": 489,
       "url": "https://github.com/nashsu/llm_wiki"
-    },
-    {
-      "type": "new_entry",
-      "repo": "floci-io/floci",
-      "title": "新发现：floci-io/floci 展现爆发早期信号",
-      "summary": "当前 4.2k star，预测得分 0.18，预计 4 周内新增 363 star。Fork 加速 4.5x。",
-      "evidence": [
-        "Fork 加速 4.5x"
-      ],
-      "score": 0.18,
-      "stars": 4159,
-      "predicted_stars_4w": 363,
-      "url": "https://github.com/floci-io/floci"
     }
   ]
 }
