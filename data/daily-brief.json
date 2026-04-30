@@ -1,5 +1,5 @@
 {
-  "date": "2026-04-29",
+  "date": "2026-04-30",
   "items": [
     {
       "type": "new_wave",
@@ -9,23 +9,6 @@
         "信号强度: strong",
         "关键项目: modelcontextprotocol/modelcontextprotocol, modelcontextprotocol/python-sdk, modelcontextprotocol/typescript-sdk"
       ]
-    },
-    {
-      "type": "new_entry",
-      "repo": "steipete/wacli",
-      "title": "新发现：steipete/wacli 展现爆发早期信号",
-      "summary": "当前 2.1k star，预测得分 0.75，预计 4 周内新增 223 star。Star 加速 8.58x，Fork 加速 5x。",
-      "evidence": [
-        "Star 加速 8.58x",
-        "Fork 加速 5x",
-        "Issue 活跃度上升 5x",
-        "PR 活跃度上升 10x",
-        "4 个因子同时加速"
-      ],
-      "score": 0.75,
-      "stars": 2146,
-      "predicted_stars_4w": 223,
-      "url": "https://github.com/steipete/wacli"
     },
     {
       "type": "new_entry",
@@ -40,7 +23,7 @@
         "4 个因子同时加速"
       ],
       "score": 0.63,
-      "stars": 2792,
+      "stars": 2828,
       "predicted_stars_4w": 321,
       "url": "https://github.com/edwardkim/rhwp"
     },
@@ -48,77 +31,21 @@
       "type": "new_entry",
       "repo": "braedonsaunders/codeflow",
       "title": "新发现：braedonsaunders/codeflow 展现爆发早期信号",
-      "summary": "当前 2.7k star，预测得分 0.48，预计 4 周内新增 141 star。Star 加速 26x，Fork 加速 10x。",
+      "summary": "当前 2.7k star，预测得分 0.48，预计 4 周内新增 141 star。Star 加速 24.38x，Fork 加速 10x。",
       "evidence": [
-        "Star 加速 26x",
+        "Star 加速 24.38x",
         "Fork 加速 10x"
       ],
       "score": 0.48,
-      "stars": 2700,
+      "stars": 2735,
       "predicted_stars_4w": 141,
       "url": "https://github.com/braedonsaunders/codeflow"
     },
     {
       "type": "new_entry",
-      "repo": "z-lab/dflash",
-      "title": "新发现：z-lab/dflash 展现爆发早期信号",
-      "summary": "当前 2.4k star，预测得分 0.48，预计 4 周内新增 243 star。Star 加速 14.13x，Fork 加速 10x。",
-      "evidence": [
-        "Star 加速 14.13x",
-        "Fork 加速 10x"
-      ],
-      "score": 0.48,
-      "stars": 2418,
-      "predicted_stars_4w": 243,
-      "url": "https://github.com/z-lab/dflash"
-    },
-    {
-      "type": "new_entry",
-      "repo": "mkurman/tamux",
-      "title": "新发现：mkurman/tamux 展现爆发早期信号",
-      "summary": "当前 295 star，预测得分 0.45，预计 4 周内新增 78 star。Star 加速 10.29x，近 4 周发布 7 次。",
-      "evidence": [
-        "Star 加速 10.29x",
-        "近 4 周发布 7 次"
-      ],
-      "score": 0.45,
-      "stars": 295,
-      "predicted_stars_4w": 78,
-      "url": "https://github.com/mkurman/tamux"
-    },
-    {
-      "type": "new_entry",
-      "repo": "saffron-health/libretto",
-      "title": "新发现：saffron-health/libretto 展现爆发早期信号",
-      "summary": "当前 567 star，预测得分 0.42，预计 4 周内新增 94 star。Star 加速 17.6x，近 4 周发布 2 次。",
-      "evidence": [
-        "Star 加速 17.6x",
-        "近 4 周发布 2 次"
-      ],
-      "score": 0.42,
-      "stars": 567,
-      "predicted_stars_4w": 94,
-      "url": "https://github.com/saffron-health/libretto"
-    },
-    {
-      "type": "new_entry",
-      "repo": "pipecat-ai/gradient-bang",
-      "title": "新发现：pipecat-ai/gradient-bang 展现爆发早期信号",
-      "summary": "当前 363 star，预测得分 0.42，预计 4 周内新增 111 star。Star 加速 10x，PR 活跃度上升 1.82x。",
-      "evidence": [
-        "Star 加速 10x",
-        "PR 活跃度上升 1.82x"
-      ],
-      "score": 0.42,
-      "stars": 363,
-      "predicted_stars_4w": 111,
-      "url": "https://github.com/pipecat-ai/gradient-bang"
-    },
-    {
-      "type": "new_entry",
       "repo": "wenfxl/openai-cpa",
       "title": "新发现：wenfxl/openai-cpa 展现爆发早期信号",
-      "summary": "当前 1.0k star，预测得分 0.40，预计 4 周内新增 149 star。Star 加速 2.38x，Fork 加速 2.33x。",
+      "summary": "当前 1.1k star，预测得分 0.40，预计 4 周内新增 149 star。Star 加速 2.38x，Fork 加速 2.33x。",
       "evidence": [
         "Star 加速 2.38x",
         "Fork 加速 2.33x",
@@ -126,91 +53,9 @@
         "3 个因子同时加速"
       ],
       "score": 0.4,
-      "stars": 1049,
+      "stars": 1059,
       "predicted_stars_4w": 149,
       "url": "https://github.com/wenfxl/openai-cpa"
-    },
-    {
-      "type": "new_entry",
-      "repo": "zarazhangrui/tab-out",
-      "title": "新发现：zarazhangrui/tab-out 展现爆发早期信号",
-      "summary": "当前 1.1k star，预测得分 0.39，预计 4 周内新增 214 star。Star 加速 32x，Fork 加速 21x。",
-      "evidence": [
-        "Star 加速 32x",
-        "Fork 加速 21x",
-        "Issue 活跃度上升 10x",
-        "3 个因子同时加速"
-      ],
-      "score": 0.39,
-      "stars": 1073,
-      "predicted_stars_4w": 214,
-      "url": "https://github.com/zarazhangrui/tab-out"
-    },
-    {
-      "type": "new_entry",
-      "repo": "mayukh4/linux-android",
-      "title": "新发现：mayukh4/linux-android 展现爆发早期信号",
-      "summary": "当前 1.7k star，预测得分 0.35，预计 4 周内新增 328 star。Star 加速 4.24x，Fork 加速 11x。",
-      "evidence": [
-        "Star 加速 4.24x",
-        "Fork 加速 11x"
-      ],
-      "score": 0.35,
-      "stars": 1659,
-      "predicted_stars_4w": 328,
-      "url": "https://github.com/mayukh4/linux-android"
-    },
-    {
-      "type": "new_entry",
-      "repo": "sparkjsdev/spark",
-      "title": "新发现：sparkjsdev/spark 展现爆发早期信号",
-      "summary": "当前 2.8k star，预测得分 0.33，预计 4 周内新增 156 star。Star 加速 8.18x。",
-      "evidence": [
-        "Star 加速 8.18x"
-      ],
-      "score": 0.33,
-      "stars": 2824,
-      "predicted_stars_4w": 156,
-      "url": "https://github.com/sparkjsdev/spark"
-    },
-    {
-      "type": "new_entry",
-      "repo": "nv-tlabs/lyra",
-      "title": "新发现：nv-tlabs/lyra 展现爆发早期信号",
-      "summary": "当前 1.8k star，预测得分 0.29，预计 4 周内新增 119 star。Star 加速 27.5x。",
-      "evidence": [
-        "Star 加速 27.5x"
-      ],
-      "score": 0.29,
-      "stars": 1812,
-      "predicted_stars_4w": 119,
-      "url": "https://github.com/nv-tlabs/lyra"
-    },
-    {
-      "type": "new_entry",
-      "repo": "devanshutak25/3d-resources",
-      "title": "新发现：devanshutak25/3d-resources 展现爆发早期信号",
-      "summary": "当前 381 star，预测得分 0.19，预计 4 周内新增 99 star。Star 加速 10x。",
-      "evidence": [
-        "Star 加速 10x"
-      ],
-      "score": 0.19,
-      "stars": 381,
-      "predicted_stars_4w": 99,
-      "url": "https://github.com/devanshutak25/3d-resources"
-    },
-    {
-      "type": "new_entry",
-      "repo": "mohi-devhub/antivibe",
-      "title": "新发现：mohi-devhub/antivibe 展现爆发早期信号",
-      "summary": "当前 632 star，预测得分 0.17，预计 4 周内新增 90 star。Star 加速 40x。",
-      "evidence": [
-        "Star 加速 40x"
-      ],
-      "score": 0.17,
-      "stars": 632,
-      "predicted_stars_4w": 90,
-      "url": "https://github.com/mohi-devhub/antivibe"
     }
   ]
 }
