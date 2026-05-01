@@ -1,5 +1,5 @@
 {
-  "date": "2026-04-30",
+  "date": "2026-05-01",
   "items": [
     {
       "type": "new_wave",
@@ -9,53 +9,6 @@
         "信号强度: strong",
         "关键项目: modelcontextprotocol/modelcontextprotocol, modelcontextprotocol/python-sdk, modelcontextprotocol/typescript-sdk"
       ]
-    },
-    {
-      "type": "new_entry",
-      "repo": "edwardkim/rhwp",
-      "title": "新发现：edwardkim/rhwp 展现爆发早期信号",
-      "summary": "当前 2.8k star，预测得分 0.63，预计 4 周内新增 321 star。Star 加速 3.24x，Fork 加速 6x。",
-      "evidence": [
-        "Star 加速 3.24x",
-        "Fork 加速 6x",
-        "PR 活跃度上升 10x",
-        "新贡献者增长 1.5x",
-        "4 个因子同时加速"
-      ],
-      "score": 0.63,
-      "stars": 2828,
-      "predicted_stars_4w": 321,
-      "url": "https://github.com/edwardkim/rhwp"
-    },
-    {
-      "type": "new_entry",
-      "repo": "braedonsaunders/codeflow",
-      "title": "新发现：braedonsaunders/codeflow 展现爆发早期信号",
-      "summary": "当前 2.7k star，预测得分 0.48，预计 4 周内新增 141 star。Star 加速 24.38x，Fork 加速 10x。",
-      "evidence": [
-        "Star 加速 24.38x",
-        "Fork 加速 10x"
-      ],
-      "score": 0.48,
-      "stars": 2735,
-      "predicted_stars_4w": 141,
-      "url": "https://github.com/braedonsaunders/codeflow"
-    },
-    {
-      "type": "new_entry",
-      "repo": "wenfxl/openai-cpa",
-      "title": "新发现：wenfxl/openai-cpa 展现爆发早期信号",
-      "summary": "当前 1.1k star，预测得分 0.40，预计 4 周内新增 149 star。Star 加速 2.38x，Fork 加速 2.33x。",
-      "evidence": [
-        "Star 加速 2.38x",
-        "Fork 加速 2.33x",
-        "近 4 周发布 9 次",
-        "3 个因子同时加速"
-      ],
-      "score": 0.4,
-      "stars": 1059,
-      "predicted_stars_4w": 149,
-      "url": "https://github.com/wenfxl/openai-cpa"
     }
   ]
 }
