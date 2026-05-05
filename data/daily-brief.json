@@ -1,14 +1,4 @@
 {
-  "date": "2026-05-04",
-  "items": [
-    {
-      "type": "new_wave",
-      "title": "新技术浪潮信号：Agentic Infrastructure / MCP 生态",
-      "summary": "检测到 \"Agentic Infrastructure / MCP 生态\" 浪潮的强信号，预测爆发时间 2025-06-19。关键项目：modelcontextprotocol/modelcontextprotocol、modelcontextprotocol/python-sdk、modelcontextprotocol/typescript-sdk。",
-      "evidence": [
-        "信号强度: strong",
-        "关键项目: modelcontextprotocol/modelcontextprotocol, modelcontextprotocol/python-sdk, modelcontextprotocol/typescript-sdk"
-      ]
-    }
-  ]
+  "date": "2026-05-05",
+  "items": []
 }
