@@ -1,5 +1,5 @@
 {
-  "date": "2026-06-03",
+  "date": "2026-06-04",
   "items": [
     {
       "type": "resurging",
@@ -11,7 +11,7 @@
         "Fork 加速 10x"
       ],
       "score": 0.48,
-      "stars": 23079,
+      "stars": 23088,
       "predicted_stars_4w": 469,
       "url": "https://github.com/google/eng-practices"
     },
@@ -19,24 +19,24 @@
       "type": "resurging",
       "repo": "twentyhq/twenty",
       "title": "twentyhq/twenty (49.0k★) 出现二次爆发信号",
-      "summary": "拥有 49.0k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 434 star。Star 加速 2.11x。",
+      "summary": "拥有 49.0k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 434 star。Star 加速 2.13x。",
       "evidence": [
-        "Star 加速 2.11x"
+        "Star 加速 2.13x"
       ],
-      "score": 0.24,
-      "stars": 49013,
+      "score": 0.25,
+      "stars": 49050,
       "predicted_stars_4w": 434,
       "url": "https://github.com/twentyhq/twenty"
     },
     {
       "type": "resurging",
       "repo": "anthropics/claude-plugins-official",
-      "title": "anthropics/claude-plugins-official (29.2k★) 出现二次爆发信号",
-      "summary": "拥有 29.2k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 616 star。。",
+      "title": "anthropics/claude-plugins-official (29.3k★) 出现二次爆发信号",
+      "summary": "拥有 29.3k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 620 star。。",
       "evidence": [],
-      "score": 0.17,
-      "stars": 29249,
-      "predicted_stars_4w": 616,
+      "score": 0.2,
+      "stars": 29342,
+      "predicted_stars_4w": 620,
       "url": "https://github.com/anthropics/claude-plugins-official"
     },
     {
@@ -50,55 +50,57 @@
     },
     {
       "type": "new_entry",
+      "repo": "ogulcancelik/herdr",
+      "title": "新发现：ogulcancelik/herdr 展现爆发早期信号",
+      "summary": "当前 4.3k star，预测得分 0.64，预计 4 周内新增 317 star。Star 加速 2.74x，Fork 加速 3.5x。",
+      "evidence": [
+        "Star 加速 2.74x",
+        "Fork 加速 3.5x",
+        "Issue 活跃度上升 3.41x",
+        "新贡献者增长 1.59x",
+        "近 4 周发布 2 次",
+        "5 个因子同时加速"
+      ],
+      "score": 0.64,
+      "stars": 4269,
+      "predicted_stars_4w": 317,
+      "url": "https://github.com/ogulcancelik/herdr"
+    },
+    {
+      "type": "new_entry",
       "repo": "st-tech/ppf-contact-solver",
       "title": "新发现：st-tech/ppf-contact-solver 展现爆发早期信号",
-      "summary": "当前 3.9k star，预测得分 0.63，预计 4 周内新增 379 star。Star 加速 10.06x，Fork 加速 8.67x。",
+      "summary": "当前 4.0k star，预测得分 0.63，预计 4 周内新增 382 star。Star 加速 10.11x，Fork 加速 9.33x。",
       "evidence": [
-        "Star 加速 10.06x",
-        "Fork 加速 8.67x",
+        "Star 加速 10.11x",
+        "Fork 加速 9.33x",
         "Issue 活跃度上升 10x",
         "3 个因子同时加速"
       ],
       "score": 0.63,
-      "stars": 3936,
-      "predicted_stars_4w": 379,
+      "stars": 3954,
+      "predicted_stars_4w": 382,
       "url": "https://github.com/st-tech/ppf-contact-solver"
-    },
-    {
-      "type": "new_entry",
-      "repo": "ogulcancelik/herdr",
-      "title": "新发现：ogulcancelik/herdr 展现爆发早期信号",
-      "summary": "当前 4.1k star，预测得分 0.57，预计 4 周内新增 306 star。Star 加速 2.6x，Fork 加速 3.5x。",
-      "evidence": [
-        "Star 加速 2.6x",
-        "Fork 加速 3.5x",
-        "Issue 活跃度上升 3.41x",
-        "3 个因子同时加速"
-      ],
-      "score": 0.57,
-      "stars": 4064,
-      "predicted_stars_4w": 306,
-      "url": "https://github.com/ogulcancelik/herdr"
     },
     {
       "type": "new_entry",
       "repo": "cursor/plugins",
       "title": "新发现：cursor/plugins 展现爆发早期信号",
-      "summary": "当前 1.8k star，预测得分 0.43，预计 4 周内新增 198 star。Star 加速 5.46x，PR 活跃度上升 5.25x。",
+      "summary": "当前 1.8k star，预测得分 0.43，预计 4 周内新增 201 star。Star 加速 5.52x，PR 活跃度上升 5.25x。",
       "evidence": [
-        "Star 加速 5.46x",
+        "Star 加速 5.52x",
         "PR 活跃度上升 5.25x"
       ],
       "score": 0.43,
-      "stars": 1774,
-      "predicted_stars_4w": 198,
+      "stars": 1811,
+      "predicted_stars_4w": 201,
       "url": "https://github.com/cursor/plugins"
     },
     {
       "type": "new_entry",
       "repo": "open-gsd/get-shit-done-redux",
       "title": "新发现：open-gsd/get-shit-done-redux 展现爆发早期信号",
-      "summary": "当前 2.5k star，预测得分 0.40，预计 4 周内新增 275 star。Fork 加速 10x，Issue 活跃度上升 7.61x。",
+      "summary": "当前 2.7k star，预测得分 0.40，预计 4 周内新增 275 star。Fork 加速 10x，Issue 活跃度上升 7.61x。",
       "evidence": [
         "Fork 加速 10x",
         "Issue 活跃度上升 7.61x",
@@ -107,7 +109,7 @@
         "5 个因子同时加速"
       ],
       "score": 0.4,
-      "stars": 2503,
+      "stars": 2654,
       "predicted_stars_4w": 275,
       "url": "https://github.com/open-gsd/get-shit-done-redux"
     },
@@ -115,26 +117,39 @@
       "type": "new_entry",
       "repo": "alistaitsacle/free-llm-api-keys",
       "title": "新发现：alistaitsacle/free-llm-api-keys 展现爆发早期信号",
-      "summary": "当前 1.5k star，预测得分 0.34，预计 4 周内新增 141 star。Star 加速 2.25x，Fork 加速 3.11x。",
+      "summary": "当前 1.5k star，预测得分 0.38，预计 4 周内新增 142 star。Star 加速 2.31x，Fork 加速 3.89x。",
       "evidence": [
-        "Star 加速 2.25x",
-        "Fork 加速 3.11x"
+        "Star 加速 2.31x",
+        "Fork 加速 3.89x"
       ],
-      "score": 0.34,
-      "stars": 1504,
-      "predicted_stars_4w": 141,
+      "score": 0.38,
+      "stars": 1531,
+      "predicted_stars_4w": 142,
       "url": "https://github.com/alistaitsacle/free-llm-api-keys"
+    },
+    {
+      "type": "new_entry",
+      "repo": "dograh-hq/dograh",
+      "title": "新发现：dograh-hq/dograh 展现爆发早期信号",
+      "summary": "当前 4.2k star，预测得分 0.31，预计 4 周内新增 194 star。PR 活跃度上升 2.19x。",
+      "evidence": [
+        "PR 活跃度上升 2.19x"
+      ],
+      "score": 0.31,
+      "stars": 4196,
+      "predicted_stars_4w": 194,
+      "url": "https://github.com/dograh-hq/dograh"
     },
     {
       "type": "new_entry",
       "repo": "wiltodelta/remove-ai-watermarks",
       "title": "新发现：wiltodelta/remove-ai-watermarks 展现爆发早期信号",
-      "summary": "当前 2.9k star，预测得分 0.29，预计 4 周内新增 140 star。Fork 加速 3.75x。",
+      "summary": "当前 2.9k star，预测得分 0.30，预计 4 周内新增 140 star。Fork 加速 4.13x。",
       "evidence": [
-        "Fork 加速 3.75x"
+        "Fork 加速 4.13x"
       ],
-      "score": 0.29,
-      "stars": 2882,
+      "score": 0.3,
+      "stars": 2911,
       "predicted_stars_4w": 140,
       "url": "https://github.com/wiltodelta/remove-ai-watermarks"
     },
@@ -142,41 +157,28 @@
       "type": "new_entry",
       "repo": "microsoft/agent-governance-toolkit",
       "title": "新发现：microsoft/agent-governance-toolkit 展现爆发早期信号",
-      "summary": "当前 3.9k star，预测得分 0.28，预计 4 周内新增 216 star。Star 加速 2.8x。",
+      "summary": "当前 4.0k star，预测得分 0.30，预计 4 周内新增 224 star。Star 加速 3.01x。",
       "evidence": [
-        "Star 加速 2.8x"
+        "Star 加速 3.01x"
       ],
-      "score": 0.28,
-      "stars": 3903,
-      "predicted_stars_4w": 216,
+      "score": 0.3,
+      "stars": 3972,
+      "predicted_stars_4w": 224,
       "url": "https://github.com/microsoft/agent-governance-toolkit"
     },
     {
       "type": "new_entry",
       "repo": "anysearch-ai/anysearch-skill",
       "title": "新发现：anysearch-ai/anysearch-skill 展现爆发早期信号",
-      "summary": "当前 2.3k star，预测得分 0.26，预计 4 周内新增 205 star。Star 加速 2.21x，Fork 加速 1.6x。",
+      "summary": "当前 2.4k star，预测得分 0.28，预计 4 周内新增 211 star。Star 加速 2.28x，Fork 加速 2x。",
       "evidence": [
-        "Star 加速 2.21x",
-        "Fork 加速 1.6x"
+        "Star 加速 2.28x",
+        "Fork 加速 2x"
       ],
-      "score": 0.26,
-      "stars": 2292,
-      "predicted_stars_4w": 205,
+      "score": 0.28,
+      "stars": 2391,
+      "predicted_stars_4w": 211,
       "url": "https://github.com/anysearch-ai/anysearch-skill"
-    },
-    {
-      "type": "new_entry",
-      "repo": "dograh-hq/dograh",
-      "title": "新发现：dograh-hq/dograh 展现爆发早期信号",
-      "summary": "当前 4.2k star，预测得分 0.26，预计 4 周内新增 180 star。PR 活跃度上升 1.94x。",
-      "evidence": [
-        "PR 活跃度上升 1.94x"
-      ],
-      "score": 0.26,
-      "stars": 4151,
-      "predicted_stars_4w": 180,
-      "url": "https://github.com/dograh-hq/dograh"
     },
     {
       "type": "new_entry",
@@ -187,21 +189,34 @@
         "Fork 加速 1.59x"
       ],
       "score": 0.22,
-      "stars": 3256,
+      "stars": 3267,
       "predicted_stars_4w": 124,
       "url": "https://github.com/dotnet/skills"
     },
     {
       "type": "new_entry",
+      "repo": "t8y2/dbx",
+      "title": "新发现：t8y2/dbx 展现爆发早期信号",
+      "summary": "当前 3.7k star，预测得分 0.22，预计 4 周内新增 168 star。新贡献者增长 1.6x。",
+      "evidence": [
+        "新贡献者增长 1.6x"
+      ],
+      "score": 0.22,
+      "stars": 3682,
+      "predicted_stars_4w": 168,
+      "url": "https://github.com/t8y2/dbx"
+    },
+    {
+      "type": "new_entry",
       "repo": "virgiliojr94/book-to-skill",
       "title": "新发现：virgiliojr94/book-to-skill 展现爆发早期信号",
-      "summary": "当前 3.9k star，预测得分 0.16，预计 4 周内新增 236 star。Fork 加速 1.5x。",
+      "summary": "当前 4.2k star，预测得分 0.17，预计 4 周内新增 252 star。Fork 加速 1.5x。",
       "evidence": [
         "Fork 加速 1.5x"
       ],
-      "score": 0.16,
-      "stars": 3905,
-      "predicted_stars_4w": 236,
+      "score": 0.17,
+      "stars": 4157,
+      "predicted_stars_4w": 252,
       "url": "https://github.com/virgiliojr94/book-to-skill"
     }
   ]
