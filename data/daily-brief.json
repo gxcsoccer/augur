@@ -1,48 +1,65 @@
 {
-  "date": "2026-06-13",
+  "date": "2026-06-14",
   "items": [
     {
       "type": "resurging",
-      "repo": "roboflow/supervision",
-      "title": "roboflow/supervision (44.0k★) 出现二次爆发信号",
-      "summary": "拥有 44.0k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 502 star。Star 加速 4.94x，Fork 加速 2.89x。",
+      "repo": "apple/container",
+      "title": "apple/container (36.9k★) 出现二次爆发信号",
+      "summary": "拥有 36.9k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 627 star。Star 加速 13.03x，Fork 加速 1.88x。",
       "evidence": [
-        "Star 加速 4.94x",
-        "Fork 加速 2.89x",
-        "新贡献者增长 2x",
+        "Star 加速 13.03x",
+        "Fork 加速 1.88x",
+        "新贡献者增长 1.59x",
+        "社交热度 30 分",
+        "4 个因子同时加速"
+      ],
+      "score": 0.59,
+      "stars": 36857,
+      "predicted_stars_4w": 627,
+      "url": "https://github.com/apple/container"
+    },
+    {
+      "type": "resurging",
+      "repo": "roboflow/supervision",
+      "title": "roboflow/supervision (44.2k★) 出现二次爆发信号",
+      "summary": "拥有 44.2k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 515 star。Star 加速 4.48x，Fork 加速 2.71x。",
+      "evidence": [
+        "Star 加速 4.48x",
+        "Fork 加速 2.71x",
+        "新贡献者增长 1.71x",
         "3 个因子同时加速"
       ],
-      "score": 0.55,
-      "stars": 44049,
-      "predicted_stars_4w": 502,
+      "score": 0.5,
+      "stars": 44169,
+      "predicted_stars_4w": 515,
       "url": "https://github.com/roboflow/supervision"
     },
     {
       "type": "resurging",
       "repo": "lfnovo/open-notebook",
-      "title": "lfnovo/open-notebook (30.0k★) 出现二次爆发信号",
-      "summary": "拥有 30.0k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 576 star。Star 加速 5.66x，Fork 加速 2.26x。",
+      "title": "lfnovo/open-notebook (30.4k★) 出现二次爆发信号",
+      "summary": "拥有 30.4k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 641 star。Star 加速 5.71x，Fork 加速 2.48x。",
       "evidence": [
-        "Star 加速 5.66x",
-        "Fork 加速 2.26x"
+        "Star 加速 5.71x",
+        "Fork 加速 2.48x"
       ],
-      "score": 0.41,
-      "stars": 29998,
-      "predicted_stars_4w": 576,
+      "score": 0.43,
+      "stars": 30410,
+      "predicted_stars_4w": 641,
       "url": "https://github.com/lfnovo/open-notebook"
     },
     {
       "type": "resurging",
       "repo": "mvanhorn/last30days-skill",
-      "title": "mvanhorn/last30days-skill (41.0k★) 出现二次爆发信号",
-      "summary": "拥有 41.0k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 1.3k star。Star 加速 3.63x，Fork 加速 2.25x。",
+      "title": "mvanhorn/last30days-skill (41.8k★) 出现二次爆发信号",
+      "summary": "拥有 41.8k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 1.4k star。Star 加速 3.64x，Fork 加速 2.34x。",
       "evidence": [
-        "Star 加速 3.63x",
-        "Fork 加速 2.25x"
+        "Star 加速 3.64x",
+        "Fork 加速 2.34x"
       ],
       "score": 0.39,
-      "stars": 41041,
-      "predicted_stars_4w": 1314,
+      "stars": 41822,
+      "predicted_stars_4w": 1429,
       "url": "https://github.com/mvanhorn/last30days-skill"
     },
     {
@@ -56,6 +73,20 @@
     },
     {
       "type": "new_entry",
+      "repo": "tinyfish-io/bigset",
+      "title": "新发现：tinyfish-io/bigset 展现爆发早期信号",
+      "summary": "当前 1.4k star，预测得分 0.52，预计 4 周内新增 161 star。Star 加速 22.5x，Fork 加速 6x。",
+      "evidence": [
+        "Star 加速 22.5x",
+        "Fork 加速 6x"
+      ],
+      "score": 0.52,
+      "stars": 1437,
+      "predicted_stars_4w": 161,
+      "url": "https://github.com/tinyfish-io/bigset"
+    },
+    {
+      "type": "new_entry",
       "repo": "next-1688/1688-shopkeeper",
       "title": "新发现：next-1688/1688-shopkeeper 展现爆发早期信号",
       "summary": "当前 3.0k star，预测得分 0.48，预计 4 周内新增 235 star。Star 加速 6.81x，Fork 加速 10x。",
@@ -64,7 +95,7 @@
         "Fork 加速 10x"
       ],
       "score": 0.48,
-      "stars": 3007,
+      "stars": 3009,
       "predicted_stars_4w": 235,
       "url": "https://github.com/next-1688/1688-shopkeeper"
     },
@@ -72,43 +103,43 @@
       "type": "new_entry",
       "repo": "openai/plugins",
       "title": "新发现：openai/plugins 展现爆发早期信号",
-      "summary": "当前 2.9k star，预测得分 0.47，预计 4 周内新增 185 star。Star 加速 6.27x，Fork 加速 2.1x。",
+      "summary": "当前 3.0k star，预测得分 0.45，预计 4 周内新增 194 star。Star 加速 6x，Fork 加速 1.93x。",
       "evidence": [
-        "Star 加速 6.27x",
-        "Fork 加速 2.1x"
+        "Star 加速 6x",
+        "Fork 加速 1.93x"
       ],
-      "score": 0.47,
-      "stars": 2949,
-      "predicted_stars_4w": 185,
+      "score": 0.45,
+      "stars": 3014,
+      "predicted_stars_4w": 194,
       "url": "https://github.com/openai/plugins"
     },
     {
       "type": "new_entry",
       "repo": "baojie/shiji-kb",
       "title": "新发现：baojie/shiji-kb 展现爆发早期信号",
-      "summary": "当前 2.1k star，预测得分 0.44，预计 4 周内新增 125 star。Star 加速 9.23x，Fork 加速 3.06x。",
+      "summary": "当前 2.1k star，预测得分 0.44，预计 4 周内新增 130 star。Star 加速 8.57x，Fork 加速 3x。",
       "evidence": [
-        "Star 加速 9.23x",
-        "Fork 加速 3.06x"
+        "Star 加速 8.57x",
+        "Fork 加速 3x"
       ],
       "score": 0.44,
-      "stars": 2068,
-      "predicted_stars_4w": 125,
+      "stars": 2074,
+      "predicted_stars_4w": 130,
       "url": "https://github.com/baojie/shiji-kb"
     },
     {
       "type": "new_entry",
-      "repo": "devenjarvis/lathe",
-      "title": "新发现：devenjarvis/lathe 展现爆发早期信号",
-      "summary": "当前 1.4k star，预测得分 0.39，预计 4 周内新增 125 star。Star 加速 10x，社交热度 30 分。",
+      "repo": "kenn-io/agentsview",
+      "title": "新发现：kenn-io/agentsview 展现爆发早期信号",
+      "summary": "当前 2.6k star，预测得分 0.43，预计 4 周内新增 106 star。Star 加速 9.8x，新贡献者增长 1.67x。",
       "evidence": [
-        "Star 加速 10x",
-        "社交热度 30 分"
+        "Star 加速 9.8x",
+        "新贡献者增长 1.67x"
       ],
-      "score": 0.39,
-      "stars": 1416,
-      "predicted_stars_4w": 125,
-      "url": "https://github.com/devenjarvis/lathe"
+      "score": 0.43,
+      "stars": 2553,
+      "predicted_stars_4w": 106,
+      "url": "https://github.com/kenn-io/agentsview"
     },
     {
       "type": "new_entry",
@@ -128,57 +159,74 @@
       "type": "new_entry",
       "repo": "maziyarpanahi/openmed",
       "title": "新发现：maziyarpanahi/openmed 展现爆发早期信号",
-      "summary": "当前 3.4k star，预测得分 0.36，预计 4 周内新增 119 star。Star 加速 3.7x，Issue 活跃度上升 10x。",
+      "summary": "当前 3.5k star，预测得分 0.36，预计 4 周内新增 130 star。Star 加速 3.75x，Issue 活跃度上升 10x。",
       "evidence": [
-        "Star 加速 3.7x",
+        "Star 加速 3.75x",
         "Issue 活跃度上升 10x"
       ],
       "score": 0.36,
-      "stars": 3365,
-      "predicted_stars_4w": 119,
+      "stars": 3461,
+      "predicted_stars_4w": 130,
       "url": "https://github.com/maziyarpanahi/openmed"
     },
     {
       "type": "new_entry",
       "repo": "butterbase-ai/butterbase",
       "title": "新发现：butterbase-ai/butterbase 展现爆发早期信号",
-      "summary": "当前 2.1k star，预测得分 0.35，预计 4 周内新增 128 star。Star 加速 5.56x，Fork 加速 10x。",
+      "summary": "当前 2.1k star，预测得分 0.35，预计 4 周内新增 142 star。Star 加速 6.33x，Fork 加速 10x。",
       "evidence": [
-        "Star 加速 5.56x",
+        "Star 加速 6.33x",
         "Fork 加速 10x",
         "新贡献者增长 2x",
         "3 个因子同时加速"
       ],
       "score": 0.35,
-      "stars": 2051,
-      "predicted_stars_4w": 128,
+      "stars": 2118,
+      "predicted_stars_4w": 142,
       "url": "https://github.com/butterbase-ai/butterbase"
     },
     {
       "type": "new_entry",
-      "repo": "tinyfish-io/bigset",
-      "title": "新发现：tinyfish-io/bigset 展现爆发早期信号",
-      "summary": "当前 1.4k star，预测得分 0.33，预计 4 周内新增 160 star。Star 加速 22.2x。",
+      "repo": "devenjarvis/lathe",
+      "title": "新发现：devenjarvis/lathe 展现爆发早期信号",
+      "summary": "当前 1.4k star，预测得分 0.32，预计 4 周内新增 125 star。Star 加速 10x。",
       "evidence": [
-        "Star 加速 22.2x"
+        "Star 加速 10x"
       ],
-      "score": 0.33,
-      "stars": 1422,
-      "predicted_stars_4w": 160,
-      "url": "https://github.com/tinyfish-io/bigset"
+      "score": 0.32,
+      "stars": 1446,
+      "predicted_stars_4w": 125,
+      "url": "https://github.com/devenjarvis/lathe"
     },
     {
       "type": "new_entry",
-      "repo": "alistaitsacle/free-llm-api-keys",
-      "title": "新发现：alistaitsacle/free-llm-api-keys 展现爆发早期信号",
-      "summary": "当前 2.3k star，预测得分 0.31，预计 4 周内新增 136 star。Fork 加速 3.5x。",
+      "repo": "open-gsd/gsd-core",
+      "title": "新发现：open-gsd/gsd-core 展现爆发早期信号",
+      "summary": "当前 3.9k star，预测得分 0.31，预计 4 周内新增 148 star。Issue 活跃度上升 1.71x，PR 活跃度上升 2x。",
       "evidence": [
-        "Fork 加速 3.5x"
+        "Issue 活跃度上升 1.71x",
+        "PR 活跃度上升 2x",
+        "新贡献者增长 2x",
+        "3 个因子同时加速"
       ],
       "score": 0.31,
-      "stars": 2345,
-      "predicted_stars_4w": 136,
-      "url": "https://github.com/alistaitsacle/free-llm-api-keys"
+      "stars": 3926,
+      "predicted_stars_4w": 148,
+      "url": "https://github.com/open-gsd/gsd-core"
+    },
+    {
+      "type": "new_entry",
+      "repo": "itsyebekhe/nahan",
+      "title": "新发现：itsyebekhe/nahan 展现爆发早期信号",
+      "summary": "当前 874 star，预测得分 0.31，预计 4 周内新增 115 star。Star 加速 12.25x，Fork 加速 10x。",
+      "evidence": [
+        "Star 加速 12.25x",
+        "Fork 加速 10x"
+      ],
+      "score": 0.31,
+      "stars": 874,
+      "predicted_stars_4w": 115,
+      "url": "https://github.com/itsyebekhe/nahan"
     },
     {
       "type": "new_entry",
@@ -195,84 +243,95 @@
     },
     {
       "type": "new_entry",
-      "repo": "open-gsd/gsd-core",
-      "title": "新发现：open-gsd/gsd-core 展现爆发早期信号",
-      "summary": "当前 3.8k star，预测得分 0.29，预计 4 周内新增 140 star。Issue 活跃度上升 1.63x，PR 活跃度上升 1.95x。",
-      "evidence": [
-        "Issue 活跃度上升 1.63x",
-        "PR 活跃度上升 1.95x",
-        "新贡献者增长 1.6x",
-        "3 个因子同时加速"
-      ],
-      "score": 0.29,
-      "stars": 3836,
-      "predicted_stars_4w": 140,
-      "url": "https://github.com/open-gsd/gsd-core"
-    },
-    {
-      "type": "new_entry",
       "repo": "muxuuu/serenity-skill",
       "title": "新发现：muxuuu/serenity-skill 展现爆发早期信号",
-      "summary": "当前 2.1k star，预测得分 0.25，预计 4 周内新增 235 star。Star 加速 2.36x，Fork 加速 3.14x。",
+      "summary": "当前 2.2k star，预测得分 0.26，预计 4 周内新增 246 star。Star 加速 2.56x，Fork 加速 3.14x。",
       "evidence": [
-        "Star 加速 2.36x",
+        "Star 加速 2.56x",
         "Fork 加速 3.14x"
       ],
-      "score": 0.25,
-      "stars": 2135,
-      "predicted_stars_4w": 235,
+      "score": 0.26,
+      "stars": 2210,
+      "predicted_stars_4w": 246,
       "url": "https://github.com/muxuuu/serenity-skill"
     },
     {
       "type": "new_entry",
-      "repo": "databay-labs/free-proxy-list",
-      "title": "新发现：databay-labs/free-proxy-list 展现爆发早期信号",
-      "summary": "当前 1.7k star，预测得分 0.22，预计 4 周内新增 115 star。Star 加速 2.99x。",
+      "repo": "alistaitsacle/free-llm-api-keys",
+      "title": "新发现：alistaitsacle/free-llm-api-keys 展现爆发早期信号",
+      "summary": "当前 2.4k star，预测得分 0.24，预计 4 周内新增 128 star。Fork 加速 3x。",
       "evidence": [
-        "Star 加速 2.99x"
+        "Fork 加速 3x"
       ],
-      "score": 0.22,
-      "stars": 1741,
-      "predicted_stars_4w": 115,
-      "url": "https://github.com/databay-labs/free-proxy-list"
+      "score": 0.24,
+      "stars": 2387,
+      "predicted_stars_4w": 128,
+      "url": "https://github.com/alistaitsacle/free-llm-api-keys"
+    },
+    {
+      "type": "new_entry",
+      "repo": "microsoft/mxc",
+      "title": "新发现：microsoft/mxc 展现爆发早期信号",
+      "summary": "当前 941 star，预测得分 0.23，预计 4 周内新增 92 star。PR 活跃度上升 10x，新贡献者增长 6x。",
+      "evidence": [
+        "PR 活跃度上升 10x",
+        "新贡献者增长 6x"
+      ],
+      "score": 0.23,
+      "stars": 941,
+      "predicted_stars_4w": 92,
+      "url": "https://github.com/microsoft/mxc"
     },
     {
       "type": "new_entry",
       "repo": "microsoft/pg_durable",
       "title": "新发现：microsoft/pg_durable 展现爆发早期信号",
-      "summary": "当前 1.9k star，预测得分 0.21，预计 4 周内新增 188 star。Fork 加速 4x。",
+      "summary": "当前 2.0k star，预测得分 0.21，预计 4 周内新增 212 star。Fork 加速 4x。",
       "evidence": [
         "Fork 加速 4x"
       ],
       "score": 0.21,
-      "stars": 1941,
-      "predicted_stars_4w": 188,
+      "stars": 1972,
+      "predicted_stars_4w": 212,
       "url": "https://github.com/microsoft/pg_durable"
     },
     {
       "type": "new_entry",
       "repo": "opensquilla/opensquilla",
       "title": "新发现：opensquilla/opensquilla 展现爆发早期信号",
-      "summary": "当前 4.1k star，预测得分 0.20，预计 4 周内新增 132 star。Fork 加速 1.5x。",
+      "summary": "当前 4.1k star，预测得分 0.20，预计 4 周内新增 141 star。Fork 加速 1.5x。",
       "evidence": [
         "Fork 加速 1.5x"
       ],
       "score": 0.2,
-      "stars": 4078,
-      "predicted_stars_4w": 132,
+      "stars": 4122,
+      "predicted_stars_4w": 141,
       "url": "https://github.com/opensquilla/opensquilla"
+    },
+    {
+      "type": "new_entry",
+      "repo": "databay-labs/free-proxy-list",
+      "title": "新发现：databay-labs/free-proxy-list 展现爆发早期信号",
+      "summary": "当前 1.8k star，预测得分 0.20，预计 4 周内新增 119 star。Star 加速 2.66x。",
+      "evidence": [
+        "Star 加速 2.66x"
+      ],
+      "score": 0.2,
+      "stars": 1796,
+      "predicted_stars_4w": 119,
+      "url": "https://github.com/databay-labs/free-proxy-list"
     },
     {
       "type": "new_entry",
       "repo": "hexo-ai/sia",
       "title": "新发现：hexo-ai/sia 展现爆发早期信号",
-      "summary": "当前 1.6k star，预测得分 0.17，预计 4 周内新增 82 star。PR 活跃度上升 3x。",
+      "summary": "当前 1.7k star，预测得分 0.19，预计 4 周内新增 104 star。PR 活跃度上升 3x。",
       "evidence": [
         "PR 活跃度上升 3x"
       ],
-      "score": 0.17,
-      "stars": 1637,
-      "predicted_stars_4w": 82,
+      "score": 0.19,
+      "stars": 1678,
+      "predicted_stars_4w": 104,
       "url": "https://github.com/hexo-ai/sia"
     }
   ]
