@@ -1,5 +1,5 @@
 {
-  "date": "2026-07-10",
+  "date": "2026-07-11",
   "items": [
     {
       "type": "new_wave",
@@ -12,31 +12,14 @@
     },
     {
       "type": "new_entry",
-      "repo": "inkeep/open-knowledge",
-      "title": "新发现：inkeep/open-knowledge 展现爆发早期信号",
-      "summary": "当前 2.5k star，预测得分 0.57，预计 4 周内新增 82 star。Star 加速 10x，PR 活跃度上升 1.5x。",
-      "evidence": [
-        "Star 加速 10x",
-        "PR 活跃度上升 1.5x",
-        "新贡献者增长 2x",
-        "近 4 周发布 5 次",
-        "4 个因子同时加速"
-      ],
-      "score": 0.57,
-      "stars": 2505,
-      "predicted_stars_4w": 82,
-      "url": "https://github.com/inkeep/open-knowledge"
-    },
-    {
-      "type": "new_entry",
       "repo": "every-app/open-seo",
       "title": "新发现：every-app/open-seo 展现爆发早期信号",
-      "summary": "当前 4.2k star，预测得分 0.33，预计 4 周内新增 98 star。Star 加速 5.63x。",
+      "summary": "当前 4.2k star，预测得分 0.33，预计 4 周内新增 98 star。Star 加速 7.03x。",
       "evidence": [
-        "Star 加速 5.63x"
+        "Star 加速 7.03x"
       ],
       "score": 0.33,
-      "stars": 4221,
+      "stars": 4236,
       "predicted_stars_4w": 98,
       "url": "https://github.com/every-app/open-seo"
     },
@@ -44,12 +27,12 @@
       "type": "new_entry",
       "repo": "makerspet/oomwoo",
       "title": "新发现：makerspet/oomwoo 展现爆发早期信号",
-      "summary": "当前 4.0k star，预测得分 0.30，预计 4 周内新增 176 star。Star 加速 10x。",
+      "summary": "当前 4.1k star，预测得分 0.30，预计 4 周内新增 176 star。Star 加速 10x。",
       "evidence": [
         "Star 加速 10x"
       ],
       "score": 0.3,
-      "stars": 4038,
+      "stars": 4082,
       "predicted_stars_4w": 176,
       "url": "https://github.com/makerspet/oomwoo"
     },
@@ -57,13 +40,13 @@
       "type": "new_entry",
       "repo": "baairon/torlink",
       "title": "新发现：baairon/torlink 展现爆发早期信号",
-      "summary": "当前 3.4k star，预测得分 0.29，预计 4 周内新增 125 star。Star 加速 10x，Fork 加速 4x。",
+      "summary": "当前 3.5k star，预测得分 0.29，预计 4 周内新增 125 star。Star 加速 10x，Fork 加速 4x。",
       "evidence": [
         "Star 加速 10x",
         "Fork 加速 4x"
       ],
       "score": 0.29,
-      "stars": 3426,
+      "stars": 3466,
       "predicted_stars_4w": 125,
       "url": "https://github.com/baairon/torlink"
     },
