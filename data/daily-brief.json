@@ -1,5 +1,5 @@
 {
-  "date": "2026-07-11",
+  "date": "2026-07-12",
   "items": [
     {
       "type": "new_wave",
@@ -12,19 +12,6 @@
     },
     {
       "type": "new_entry",
-      "repo": "every-app/open-seo",
-      "title": "新发现：every-app/open-seo 展现爆发早期信号",
-      "summary": "当前 4.2k star，预测得分 0.33，预计 4 周内新增 98 star。Star 加速 7.03x。",
-      "evidence": [
-        "Star 加速 7.03x"
-      ],
-      "score": 0.33,
-      "stars": 4236,
-      "predicted_stars_4w": 98,
-      "url": "https://github.com/every-app/open-seo"
-    },
-    {
-      "type": "new_entry",
       "repo": "makerspet/oomwoo",
       "title": "新发现：makerspet/oomwoo 展现爆发早期信号",
       "summary": "当前 4.1k star，预测得分 0.30，预计 4 周内新增 176 star。Star 加速 10x。",
@@ -32,7 +19,7 @@
         "Star 加速 10x"
       ],
       "score": 0.3,
-      "stars": 4082,
+      "stars": 4119,
       "predicted_stars_4w": 176,
       "url": "https://github.com/makerspet/oomwoo"
     },
@@ -46,23 +33,9 @@
         "Fork 加速 4x"
       ],
       "score": 0.29,
-      "stars": 3466,
+      "stars": 3503,
       "predicted_stars_4w": 125,
       "url": "https://github.com/baairon/torlink"
-    },
-    {
-      "type": "new_entry",
-      "repo": "pcanterb/pcanterb",
-      "title": "新发现：pcanterb/pcanterb 展现爆发早期信号",
-      "summary": "当前 32 star，预测得分 0.29，预计 4 周内新增 70 star。Star 加速 5.4x，Fork 加速 10x。",
-      "evidence": [
-        "Star 加速 5.4x",
-        "Fork 加速 10x"
-      ],
-      "score": 0.29,
-      "stars": 32,
-      "predicted_stars_4w": 70,
-      "url": "https://github.com/pcanterb/pcanterb"
     }
   ]
 }
