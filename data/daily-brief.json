@@ -1,5 +1,5 @@
 {
-  "date": "2026-07-14",
+  "date": "2026-07-15",
   "items": [
     {
       "type": "new_wave",
@@ -19,23 +19,9 @@
         "Star 加速 10x"
       ],
       "score": 0.3,
-      "stars": 4271,
+      "stars": 4325,
       "predicted_stars_4w": 176,
       "url": "https://github.com/makerspet/oomwoo"
-    },
-    {
-      "type": "new_entry",
-      "repo": "baairon/torlink",
-      "title": "新发现：baairon/torlink 展现爆发早期信号",
-      "summary": "当前 3.6k star，预测得分 0.29，预计 4 周内新增 125 star。Star 加速 10x，Fork 加速 4x。",
-      "evidence": [
-        "Star 加速 10x",
-        "Fork 加速 4x"
-      ],
-      "score": 0.29,
-      "stars": 3579,
-      "predicted_stars_4w": 125,
-      "url": "https://github.com/baairon/torlink"
     }
   ]
 }
