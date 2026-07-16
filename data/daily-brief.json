@@ -1,5 +1,5 @@
 {
-  "date": "2026-07-15",
+  "date": "2026-07-16",
   "items": [
     {
       "type": "new_wave",
@@ -9,19 +9,6 @@
         "信号强度: strong",
         "关键项目: modelcontextprotocol/modelcontextprotocol, modelcontextprotocol/python-sdk, modelcontextprotocol/typescript-sdk"
       ]
-    },
-    {
-      "type": "new_entry",
-      "repo": "makerspet/oomwoo",
-      "title": "新发现：makerspet/oomwoo 展现爆发早期信号",
-      "summary": "当前 4.3k star，预测得分 0.30，预计 4 周内新增 176 star。Star 加速 10x。",
-      "evidence": [
-        "Star 加速 10x"
-      ],
-      "score": 0.3,
-      "stars": 4325,
-      "predicted_stars_4w": 176,
-      "url": "https://github.com/makerspet/oomwoo"
     }
   ]
 }
