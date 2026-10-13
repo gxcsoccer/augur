@@ -9,3 +9,6 @@ data/*.tmp
 data/*.bak
 data/*.db-shm
 data/*.db-wal
+
+# Local paired model benchmark measurements (may include live output)
+reports/jev-ab.*.json
