@@ -1,0 +1,397 @@
+{
+  "version": 1,
+  "provenance": "Authored synthetic acceptance examples, 2026-09-29. Labels are provisional engineering annotations, not user-reviewed production ground truth. No fetched/live repository descriptions.",
+  "samples": [
+    {
+      "project": {
+        "id": "fixture/tensor-runtime",
+        "description": "GPU tensor computation and neural network training engine.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "infrastructure",
+        "domains": [
+          "other"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/local-inference",
+        "description": "C++ runtime for running language models locally on a laptop CPU.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "infrastructure",
+        "domains": [
+          "local-ai"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/syntax-parser",
+        "description": "Incremental parsing engine for programming language syntax trees.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "infrastructure",
+        "domains": [
+          "other"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/wire-format",
+        "description": "Binary serialization format and protocol for structured data exchange.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "infrastructure",
+        "domains": [
+          "data"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/speech-engine",
+        "description": "Low-level neural speech recognition and speech synthesis inference engine.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "infrastructure",
+        "domains": [
+          "voice"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/agent-protocol",
+        "description": "Open communication protocol between autonomous AI agents.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "infrastructure",
+        "domains": [
+          "agent"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/policy-vm",
+        "description": "Sandbox runtime enforcing permission boundaries for untrusted code.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "infrastructure",
+        "domains": [
+          "security"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/storage-engine",
+        "description": "Embedded columnar storage engine for analytical databases.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "infrastructure",
+        "domains": [
+          "data"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/agent-sdk",
+        "description": "TypeScript SDK for composing autonomous agents and tool-calling workflows.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "tooling",
+        "domains": [
+          "agent"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/memory-sdk",
+        "description": "Library adding persistent context recall and long-term memory to AI agents.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "tooling",
+        "domains": [
+          "agent",
+          "memory"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/eval-harness",
+        "description": "CLI framework for evaluating language model quality on benchmark datasets.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "tooling",
+        "domains": [
+          "eval"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/retrieval-kit",
+        "description": "Library for document indexing, vector retrieval and RAG pipelines.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "tooling",
+        "domains": [
+          "search",
+          "data"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/deploy-cli",
+        "description": "Command line utility for deploying services and managing CI/CD workflows.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "tooling",
+        "domains": [
+          "devops"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/voice-sdk",
+        "description": "SDK integrating speech recognition and text-to-speech in developer applications.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "tooling",
+        "domains": [
+          "voice"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/payment-sdk",
+        "description": "Developer integration library for payment processing and financial transactions.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "tooling",
+        "domains": [
+          "economy"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/codegen-plugin",
+        "description": "Developer plugin generating code with AI inside an editor.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "tooling",
+        "domains": [
+          "code-gen"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/desktop-writer",
+        "description": "Desktop app for end users to draft documents using locally running AI models.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "application",
+        "domains": [
+          "desktop",
+          "local-ai"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/coding-app",
+        "description": "AI desktop coding assistant that generates and edits code for users.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "application",
+        "domains": [
+          "desktop",
+          "code-gen"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/search-product",
+        "description": "Hosted end-user product for searching company documents and answering questions.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "application",
+        "domains": [
+          "search"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/voice-notes",
+        "description": "End-user mobile app transcribing voice notes into text.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "application",
+        "domains": [
+          "voice"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/finance-dashboard",
+        "description": "Web app for end users to analyze investment portfolios and transactions.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "application",
+        "domains": [
+          "economy",
+          "data"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/security-dashboard",
+        "description": "SaaS dashboard for users to inspect vulnerabilities and security alerts.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "application",
+        "domains": [
+          "security"
+        ]
+      },
+      "slice": "en"
+    },
+    {
+      "project": {
+        "id": "fixture/zh-agent",
+        "description": "面向用户的桌面 AI 助手，自主调用工具完成任务，并长期记住用户上下文。",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "application",
+        "domains": [
+          "agent",
+          "memory",
+          "desktop"
+        ]
+      },
+      "slice": "zh"
+    },
+    {
+      "project": {
+        "id": "fixture/garden-app",
+        "description": "Mobile product for home gardeners to track watering schedules.",
+        "language": null,
+        "topics": "[]",
+        "readme": ""
+      },
+      "expected": {
+        "layer": "application",
+        "domains": [
+          "other"
+        ]
+      },
+      "slice": "en"
+    }
+  ]
+}

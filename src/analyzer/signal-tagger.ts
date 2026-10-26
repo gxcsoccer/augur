@@ -6,12 +6,16 @@
  */
 
 import { getLlm, LLM_MODEL, LLM_THINKING_OFF } from '../llm/client.js';
+import { observe, validLabels, type ObserveCall, type ProjectInput } from './signal-types.js';
+import { classifyWithJev, type SignalTaggerOptions, type ClassificationExperiment } from './signal-tagger-experiment.js';
 
 export interface SignalClassification {
   projectId: string;
   layer: 'infrastructure' | 'tooling' | 'application';
   domains: string[];
   reasoning: string;
+  /** Present only on the opt-in experimental path. */
+  experiment?: ClassificationExperiment;
 }
 
 const SYSTEM_PROMPT = `你是一个技术趋势分析专家。给定一组开源项目的信息，将每个项目分类为三层信号之一，并识别技术域。
@@ -42,7 +46,16 @@ agent, memory, desktop, voice, eval, local-ai, code-gen, search, data, security,
 只返回 JSON，不要其他内容。`;
 
 export async function classifyProjects(
-  projects: { id: string; description: string | null; language: string | null; topics: string | null; readme?: string }[],
+  projects: ProjectInput[],
+  options: SignalTaggerOptions = {},
+): Promise<SignalClassification[]> {
+  if (options.provider !== 'jev') return classifyProjectsWithLlm(projects, options.onCall);
+  return classifyWithJev(projects, options, classifyProjectsWithLlm);
+}
+
+export async function classifyProjectsWithLlm(
+  projects: ProjectInput[],
+  onCall?: ObserveCall,
 ): Promise<SignalClassification[]> {
   if (projects.length === 0) return [];
 
@@ -59,6 +72,10 @@ export async function classifyProjects(
       return `- ${p.id} (${p.language ?? 'unknown'})\n  Topics: ${topics.join(', ') || 'none'}\n  Description: ${p.description ?? 'none'}\n  README: ${readmeSnippet || 'none'}`;
     }).join('\n\n');
 
+    const started = performance.now();
+    const metric = { provider: 'llm' as const, projectIds: batch.map(p => p.id), model: LLM_MODEL,
+      elapsedMs: 0, ok: false, inputTokens: undefined as number | undefined, outputTokens: undefined as number | undefined,
+      error: undefined as string | undefined, invalidProjectIds: undefined as string[] | undefined };
     try {
       const response = await llm.chat.completions.create({
         model: LLM_MODEL,
@@ -72,8 +89,11 @@ export async function classifyProjects(
         thinking: LLM_THINKING_OFF,
       });
 
+      metric.model = response.model ?? LLM_MODEL;
+      metric.inputTokens = response.usage?.prompt_tokens;
+      metric.outputTokens = response.usage?.completion_tokens;
       const content = response.choices[0]?.message?.content?.trim();
-      if (!content) continue;
+      if (!content) { metric.error = 'empty_response'; continue; }
 
       // Parse JSON from response (handle markdown code blocks)
       const jsonStr = content.replace(/^```json?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
@@ -84,6 +104,12 @@ export async function classifyProjects(
         reasoning: string;
       }>;
 
+      metric.ok = true;
+      metric.invalidProjectIds = batch.filter(p => {
+        const matches = Array.isArray(parsed) ? parsed.filter(item => item?.id === p.id) : [];
+        const item = matches[0];
+        return matches.length !== 1 || !item || !validLabels(item) || typeof item.reasoning !== 'string' || !item.reasoning;
+      }).map(p => p.id);
       for (const item of parsed) {
         const layer = (['infrastructure', 'tooling', 'application'] as const).includes(item.layer as any)
           ? item.layer as 'infrastructure' | 'tooling' | 'application'
@@ -97,6 +123,8 @@ export async function classifyProjects(
         });
       }
     } catch (err) {
+      metric.ok = false;
+      metric.error = 'request_or_parse_failed';
       console.warn(`  LLM classification failed for batch ${i / batchSize + 1}: ${(err as Error).message}`);
       // Fallback: mark as application
       for (const p of batch) {
@@ -107,6 +135,9 @@ export async function classifyProjects(
           reasoning: 'LLM classification failed, defaulting to application',
         });
       }
+    } finally {
+      metric.elapsedMs = performance.now() - started;
+      observe(onCall, metric);
     }
   }
 
