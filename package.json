@@ -11,7 +11,9 @@
     "dev": "tsx src/cli.ts",
     "start": "node dist/cli.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:signal": "vitest run src/analyzer/__tests__/signal-tagger.test.ts",
+    "bench:signal": "node --import tsx src/benchmarks/signal-tagger.ts"
   },
   "keywords": [
     "github",
