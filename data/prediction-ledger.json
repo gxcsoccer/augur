@@ -47587,6 +47587,92 @@
       "id": "pred_1795130922747_278t",
       "status": "miss",
       "verifiedAt": "2026-11-19"
+    },
+    {
+      "createdAt": "2026-11-20",
+      "wave": "Voice AI / 实时多模态",
+      "predictedEruption": "2025-08-22",
+      "confidenceLower": "",
+      "confidenceUpper": "",
+      "signalStrength": "moderate",
+      "signalCount": 2,
+      "keySignals": [
+        "TEN-framework/ten-framework",
+        "resemble-ai/chatterbox"
+      ],
+      "params": {
+        "accelerationThreshold": 1.5,
+        "windowSize": 4,
+        "minBaseline": 3,
+        "layerWeight": 0.25,
+        "growthWeight": 0.25,
+        "usageWeight": 0.2,
+        "activityWeight": 0.15,
+        "signalBonusWeight": 0.15,
+        "compressionFactor": 0.6,
+        "biasCorrection": 0.5,
+        "recencyBoost": 0.5
+      },
+      "id": "pred_1795215696636_cr4g",
+      "status": "hit",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "createdAt": "2026-11-20",
+      "wave": "Autonomous Commerce / AI Economy",
+      "predictedEruption": "2026-01-14",
+      "confidenceLower": "",
+      "confidenceUpper": "",
+      "signalStrength": "moderate",
+      "signalCount": 2,
+      "keySignals": [
+        "HKUDS/AI-Trader",
+        "alsk1992/CloddsBot"
+      ],
+      "params": {
+        "accelerationThreshold": 1.5,
+        "windowSize": 4,
+        "minBaseline": 3,
+        "layerWeight": 0.25,
+        "growthWeight": 0.25,
+        "usageWeight": 0.2,
+        "activityWeight": 0.15,
+        "signalBonusWeight": 0.15,
+        "compressionFactor": 0.6,
+        "biasCorrection": 0.5,
+        "recencyBoost": 0.5
+      },
+      "id": "pred_1795215696651_4g49",
+      "status": "miss",
+      "verifiedAt": "2026-11-20"
+    },
+    {
+      "createdAt": "2026-11-20",
+      "wave": "Embodied AI / 机器人",
+      "predictedEruption": "2025-07-15",
+      "confidenceLower": "",
+      "confidenceUpper": "",
+      "signalStrength": "weak",
+      "signalCount": 1,
+      "keySignals": [
+        "NVIDIA/Isaac-GR00T"
+      ],
+      "params": {
+        "accelerationThreshold": 1.5,
+        "windowSize": 4,
+        "minBaseline": 3,
+        "layerWeight": 0.25,
+        "growthWeight": 0.25,
+        "usageWeight": 0.2,
+        "activityWeight": 0.15,
+        "signalBonusWeight": 0.15,
+        "compressionFactor": 0.6,
+        "biasCorrection": 0.5,
+        "recencyBoost": 0.5
+      },
+      "id": "pred_1795215696665_1ze7",
+      "status": "hit",
+      "verifiedAt": "2026-11-20"
     }
   ]
 }

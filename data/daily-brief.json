@@ -1,4 +1,104 @@
 {
-  "date": "2026-11-19",
-  "items": []
+  "date": "2026-11-20",
+  "items": [
+    {
+      "type": "resurging",
+      "repo": "sherlock-project/sherlock",
+      "title": "sherlock-project/sherlock (115.0k★) 出现二次爆发信号",
+      "summary": "拥有 115.0k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 375 star。Star 加速 4.65x，Fork 加速 3.5x。",
+      "evidence": [
+        "Star 加速 4.65x",
+        "Fork 加速 3.5x"
+      ],
+      "score": 0.44,
+      "stars": 115018,
+      "predicted_stars_4w": 375,
+      "url": "https://github.com/sherlock-project/sherlock"
+    },
+    {
+      "type": "new_entry",
+      "repo": "ersinkoc/phonebox",
+      "title": "新发现：ersinkoc/phonebox 展现爆发早期信号",
+      "summary": "当前 4.2k star，预测得分 0.44，预计 4 周内新增 75 star。Star 加速 6x，Fork 加速 10x。",
+      "evidence": [
+        "Star 加速 6x",
+        "Fork 加速 10x",
+        "Issue 活跃度上升 10x",
+        "PR 活跃度上升 2x",
+        "4 个因子同时加速"
+      ],
+      "score": 0.44,
+      "stars": 4216,
+      "predicted_stars_4w": 75,
+      "url": "https://github.com/ersinkoc/phonebox"
+    },
+    {
+      "type": "new_entry",
+      "repo": "shinyobjectz/raea",
+      "title": "新发现：shinyobjectz/raea 展现爆发早期信号",
+      "summary": "当前 2.8k star，预测得分 0.33，预计 4 周内新增 60 star。Star 加速 3.11x，PR 活跃度上升 10x。",
+      "evidence": [
+        "Star 加速 3.11x",
+        "PR 活跃度上升 10x"
+      ],
+      "score": 0.33,
+      "stars": 2820,
+      "predicted_stars_4w": 60,
+      "url": "https://github.com/shinyobjectz/raea"
+    },
+    {
+      "type": "new_entry",
+      "repo": "n8n-io/nod",
+      "title": "新发现：n8n-io/nod 展现爆发早期信号",
+      "summary": "当前 2.8k star，预测得分 0.22，预计 4 周内新增 63 star。Fork 加速 3x，Issue 活跃度上升 3x。",
+      "evidence": [
+        "Fork 加速 3x",
+        "Issue 活跃度上升 3x"
+      ],
+      "score": 0.22,
+      "stars": 2829,
+      "predicted_stars_4w": 63,
+      "url": "https://github.com/n8n-io/nod"
+    },
+    {
+      "type": "new_entry",
+      "repo": "arjun988/blender-skills",
+      "title": "新发现：arjun988/blender-skills 展现爆发早期信号",
+      "summary": "当前 4.5k star，预测得分 0.19，预计 4 周内新增 75 star。Star 加速 3.04x。",
+      "evidence": [
+        "Star 加速 3.04x"
+      ],
+      "score": 0.19,
+      "stars": 4488,
+      "predicted_stars_4w": 75,
+      "url": "https://github.com/arjun988/blender-skills"
+    },
+    {
+      "type": "new_entry",
+      "repo": "hitkeeen/blender-ai-mcp-addon",
+      "title": "新发现：hitkeeen/blender-ai-mcp-addon 展现爆发早期信号",
+      "summary": "当前 34 star，预测得分 0.17，预计 4 周内新增 74 star。Star 加速 5.8x。",
+      "evidence": [
+        "Star 加速 5.8x"
+      ],
+      "score": 0.17,
+      "stars": 34,
+      "predicted_stars_4w": 74,
+      "url": "https://github.com/hitkeeen/blender-ai-mcp-addon"
+    },
+    {
+      "type": "new_entry",
+      "repo": "expo/exact",
+      "title": "新发现：expo/exact 展现爆发早期信号",
+      "summary": "当前 4.8k star，预测得分 0.16，预计 4 周内新增 108 star。PR 活跃度上升 1.67x，新贡献者增长 3x。",
+      "evidence": [
+        "PR 活跃度上升 1.67x",
+        "新贡献者增长 3x"
+      ],
+      "score": 0.16,
+      "stars": 4826,
+      "predicted_stars_4w": 108,
+      "url": "https://github.com/expo/exact"
+    }
+  ]
 }
