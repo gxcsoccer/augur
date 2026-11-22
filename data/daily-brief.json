@@ -1,110 +1,82 @@
 {
-  "date": "2026-11-21",
+  "date": "2026-11-22",
   "items": [
-    {
-      "type": "resurging",
-      "repo": "sherlock-project/sherlock",
-      "title": "sherlock-project/sherlock (115.5k★) 出现二次爆发信号",
-      "summary": "拥有 115.5k star 的成熟项目出现新一轮加速增长，预计 4 周内新增 388 star。Star 加速 4.92x，Fork 加速 3.85x。",
-      "evidence": [
-        "Star 加速 4.92x",
-        "Fork 加速 3.85x"
-      ],
-      "score": 0.47,
-      "stars": 115451,
-      "predicted_stars_4w": 388,
-      "url": "https://github.com/sherlock-project/sherlock"
-    },
     {
       "type": "new_entry",
       "repo": "simplexai-labs/linger",
       "title": "新发现：simplexai-labs/linger 展现爆发早期信号",
-      "summary": "当前 3.4k star，预测得分 0.44，预计 4 周内新增 94 star。Star 加速 13.67x，Fork 加速 10x。",
+      "summary": "当前 3.8k star，预测得分 0.50，预计 4 周内新增 106 star。Star 加速 15.33x，Fork 加速 10x。",
       "evidence": [
-        "Star 加速 13.67x",
-        "Fork 加速 10x",
-        "PR 活跃度上升 5x",
-        "新贡献者增长 2x",
-        "4 个因子同时加速"
-      ],
-      "score": 0.44,
-      "stars": 3350,
-      "predicted_stars_4w": 94,
-      "url": "https://github.com/simplexai-labs/linger"
-    },
-    {
-      "type": "new_entry",
-      "repo": "ersinkoc/phonebox",
-      "title": "新发现：ersinkoc/phonebox 展现爆发早期信号",
-      "summary": "当前 4.6k star，预测得分 0.44，预计 4 周内新增 86 star。Star 加速 7x，Fork 加速 10x。",
-      "evidence": [
-        "Star 加速 7x",
+        "Star 加速 15.33x",
         "Fork 加速 10x",
         "Issue 活跃度上升 10x",
-        "PR 活跃度上升 2x",
-        "4 个因子同时加速"
+        "PR 活跃度上升 7x",
+        "新贡献者增长 2x",
+        "5 个因子同时加速"
       ],
-      "score": 0.44,
-      "stars": 4618,
-      "predicted_stars_4w": 86,
-      "url": "https://github.com/ersinkoc/phonebox"
+      "score": 0.5,
+      "stars": 3810,
+      "predicted_stars_4w": 106,
+      "url": "https://github.com/simplexai-labs/linger"
     },
     {
       "type": "new_entry",
       "repo": "shinyobjectz/raea",
       "title": "新发现：shinyobjectz/raea 展现爆发早期信号",
-      "summary": "当前 3.1k star，预测得分 0.34，预计 4 周内新增 65 star。Star 加速 3.33x，PR 活跃度上升 10x。",
+      "summary": "当前 4.2k star，预测得分 0.36，预计 4 周内新增 74 star。Star 加速 3.78x，PR 活跃度上升 10x。",
       "evidence": [
-        "Star 加速 3.33x",
+        "Star 加速 3.78x",
         "PR 活跃度上升 10x"
       ],
-      "score": 0.34,
-      "stars": 3078,
-      "predicted_stars_4w": 65,
+      "score": 0.36,
+      "stars": 4201,
+      "predicted_stars_4w": 74,
       "url": "https://github.com/shinyobjectz/raea"
     },
     {
       "type": "new_entry",
       "repo": "n8n-io/nod",
       "title": "新发现：n8n-io/nod 展现爆发早期信号",
-      "summary": "当前 3.0k star，预测得分 0.27，预计 4 周内新增 76 star。Fork 加速 4x，Issue 活跃度上升 3x。",
+      "summary": "当前 3.1k star，预测得分 0.28，预计 4 周内新增 76 star。Fork 加速 4x，Issue 活跃度上升 3x。",
       "evidence": [
         "Fork 加速 4x",
         "Issue 活跃度上升 3x",
-        "PR 活跃度上升 1.5x",
+        "PR 活跃度上升 1.75x",
         "3 个因子同时加速"
       ],
-      "score": 0.27,
-      "stars": 2963,
+      "score": 0.28,
+      "stars": 3111,
       "predicted_stars_4w": 76,
       "url": "https://github.com/n8n-io/nod"
     },
     {
       "type": "new_entry",
-      "repo": "arjun988/blender-skills",
-      "title": "新发现：arjun988/blender-skills 展现爆发早期信号",
-      "summary": "当前 4.6k star，预测得分 0.20，预计 4 周内新增 79 star。Star 加速 3.22x。",
+      "repo": "expo/exact",
+      "title": "新发现：expo/exact 展现爆发早期信号",
+      "summary": "当前 4.9k star，预测得分 0.22，预计 4 周内新增 115 star。Issue 活跃度上升 1.67x，PR 活跃度上升 3x。",
       "evidence": [
-        "Star 加速 3.22x"
+        "Issue 活跃度上升 1.67x",
+        "PR 活跃度上升 3x",
+        "新贡献者增长 3x",
+        "3 个因子同时加速"
       ],
-      "score": 0.2,
-      "stars": 4578,
-      "predicted_stars_4w": 79,
-      "url": "https://github.com/arjun988/blender-skills"
+      "score": 0.22,
+      "stars": 4916,
+      "predicted_stars_4w": 115,
+      "url": "https://github.com/expo/exact"
     },
     {
       "type": "new_entry",
-      "repo": "expo/exact",
-      "title": "新发现：expo/exact 展现爆发早期信号",
-      "summary": "当前 4.9k star，预测得分 0.19，预计 4 周内新增 112 star。PR 活跃度上升 3x，新贡献者增长 3x。",
+      "repo": "arjun988/blender-skills",
+      "title": "新发现：arjun988/blender-skills 展现爆发早期信号",
+      "summary": "当前 4.7k star，预测得分 0.20，预计 4 周内新增 82 star。Star 加速 3.3x。",
       "evidence": [
-        "PR 活跃度上升 3x",
-        "新贡献者增长 3x"
+        "Star 加速 3.3x"
       ],
-      "score": 0.19,
-      "stars": 4873,
-      "predicted_stars_4w": 112,
-      "url": "https://github.com/expo/exact"
+      "score": 0.2,
+      "stars": 4654,
+      "predicted_stars_4w": 82,
+      "url": "https://github.com/arjun988/blender-skills"
     },
     {
       "type": "new_entry",
