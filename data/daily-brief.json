@@ -1,19 +1,32 @@
 {
-  "date": "2026-11-24",
+  "date": "2026-11-25",
   "items": [
     {
       "type": "new_entry",
       "repo": "simplexai-labs/linger",
       "title": "新发现：simplexai-labs/linger 展现爆发早期信号",
-      "summary": "当前 4.2k star，预测得分 0.20，预计 4 周内新增 106 star。PR 活跃度上升 1.5x，新贡献者增长 2.67x。",
+      "summary": "当前 4.4k star，预测得分 0.23，预计 4 周内新增 106 star。PR 活跃度上升 2.25x，新贡献者增长 2.67x。",
       "evidence": [
-        "PR 活跃度上升 1.5x",
+        "PR 活跃度上升 2.25x",
         "新贡献者增长 2.67x"
       ],
-      "score": 0.2,
-      "stars": 4210,
+      "score": 0.23,
+      "stars": 4374,
       "predicted_stars_4w": 106,
       "url": "https://github.com/simplexai-labs/linger"
+    },
+    {
+      "type": "new_entry",
+      "repo": "horizon-rust/horizon",
+      "title": "新发现：horizon-rust/horizon 展现爆发早期信号",
+      "summary": "当前 135 star，预测得分 0.17，预计 4 周内新增 66 star。新贡献者增长 1.5x。",
+      "evidence": [
+        "新贡献者增长 1.5x"
+      ],
+      "score": 0.17,
+      "stars": 135,
+      "predicted_stars_4w": 66,
+      "url": "https://github.com/horizon-rust/horizon"
     },
     {
       "type": "new_entry",
