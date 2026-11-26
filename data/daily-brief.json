@@ -1,19 +1,50 @@
 {
-  "date": "2026-11-25",
+  "date": "2026-11-26",
   "items": [
+    {
+      "type": "new_entry",
+      "repo": "thtbee/nectarlink",
+      "title": "新发现：thtbee/nectarlink 展现爆发早期信号",
+      "summary": "当前 95 star，预测得分 0.51，预计 4 周内新增 82 star。Fork 加速 1.67x，Issue 活跃度上升 3.13x。",
+      "evidence": [
+        "Fork 加速 1.67x",
+        "Issue 活跃度上升 3.13x",
+        "PR 活跃度上升 3.33x",
+        "4 个因子同时加速"
+      ],
+      "score": 0.51,
+      "stars": 95,
+      "predicted_stars_4w": 82,
+      "url": "https://github.com/thtbee/nectarlink"
+    },
     {
       "type": "new_entry",
       "repo": "simplexai-labs/linger",
       "title": "新发现：simplexai-labs/linger 展现爆发早期信号",
-      "summary": "当前 4.4k star，预测得分 0.23，预计 4 周内新增 106 star。PR 活跃度上升 2.25x，新贡献者增长 2.67x。",
+      "summary": "当前 4.7k star，预测得分 0.28，预计 4 周内新增 115 star。PR 活跃度上升 2.5x，新贡献者增长 2.67x。",
       "evidence": [
-        "PR 活跃度上升 2.25x",
-        "新贡献者增长 2.67x"
+        "PR 活跃度上升 2.5x",
+        "新贡献者增长 2.67x",
+        "近 4 周发布 2 次",
+        "3 个因子同时加速"
+      ],
+      "score": 0.28,
+      "stars": 4687,
+      "predicted_stars_4w": 115,
+      "url": "https://github.com/simplexai-labs/linger"
+    },
+    {
+      "type": "new_entry",
+      "repo": "arjun988/blender-skills",
+      "title": "新发现：arjun988/blender-skills 展现爆发早期信号",
+      "summary": "当前 4.9k star，预测得分 0.23，预计 4 周内新增 48 star。Fork 加速 3.33x。",
+      "evidence": [
+        "Fork 加速 3.33x"
       ],
       "score": 0.23,
-      "stars": 4374,
-      "predicted_stars_4w": 106,
-      "url": "https://github.com/simplexai-labs/linger"
+      "stars": 4943,
+      "predicted_stars_4w": 48,
+      "url": "https://github.com/arjun988/blender-skills"
     },
     {
       "type": "new_entry",
