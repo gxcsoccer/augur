@@ -1,0 +1,375 @@
+{
+  "notice": "Scripted test doubles, NOT Jev or LLM measurements. Independent frozen replay table; never use mock scores to select a model. Token counts are synthetic.",
+  "responses": {
+    "fixture/tensor-runtime": {
+      "llm": {
+        "layer": "infrastructure",
+        "domains": [
+          "other"
+        ]
+      },
+      "jev": {
+        "layer": "tooling",
+        "domains": [
+          "other"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/local-inference": {
+      "llm": {
+        "layer": "infrastructure",
+        "domains": [
+          "local-ai"
+        ]
+      },
+      "jev": {
+        "layer": "infrastructure",
+        "domains": [
+          "local-ai"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/syntax-parser": {
+      "llm": {
+        "layer": "infrastructure",
+        "domains": [
+          "other"
+        ]
+      },
+      "jev": {
+        "layer": "infrastructure",
+        "domains": [
+          "other"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/wire-format": {
+      "llm": {
+        "layer": "infrastructure",
+        "domains": [
+          "data"
+        ]
+      },
+      "jev": {
+        "layer": "infrastructure",
+        "domains": [
+          "data"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/speech-engine": {
+      "llm": {
+        "layer": "infrastructure",
+        "domains": [
+          "voice"
+        ]
+      },
+      "jev": {
+        "layer": "infrastructure",
+        "domains": [
+          "voice"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/agent-protocol": {
+      "llm": {
+        "layer": "tooling",
+        "domains": [
+          "agent"
+        ]
+      },
+      "jev": {
+        "layer": "infrastructure",
+        "domains": [
+          "agent"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/policy-vm": {
+      "llm": {
+        "layer": "infrastructure",
+        "domains": [
+          "security"
+        ]
+      },
+      "jev": {
+        "layer": "infrastructure",
+        "domains": [
+          "security"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/storage-engine": {
+      "llm": {
+        "layer": "infrastructure",
+        "domains": [
+          "data"
+        ]
+      },
+      "jev": {
+        "layer": "infrastructure",
+        "domains": [
+          "data"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/agent-sdk": {
+      "llm": {
+        "layer": "tooling",
+        "domains": [
+          "agent"
+        ]
+      },
+      "jev": {
+        "layer": "tooling",
+        "domains": [
+          "agent"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/memory-sdk": {
+      "llm": {
+        "layer": "tooling",
+        "domains": [
+          "agent",
+          "memory"
+        ]
+      },
+      "jev": {
+        "layer": "tooling",
+        "domains": [
+          "agent",
+          "memory"
+        ],
+        "confidence": 0.45
+      }
+    },
+    "fixture/eval-harness": {
+      "llm": {
+        "layer": "tooling",
+        "domains": [
+          "eval"
+        ]
+      },
+      "jev": {
+        "layer": "tooling",
+        "domains": [
+          "eval"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/retrieval-kit": {
+      "llm": {
+        "layer": "tooling",
+        "domains": [
+          "search"
+        ]
+      },
+      "jev": {
+        "layer": "tooling",
+        "domains": [
+          "search",
+          "data"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/deploy-cli": {
+      "llm": {
+        "layer": "tooling",
+        "domains": [
+          "devops"
+        ]
+      },
+      "jev": {
+        "layer": "tooling",
+        "domains": [
+          "devops"
+        ],
+        "confidence": 0.96,
+        "error": "http_429"
+      }
+    },
+    "fixture/voice-sdk": {
+      "llm": {
+        "layer": "tooling",
+        "domains": [
+          "voice"
+        ]
+      },
+      "jev": {
+        "layer": "tooling",
+        "domains": [
+          "voice"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/payment-sdk": {
+      "llm": {
+        "layer": "tooling",
+        "domains": [
+          "economy"
+        ]
+      },
+      "jev": {
+        "layer": "tooling",
+        "domains": [
+          "economy"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/codegen-plugin": {
+      "llm": {
+        "layer": "tooling",
+        "domains": [
+          "code-gen"
+        ]
+      },
+      "jev": {
+        "layer": "tooling",
+        "domains": [
+          "code-gen"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/desktop-writer": {
+      "llm": {
+        "layer": "application",
+        "domains": [
+          "desktop",
+          "local-ai"
+        ]
+      },
+      "jev": {
+        "layer": "application",
+        "domains": [
+          "desktop",
+          "local-ai"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/coding-app": {
+      "llm": {
+        "layer": "application",
+        "domains": [
+          "desktop",
+          "code-gen"
+        ]
+      },
+      "jev": {
+        "layer": "application",
+        "domains": [
+          "desktop",
+          "code-gen"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/search-product": {
+      "llm": {
+        "layer": "application",
+        "domains": [
+          "search"
+        ]
+      },
+      "jev": {
+        "layer": "application",
+        "domains": [
+          "search"
+        ],
+        "confidence": 0.6
+      }
+    },
+    "fixture/voice-notes": {
+      "llm": {
+        "layer": "application",
+        "domains": [
+          "voice"
+        ]
+      },
+      "jev": {
+        "layer": "application",
+        "domains": [
+          "voice"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/finance-dashboard": {
+      "llm": {
+        "layer": "application",
+        "domains": [
+          "economy",
+          "data"
+        ]
+      },
+      "jev": {
+        "layer": "application",
+        "domains": [
+          "economy",
+          "data"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/security-dashboard": {
+      "llm": {
+        "layer": "application",
+        "domains": [
+          "security"
+        ]
+      },
+      "jev": {
+        "layer": "application",
+        "domains": [
+          "security"
+        ],
+        "confidence": 0.96
+      }
+    },
+    "fixture/zh-agent": {
+      "llm": {
+        "layer": "application",
+        "domains": [
+          "agent",
+          "memory",
+          "desktop"
+        ]
+      },
+      "jev": {
+        "layer": "application",
+        "domains": [
+          "agent",
+          "memory",
+          "desktop"
+        ],
+        "confidence": 0.55
+      }
+    },
+    "fixture/garden-app": {
+      "llm": null,
+      "jev": {
+        "layer": "application",
+        "domains": [
+          "other"
+        ],
+        "confidence": 0.96,
+        "error": "invalid_response"
+      }
+    }
+  }
+}
