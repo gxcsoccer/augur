@@ -1,21 +1,18 @@
 {
-  "date": "2026-11-27",
+  "date": "2026-11-28",
   "items": [
     {
       "type": "new_entry",
-      "repo": "simplexai-labs/linger",
-      "title": "新发现：simplexai-labs/linger 展现爆发早期信号",
-      "summary": "当前 4.9k star，预测得分 0.28，预计 4 周内新增 115 star。PR 活跃度上升 2.5x，新贡献者增长 2.67x。",
+      "repo": "google-gemini/gemini-api-cli",
+      "title": "新发现：google-gemini/gemini-api-cli 展现爆发早期信号",
+      "summary": "当前 4.2k star，预测得分 0.29，预计 4 周内新增 65 star。Star 加速 6.82x。",
       "evidence": [
-        "PR 活跃度上升 2.5x",
-        "新贡献者增长 2.67x",
-        "近 4 周发布 2 次",
-        "3 个因子同时加速"
+        "Star 加速 6.82x"
       ],
-      "score": 0.28,
-      "stars": 4884,
-      "predicted_stars_4w": 115,
-      "url": "https://github.com/simplexai-labs/linger"
+      "score": 0.29,
+      "stars": 4213,
+      "predicted_stars_4w": 65,
+      "url": "https://github.com/google-gemini/gemini-api-cli"
     },
     {
       "type": "new_entry",
